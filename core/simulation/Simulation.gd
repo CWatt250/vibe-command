@@ -14,6 +14,7 @@ var grid_map: NavGrid
 var spatial: SpatialIndex
 var power_sys: PowerSystem
 var compute_sys: ComputeSystem
+var command_sys: CommandCapacitySystem
 var combat: CombatSystem
 var compute_deficit: Dictionary = {}   # faction -> bool (or global combat penalty source)
 
@@ -35,6 +36,7 @@ func _init(registry_: ContentRegistry, events_: GameEvents, grid_h: int, grid_w:
 	spatial = SpatialIndex.new()
 	power_sys = PowerSystem.new()
 	compute_sys = ComputeSystem.new()
+	command_sys = CommandCapacitySystem.new(registry)
 	combat = CombatSystem.new(self, registry, events)
 
 # --- Players / resources ---
@@ -375,6 +377,23 @@ func _issue_train(self_id: int, targets: Array, cmd: Dictionary) -> void:
 		return
 	var cost: float = def.get("costCredits", 0.0)
 	var build_time: float = def.get("buildTimeSec", 5.0)
+	var unit_reserve: float = def.get("reserveCapacity", 0.0)
+	# Command Capacity gate (§6.2): the FEDERAL differentiator — deficit BLOCKS new
+	# elite production (does NOT debuff existing units like Compute does).
+	# Compute command state for the producing faction once, before the loop.
+	var _cmd_state: Dictionary = {}
+	if unit_reserve > 0.0:
+		var _f: String = "FC"
+		# Resolve the producing faction from the first valid target.
+		for t in targets:
+			var te: Entity = entities.get(t)
+			if te != null:
+				_f = te.faction_id
+				break
+		_cmd_state = command_sys._compute(entities, _f)
+		if not command_sys.can_produce(_cmd_state, unit_reserve):
+			events.log.emit("TRAIN blocked: command capacity exceeded for " + unit_id + " (faction " + _f + ")")
+			return
 	# target(s) = production structure(s); enqueue on each in range/powered.
 	for t in targets:
 		var e: Entity = entities.get(t)
