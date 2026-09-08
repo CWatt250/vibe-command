@@ -47,7 +47,7 @@ func _draw_structure(e: Entity) -> void:
 	if tex != null:
 		# faction-tint the structure sprite, draw centered on footprint
 		var box := _scaled_sprite_box(e, tex, 60.0)
-		var tint := col.darkened(0.35).lerp(Color.WHITE, 0.2)
+		var tint := Color.WHITE.lerp(col, 0.22)
 		draw_texture_rect(tex, box, false, tint)
 	else:
 		var half := 28.0

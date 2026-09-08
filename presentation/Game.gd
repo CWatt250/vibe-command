@@ -104,25 +104,42 @@ func _spawn_starter_force() -> void:
 	sim.add_player("VC")
 	sim.add_player("FC")
 	sim.selected_faction = "VC"
-	# Vibe base + infantry in one cluster
-	var base_cell := Vector2i(24, 24)
+
+	# --- Vibe Coder home base (The Garage) ---
 	sim.spawn_structure("VC-B01", "VC", Vector2(24, 24) * NavGrid.CELL)
-	for i in range(12):
-		var ang := TAU * i / 12.0
-		var pos := Vector2(960, 960) + Vector2(cos(ang), sin(ang)) * 120.0
-		sim.spawn_unit("VC-U01", "VC", pos)
-	# Hostile Federal picket in direct contact range so combat is immediately visible.
+	sim.spawn_structure("VC-B02", "VC", Vector2(21, 27) * NavGrid.CELL)
+	sim.spawn_structure("VC-B03", "VC", Vector2(27, 27) * NavGrid.CELL)
+
+	# Garage roster showcase: one of every Vibe Coder unit rings the HQ.
+	var roster: Array = ["VC-U02", "VC-U03", "VC-U04", "VC-U05", "VC-U06", "VC-U07",
+		"VC-U08", "VC-U09", "VC-U10", "VC-U11", "VC-U12", "VC-U13", "VC-U14"]
+	for i in range(roster.size()):
+		var ang := TAU * i / float(roster.size())
+		var pos := Vector2(24.5, 24.5) * NavGrid.CELL + Vector2(cos(ang), sin(ang)) * 215.0
+		sim.spawn_unit(String(roster[i]), "VC", pos)
+
+	# Maker crew + harvester crew.
+	for i in range(8):
+		var ang2 := TAU * i / 8.0
+		sim.spawn_unit("VC-U01", "VC", Vector2(24.5, 24.5) * NavGrid.CELL + Vector2(cos(ang2), sin(ang2)) * 125.0)
+	for i in range(2):
+		sim.spawn_unit("VC-SRV", "VC", Vector2(24.5, 24.5) * NavGrid.CELL + Vector2(-150.0 + i * 44.0, 165.0))
+
+	# --- Resource fields (economy is a real system, not decoration) ---
+	sim.spawn_resource_field(Vector2(18, 20) * NavGrid.CELL, 4000.0)
+	sim.spawn_resource_field(Vector2(30, 20) * NavGrid.CELL, 4000.0)
+
+	# --- Federal Command base + garrison ---
+	sim.spawn_structure("FC-B01", "FC", Vector2(48, 48) * NavGrid.CELL)
+	sim.spawn_structure("FC-B03", "FC", Vector2(45, 51) * NavGrid.CELL)
+	for i in range(2):
+		sim.spawn_unit("FC-SRV", "FC", Vector2(48.5, 48.5) * NavGrid.CELL + Vector2(-125.0 + i * 44.0, 135.0))
 	for i in range(6):
-		var ang := TAU * i / 6.0
-		var pos := Vector2(1290, 1290) + Vector2(cos(ang), sin(ang)) * 90.0
-		sim.spawn_unit("FC-U01", "FC", pos)
-	# Drive the Vibe force into the Federal picket so the sandbox shows a live engagement.
-	var vc_ids: Array = []
-	for e in sim.entities.values():
-		if e.faction_id == "VC" and e.kind == "unit":
-			vc_ids.append(e.id)
-	if vc_ids.size() > 0:
-		sim.run_commands(0, [{ "type": "ATTACK_MOVE", "entityIds": vc_ids, "targetPosition": Vector2(1290, 1290) }])
+		var ang3 := TAU * i / 6.0
+		sim.spawn_unit("FC-U01", "FC", Vector2(48.5, 48.5) * NavGrid.CELL + Vector2(cos(ang3), sin(ang3)) * 110.0)
+
+	# Skirmish AI drives Federal Command against the Vibe Coder player.
+	sim.attach_skirmish_ai("FC", "VC")
 
 func _process(delta: float) -> void:
 	_accum += delta

@@ -22,7 +22,7 @@ if not tok:
     print(f"ERROR: no TELEGRAM_BOT_TOKEN in {env}")
     sys.exit(1)
 
-data = urllib.parse.urlencode({"chat_id": CHAT, "text": message, "parse_mode": "HTML"}).encode()
+data = urllib.parse.urlencode({"chat_id": CHAT, "text": message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"), "parse_mode": "HTML"}).encode()
 req = urllib.request.Request(f"https://api.telegram.org/bot{tok}/sendMessage", data=data)
 try:
     resp = urllib.request.urlopen(req)
