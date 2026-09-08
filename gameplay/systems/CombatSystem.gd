@@ -34,9 +34,22 @@ func tick_all() -> void:
 		if target == null or not target.alive:
 			w.current_target_id = -1
 			continue
+		# 2b. If the target is out of firing range, chase it (attack pursuit). Only re-path
+		#     when not already moving, to avoid repathing every tick.
+		if not w.target_in_range(target.position, e.position):
+			if e.movement != null and not e.movement.is_moving() and not e.movement.reached_goal(e.position):
+				_chase(e, target)
 		# 3. Fire when in range and cooldown ready.
 		if w.can_fire() and w.target_in_range(target.position, e.position):
 			_resolve_fire(e, w, target)
+
+func _chase(e: Entity, target: Entity) -> void:
+	# Path toward the target so the attacker closes to firing range.
+	if sim.grid_map == null:
+		return
+	var dst := sim.grid_map.find_path(e.position, target.position, e.movement.path_layer == "air")
+	if dst.size() > 0:
+		e.movement.set_path(dst, target.position)
 
 ## Acquire the highest-scoring valid enemy target within acquisition radius.
 func _acquire_target(e: Entity) -> int:

@@ -102,7 +102,7 @@ func _issue_context_order(world_pos: Vector2) -> void:
 	var target_id := _unit_at_world(world_pos)
 	var orders: Array = []
 	if target_id >= 0 and sim.entities.get(target_id) != null and sim.entities.get(target_id).faction_id != sim.selected_faction:
-		orders.append({"type": "ATTACK", "entityIds": ids, "targetId": target_id})
+		orders.append({"type": "ATTACK", "entityIds": ids, "targetEntityId": target_id})
 	else:
 		orders.append({"type": "MOVE", "entityIds": ids, "targetPosition": world_pos})
 	orders_issued.emit(orders)
