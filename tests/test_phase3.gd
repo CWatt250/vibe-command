@@ -27,6 +27,7 @@ func _init() -> void:
 	failures += _test_build_creates_site_and_constructs()
 	failures += _test_train_spawns_unit()
 	failures += _test_power_brownout()
+	failures += _test_turret_defense()
 	print("PHASE3_RESULT: ", "ALL PASS" if failures == 0 else ("%d FAIL" % failures))
 	quit()
 
@@ -95,6 +96,34 @@ func _test_train_spawns_unit() -> int:
 			break
 	if not spawned:
 		push_error("TRAIN never spawned VC-U01 at rally")
+		return 1
+	return 0
+
+func _test_turret_defense() -> int:
+	# VC-D02 Auto Turret (wpn_turret_gun, range 150, baseDamage 12, reload 1.0s).
+	# It should auto-acquire and destroy an approaching FC infantry, without moving.
+	_sim.add_player("FC")
+	var turret := _sim.spawn_structure("VC-D02", "VC", Vector2(1500, 1000))
+	if turret == -1:
+		push_error("turret spawn failed")
+		return 1
+	var attacker := _sim.spawn_unit("FC-U01", "FC", Vector2(1560, 1000))  # ~60u away, in range
+	if attacker == -1:
+		push_error("turret target spawn failed")
+		return 1
+	var turret_pos: Vector2 = _sim.entities[turret].position
+	var killed := false
+	for i in range(30 * 60):  # up to 30s sim
+		_sim.step(_sim.TICK_DT)
+		var t = _sim.entities.get(attacker)
+		if t == null:
+			killed = true
+			break
+	if not killed:
+		push_error("turret failed to destroy FC infantry within 30s")
+		return 1
+	if _sim.entities[turret].position.distance_to(turret_pos) > 0.001:
+		push_error("turret moved (structures must stay planted)")
 		return 1
 	return 0
 

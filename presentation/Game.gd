@@ -9,7 +9,6 @@ const TICK_RATE: float = 30.0   # sim steps per second
 var registry: ContentRegistry
 var events: GameEvents
 var sim: Simulation
-var combat: CombatSystem
 
 var rts_cam: RTSCamera
 var selection_input: SelectionInput
@@ -32,7 +31,6 @@ func _ready() -> void:
 	# Build simulation world (50x50 cells at 40u = 2000u world)
 	var grid = NavGrid.new(50, 50)
 	sim = Simulation.new(registry, events, 50, 50)
-	combat = CombatSystem.new(sim, registry, events)
 
 	# Build the industrial map: roads + scattered blocked structures
 	_build_map(grid)
@@ -113,7 +111,6 @@ func _process(delta: float) -> void:
 	var step := 1.0 / TICK_RATE
 	while _accum >= step:
 		sim.step(step)
-		combat.tick_all()
 		_accum -= step
 		entity_renderer.queue_redraw()
 	_frame += 1

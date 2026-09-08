@@ -13,6 +13,7 @@ var events: GameEvents
 var grid_map: NavGrid
 var spatial: SpatialIndex
 var power_sys: PowerSystem
+var combat: CombatSystem
 
 ## Transient UI/selection state (owned by sim as the single authority on entities/factions).
 var selected_ids: Array = []
@@ -31,6 +32,7 @@ func _init(registry_: ContentRegistry, events_: GameEvents, grid_h: int, grid_w:
 	grid_map = NavGrid.new(grid_w, grid_h)
 	spatial = SpatialIndex.new()
 	power_sys = PowerSystem.new()
+	combat = CombatSystem.new(self, registry, events)
 
 # --- Players / resources ---
 func add_player(faction: String) -> void:
@@ -146,6 +148,9 @@ func step(dt: float) -> void:
 			continue
 		_tick_entity(e, dt)
 	_recompute_power()
+	# Combat is resolved by the sim itself (authoritative, Blueprint §2) so a
+	# headless sim fully simulates without an external driver.
+	combat.tick_all()
 
 func _recompute_power() -> void:
 	## Per-faction power ratio -> production speed_scale (Blueprint §5.5 / §6).

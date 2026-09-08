@@ -16,12 +16,11 @@ func _init() -> void:
 	else:
 		print("PASS: registry units=", registry.all_units().size(), " structures=", registry.all_structures().size(), " weapons=", registry.all_weapons().size())
 
-	# 2. Simulation + combat system
+	# 2. Simulation (owns its CombatSystem per Blueprint §2 — authoritative)
 	var events := GameEvents.new()
 	var sim := Simulation.new(registry, events, 40, 40)
 	sim.add_player("VC")
 	sim.add_player("FC")
-	var combat := CombatSystem.new(sim, registry, events)
 
 	# 3. Spawn 3 VC infantry
 	var u1 := sim.spawn_unit("VC-U01", "VC", Vector2(80, 80))
@@ -40,7 +39,6 @@ func _init() -> void:
 	var start := Time.get_ticks_usec()
 	for t in range(15 * 60):
 		sim.step(sim.TICK_DT)
-		combat.tick_all()
 		var m1: Entity = sim.entities.get(u1)
 		if m1 != null and m1.position.distance_to(dest) <= 30.0:
 			reached = 1
@@ -64,7 +62,6 @@ func _init() -> void:
 	var enemy_died := false
 	for t in range(30 * 60):  # up to 30s
 		sim.step(sim.TICK_DT)
-		combat.tick_all()
 		var eb: Entity = sim.entities.get(b)
 		if eb == null:
 			enemy_died = true
