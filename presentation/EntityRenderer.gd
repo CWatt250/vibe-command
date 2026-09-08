@@ -43,31 +43,62 @@ func _draw() -> void:
 
 func _draw_structure(e: Entity) -> void:
 	var col: Color = FC_COLORS.get(e.faction_id, Color.WHITE)
-	# Structure footprint (square), faction-colored with a roof accent.
-	var half := 28.0
-	draw_rect(Rect2(e.position.x - half, e.position.y - half, half * 2.0, half * 2.0), col.darkened(0.45))
-	draw_rect(Rect2(e.position.x - half, e.position.y - half, half * 2.0, half * 2.0), col, false, 3.0)
-	# Roof accent (inner)
-	draw_rect(Rect2(e.position.x - half * 0.6, e.position.y - half * 0.6, half * 1.2, half * 1.2), col.darkened(0.15))
+	var tex := SpriteAtlas.texture(e.def_id)
+	if tex != null:
+		# faction-tint the structure sprite, draw centered on footprint
+		var box := _scaled_sprite_box(e, tex, 60.0)
+		var tint := col.darkened(0.35).lerp(Color.WHITE, 0.2)
+		draw_texture_rect(tex, box, false, tint)
+	else:
+		var half := 28.0
+		draw_rect(Rect2(e.position.x - half, e.position.y - half, half * 2.0, half * 2.0), col.darkened(0.45))
+		draw_rect(Rect2(e.position.x - half, e.position.y - half, half * 2.0, half * 2.0), col, false, 3.0)
 	if e.health != null:
 		_draw_health(e.position, e.health.current / e.health.max_health)
 	if sim.selected_ids.has(e.id):
+		var half := 28.0
 		draw_arc(e.position, half + 6.0, 0, TAU, 24, Color(0.0, 1.0, 0.4), 2.0)
 
 func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 	var col: Color = FC_COLORS.get(e.faction_id, Color.WHITE)
-	# Body
-	draw_circle(e.position, 12.0, col)
-	draw_arc(e.position, 12.0, 0, TAU, 24, col.darkened(0.4), 1.5)
-	# Facing / weapon nose
-	var facing := _facing_for(e)
-	draw_line(e.position, e.position + facing * 16.0, col.lightened(0.35), 2.0)
-	# Health bar (always shown for units)
+	var tex := SpriteAtlas.texture(e.def_id)
+	if tex != null:
+		var angle := _facing_angle(e)
+		var box := _scaled_sprite_box(e, tex, 42.0)
+		var draw_pos := box.get_center()
+		var tint := Color.WHITE
+		# Character/vehicle tint: faction hue washed over a mostly-neutral sprite.
+		if SpriteAtlas.is_humanoid(e.def_id):
+			tint = Color(1.0, 1.0, 1.0).lerp(col, 0.55)
+		# Rotation: sprites face up (-Y). Godot rotation 0 = up; angle from facing.
+		draw_set_transform(draw_pos, angle, Vector2.ONE)
+		draw_texture_rect(tex, Rect2(-box.size * 0.5, box.size), false, tint)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	else:
+		draw_circle(e.position, 12.0, col)
+		draw_arc(e.position, 12.0, 0, TAU, 24, col.darkened(0.4), 1.5)
 	if e.health != null:
 		_draw_health(e.position, e.health.current / e.health.max_health)
-	# Selection ring
 	if sim.selected_ids.has(e.id):
 		draw_arc(e.position, 16.0, 0, TAU, 24, Color(0.0, 1.0, 0.4), 2.0)
+
+## World-space rect to draw a sprite at its entity position, scaled so the max
+## dimension is `target_px` world units (keeps unit readable at cell=20).
+func _scaled_sprite_box(e: Entity, tex: Texture2D, target_px: float) -> Rect2:
+	var sz := tex.get_size()
+	var scale := 1.0
+	if sz.x > 0 and sz.y > 0:
+		scale = target_px / max(sz.x, sz.y)
+	var w := sz.x * scale
+	var h := sz.y * scale
+	return Rect2(e.position - Vector2(w, h) * 0.5, Vector2(w, h))
+
+func _facing_angle(e: Entity) -> float:
+	if e.movement != null and not e.movement.facing.is_zero_approx():
+		# sprites face up (-Y) == +90deg in Godot's rotate-down convention.
+		# facing is a world direction; rotation = facing.angle() + PI/2.
+		return e.movement.facing.angle() + PI * 0.5
+	return 0.0
 
 func _draw_health(pos: Vector2, pct: float) -> void:
 	var w := 24.0

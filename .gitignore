@@ -16,3 +16,4 @@ __pycache__/
 # Godot import artifacts
 *.import
 NEXUS
+NEXUS.md

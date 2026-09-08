@@ -12,6 +12,8 @@ const ConstructionComponent := preload("res://gameplay/components/ConstructionCo
 const GarrisonComponent := preload("res://gameplay/components/GarrisonComponent.gd")
 const GarrisonableComponent := preload("res://gameplay/components/GarrisonableComponent.gd")
 const VeterancyComponent := preload("res://gameplay/components/VeterancyComponent.gd")
+const HarvestComponent := preload("res://gameplay/components/HarvestComponent.gd")
+const ResourceNodeComponent := preload("res://gameplay/components/ResourceNodeComponent.gd")
 
 ## Runtime refs — bound by Simulation at spawn.
 var grid: NavGrid = null
@@ -36,6 +38,8 @@ var construction: ConstructionComponent = null
 var garrison: GarrisonComponent = null
 var garrisonable: GarrisonableComponent = null
 var veterancy: VeterancyComponent = null
+var harvest: HarvestComponent = null
+var resource: ResourceNodeComponent = null
 var def_data: Dictionary = {}
 
 ## Garrison / repair runtime state (§5.7, repair).
@@ -100,3 +104,13 @@ func _attach_components(reg: ContentRegistry, def: Dictionary, start_built: bool
 		var v := VeterancyComponent.new()
 		v.setup(def, self)
 		veterancy = v
+	# Harvest (units that mine credits from resource fields — §5.4)
+	if def.get("harvest", false) and def.get("kind", "unit") == "unit":
+		var hc := HarvestComponent.new()
+		hc.setup(def, self)
+		harvest = hc
+	# Resource node (a depletable harvestable field — §5.4)
+	if def.get("resource", false):
+		var rc := ResourceNodeComponent.new()
+		rc.setup(def, self)
+		resource = rc
