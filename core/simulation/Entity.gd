@@ -8,6 +8,7 @@ const MovementComponent := preload("res://gameplay/components/MovementComponent.
 const WeaponComponent := preload("res://gameplay/components/WeaponComponent.gd")
 const SensorComponent := preload("res://gameplay/components/SensorComponent.gd")
 const ProductionComponent := preload("res://gameplay/components/ProductionComponent.gd")
+const ConstructionComponent := preload("res://gameplay/components/ConstructionComponent.gd")
 
 ## Runtime refs — bound by Simulation at spawn.
 var grid: NavGrid = null
@@ -28,6 +29,7 @@ var movement: MovementComponent = null
 var weapon: WeaponComponent = null
 var sensor: SensorComponent = null
 var production: ProductionComponent = null
+var construction: ConstructionComponent = null
 var def_data: Dictionary = {}
 
 func _init(def: Dictionary, owner: String, entity_id: int) -> void:
@@ -41,7 +43,7 @@ func is_owned_by(faction: String) -> bool:
 	return faction_id == faction
 
 ## Attach components based on definition + content (Blueprint §2 component-based).
-func _attach_components(reg: ContentRegistry, def: Dictionary) -> void:
+func _attach_components(reg: ContentRegistry, def: Dictionary, start_built: bool = true) -> void:
 	# Health
 	var h := HealthComponent.new()
 	h.setup(def, self)
@@ -68,3 +70,8 @@ func _attach_components(reg: ContentRegistry, def: Dictionary) -> void:
 		var p := ProductionComponent.new()
 		p.setup(def, self)
 		production = p
+	# Construction (structures build over time; pre-placed spawn built)
+	if def.has("footprint"):
+		var c := ConstructionComponent.new()
+		c.setup(def, start_built)
+		construction = c

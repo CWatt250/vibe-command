@@ -12,6 +12,7 @@ var events: GameEvents
 
 var grid_map: NavGrid
 var spatial: SpatialIndex
+var power_sys: PowerSystem
 
 ## Transient UI/selection state (owned by sim as the single authority on entities/factions).
 var selected_ids: Array = []
@@ -29,6 +30,7 @@ func _init(registry_: ContentRegistry, events_: GameEvents, grid_h: int, grid_w:
 	events = events_
 	grid_map = NavGrid.new(grid_w, grid_h)
 	spatial = SpatialIndex.new()
+	power_sys = PowerSystem.new()
 
 # --- Players / resources ---
 func add_player(faction: String) -> void:
@@ -76,17 +78,42 @@ func spawn_unit(def_id: String, faction: String, pos: Vector2) -> int:
 	_register_entity(e, def_id, pos)
 	return e.id
 
-func spawn_structure(def_id: String, faction: String, pos: Vector2) -> int:
+func spawn_structure(def_id: String, faction: String, pos: Vector2, start_built: bool = true) -> int:
 	var def = registry.get_structure(def_id)
 	if def.is_empty():
 		push_error("Simulation: unknown structure def " + def_id)
 		return -1
 	var e = Entity.new(def, faction, _next_id)
 	e.kind = "structure"
-	e._attach_components(registry, def)
+	e._attach_components(registry, def, start_built)
 	_register_entity(e, def_id, pos)
-	events.structure_placed.emit(e.id, def_id, faction, pos)
+	if start_built:
+		events.structure_placed.emit(e.id, def_id, faction, pos)
+	else:
+		events.log.emit("Construction started: " + def_id)
 	return e.id
+
+## Spawn a build site (structure under construction). Blocks its footprint in the grid.
+func spawn_build_site(def_id: String, faction: String, pos: Vector2) -> int:
+	var id := spawn_structure(def_id, faction, pos, false)
+	if id == -1:
+		return -1
+	_block_footprint(entities[id])
+	return id
+
+func _block_footprint(e: Entity) -> void:
+	var fp: Array = e.def_data.get("footprint", [1, 1])
+	var w: int = fp[0] if fp.size() > 0 else 1
+	var h: int = fp[1] if fp.size() > 1 else 1
+	var c: Vector2i = grid_map.world_to_cell(e.position.x, e.position.y)
+	grid_map.block_rect(c.x - w / 2, c.y - h / 2, w, h)
+
+func _unblock_footprint(e: Entity) -> void:
+	var fp: Array = e.def_data.get("footprint", [1, 1])
+	var w: int = fp[0] if fp.size() > 0 else 1
+	var h: int = fp[1] if fp.size() > 1 else 1
+	var c: Vector2i = grid_map.world_to_cell(e.position.x, e.position.y)
+	grid_map.unblock_rect(c.x - w / 2, c.y - h / 2, w, h)
 
 func _register_entity(e: Entity, _def_id: String, pos: Vector2) -> void:
 	var id := e.id
@@ -118,8 +145,31 @@ func step(dt: float) -> void:
 		if e == null or not e.alive:
 			continue
 		_tick_entity(e, dt)
+	_recompute_power()
+
+func _recompute_power() -> void:
+	## Per-faction power ratio -> production speed_scale (Blueprint §5.5 / §6).
+	var by_faction: Dictionary = {}
+	for id in entities:
+		var e: Entity = entities[id]
+		if not by_faction.has(e.faction_id):
+			by_faction[e.faction_id] = true
+	for faction in by_faction.keys():
+		var r: Dictionary = power_sys._compute(entities, faction)
+		var scale: float = power_sys._speed_scale(r["ratio"])
+		for eid in entities:
+			var e: Entity = entities[eid]
+			if e.faction_id != faction:
+				continue
+			if e.production != null:
+				e.production.set_speed_scale(scale)
+				e.production.set_powered(r["powered"])
 
 func _tick_entity(e: Entity, dt: float) -> void:
+	# Construction progress (build sites) — emits completion when built.
+	if e.construction != null and not e.construction.is_built():
+		if e.construction.tick(dt):
+			events.building_constructed.emit(e.id, e.def_id, e.faction_id)
 	if e.movement != null:
 		var newpos: Vector2 = e.movement.update(dt, e.position)
 		if newpos != e.position:
@@ -153,6 +203,12 @@ func run_commands(id: int, commands: Array) -> void:
 					var et: Entity = entities.get(t)
 					if et != null and et.movement != null:
 						et.movement.clear()
+			"BUILD":
+				_issue_build(id, cmd)
+			"TRAIN":
+				_issue_train(id, targets, cmd)
+			"SET_RALLY":
+				_issue_set_rally(id, targets, cmd.get("position", Vector2.ZERO))
 			_:
 				pass
 
@@ -194,3 +250,100 @@ func _issue_attack(self_id: int, targets: Array, cmd: Dictionary) -> void:
 
 func _issue_attack_move(self_id: int, targets: Array, destination: Vector2) -> void:
 	_issue_move(self_id, targets, destination)
+
+# --- Base building (Blueprint §5.2) / production (Blueprint §5.3) ---
+func _issue_build(self_id: int, cmd: Dictionary) -> void:
+	var def_id: String = cmd.get("structureDefId", "")
+	var pos: Vector2 = cmd.get("position", Vector2.ZERO)
+	var faction: String = cmd.get("faction", _issue_builder_faction(cmd.get("builderId", 0)))
+	if faction == "":
+		events.log.emit("BUILD rejected: no faction")
+		return
+	var def = registry.get_structure(def_id)
+	if def.is_empty():
+		events.log.emit("BUILD rejected: unknown structure " + def_id)
+		return
+	# 1. Credits check + reserve (Blueprint §5.2 step 3).
+	var cost: float = def.get("costCredits", 0.0)
+	if not spend_credits(faction, cost):
+		events.log.emit("BUILD rejected: not enough credits for " + def_id)
+		return
+	# 2. Placement ghost checks: grid passable + inside build radius of an HQ (steps 2).
+	if not _placement_valid(def, pos, faction):
+		# No footprint conflict; refund reserved credits + reject.
+		add_credits(faction, cost)
+		events.log.emit("BUILD rejected: invalid placement for " + def_id)
+		return
+	var id := spawn_build_site(def_id, faction, pos)
+	events.structure_order.emit(id, def_id, faction, pos)
+
+func _issue_builder_faction(builder_id: int) -> String:
+	if builder_id >= 0 and entities.has(builder_id):
+		return entities[builder_id].faction_id
+	return selected_faction
+
+func _placement_valid(def: Dictionary, pos: Vector2, faction: String) -> bool:
+	# Footprint cells must be clear / in-bounds.
+	var fp: Array = def.get("footprint", [1, 1])
+	var w: int = fp[0] if fp.size() > 0 else 1
+	var h: int = fp[1] if fp.size() > 1 else 1
+	var c: Vector2i = grid_map.world_to_cell(pos.x, pos.y)
+	for dy in range(h):
+		for dx in range(w):
+			var cx: int = c.x - w / 2 + dx
+			var cy: int = c.y - h / 2 + dy
+			if not grid_map.in_bounds(cx, cy):
+				return false
+			if grid_map.is_blocked(cx, cy):
+				return false
+	# Build radius: require a built HQ owned by faction within range.
+	var radius: float = _build_radius_for(faction)
+	if radius > 0.0:
+		var in_range := false
+		for eid in entities:
+			var e: Entity = entities[eid]
+			if e.faction_id != faction or e.kind != "structure":
+				continue
+			var d: Dictionary = e.def_data
+			if d.get("class", "") == "HQ" and (e.construction == null or e.construction.is_built()):
+				if pos.distance_to(e.position) <= radius:
+					in_range = true
+					break
+		if not in_range:
+			return false
+	return true
+
+func _build_radius_for(faction: String) -> float:
+	# From the faction's HQ/"BuilderNetwork" config; default 1200 if present.
+	var f = registry.get_faction(faction)
+	if f.has("buildRadius"):
+		return f["buildRadius"]
+	return 1200.0
+
+func _issue_train(self_id: int, targets: Array, cmd: Dictionary) -> void:
+	var unit_id: String = cmd.get("unitDefId", "")
+	var def = registry.get_unit(unit_id)
+	if def.is_empty():
+		events.log.emit("TRAIN rejected: unknown unit " + unit_id)
+		return
+	var cost: float = def.get("costCredits", 0.0)
+	var build_time: float = def.get("buildTimeSec", 5.0)
+	# target(s) = production structure(s); enqueue on each in range/powered.
+	for t in targets:
+		var e: Entity = entities.get(t)
+		if e == null or e.production == null:
+			continue
+		if e.construction != null and not e.construction.is_built():
+			continue
+		var faction: String = e.faction_id
+		if not spend_credits(faction, cost):
+			events.log.emit("TRAIN rejected: not enough credits for " + unit_id)
+			continue
+		e.production.enqueue(unit_id, cost, build_time)
+		events.production_queued.emit(e.id, unit_id, cost)
+
+func _issue_set_rally(self_id: int, targets: Array, position: Vector2) -> void:
+	for t in targets:
+		var e: Entity = entities.get(t)
+		if e != null and e.production != null:
+			e.production.rally_point = position

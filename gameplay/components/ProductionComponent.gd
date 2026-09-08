@@ -7,6 +7,7 @@ var queue: Array = []            # [{unit_def_id, progress, duration_total, paid
 var rally_point: Vector2 = Vector2.ZERO
 var _power_ok: bool = true
 var building_open: bool = true
+var speed_scale: float = 1.0     # brownout/power modifier (<1 slow, 0 paused)
 
 func setup(_def: Dictionary, _owner) -> void:
 	pass
@@ -15,12 +16,13 @@ func can_queue(unit_def_id: String) -> bool:
 	# caller validates cost/tech/requirement before enqueue
 	return building_open
 
-func enqueue(unit_def_id: String, _cost: float, build_time: float) -> void:
+func enqueue(unit_def_id: String, cost: float, build_time: float) -> void:
+	# Credits is already reserved (spent) by the caller before enqueue — Blueprint §5.3.
 	queue.append({
 		"unit": unit_def_id,
 		"progress": 0.0,
 		"total": build_time,
-		"paid": true
+		"paid_cost": cost
 	})
 
 func cancel(index: int) -> Dictionary:
@@ -35,11 +37,18 @@ func remove_at(index: int) -> void:
 func set_powered(p: bool) -> void:
 	_power_ok = p
 
+func set_speed_scale(s: float) -> void:
+	speed_scale = s
+
 func tick(dt: float) -> Array:
 	## Advance queue; returns array of completed unit defs this tick.
+	## Pauses when unpowered or critical brownout (scale <= 0); slows otherwise.
 	var completed: Array = []
-	if _power_ok and queue.size() > 0:
-		queue[0]["progress"] += dt
+	var rate := speed_scale
+	if not _power_ok or rate <= 0.0:
+		return completed
+	if queue.size() > 0:
+		queue[0]["progress"] += dt * rate
 		if queue[0]["progress"] >= queue[0]["total"]:
 			var done = queue.pop_front()
 			completed.append(done["unit"])
