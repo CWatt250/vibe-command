@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "factions": [
+    {
+      "id": "VC", "displayName": "Vibe Coder", "color": "00d1ff",
+      "resourceIds": ["credits", "power", "compute"],
+      "startCredits": 1500, "harvesterUnitId": "VC-SRV", "builderUnitId": "VC-U01",
+      "defenseTag": "improvised", "techTiers": 3,
+      "desc": "Improvised garage tech evolving into autonomous machine warfare. Compute is a real system."
+    },
+    {
+      "id": "FC", "displayName": "Federal Command", "color": "e8e8e8",
+      "resourceIds": ["credits", "power", "command"],
+      "startCredits": 1500, "harvesterUnitId": "FC-SRV", "builderUnitId": "FC-U02",
+      "defenseTag": "conventional", "techTiers": 3,
+      "desc": "Conventional combined-arms military. Command Capacity gates elite production."
+    }
+  ]
+}

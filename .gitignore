@@ -1,0 +1,14 @@
+# Godot 4 generated
+.godot/
+*.uid
+*.tmp
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc

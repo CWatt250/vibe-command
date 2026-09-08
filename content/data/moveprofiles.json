@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "profiles": [
+    { "id": "prof_infantry", "speed": 60, "acceleration": 200, "turnRateDeg": 160, "pathLayer": "ground", "footprintRadius": 6 },
+    { "id": "prof_infantry_fast", "speed": 85, "acceleration": 240, "turnRateDeg": 200, "pathLayer": "ground", "footprintRadius": 6 },
+    { "id": "prof_vehicle", "speed": 95, "acceleration": 160, "turnRateDeg": 90, "pathLayer": "ground", "footprintRadius": 10 },
+    { "id": "prof_vehicle_fast", "speed": 120, "acceleration": 200, "turnRateDeg": 110, "pathLayer": "ground", "footprintRadius": 9 },
+    { "id": "prof_vehicle_heavy", "speed": 70, "acceleration": 90, "turnRateDeg": 55, "pathLayer": "ground", "footprintRadius": 12 },
+    { "id": "prof_air", "speed": 150, "acceleration": 300, "turnRateDeg": 300, "pathLayer": "air", "footprintRadius": 6 },
+    { "id": "prof_air_fast", "speed": 190, "acceleration": 360, "turnRateDeg": 360, "pathLayer": "air", "footprintRadius": 6 }
+  ]
+}

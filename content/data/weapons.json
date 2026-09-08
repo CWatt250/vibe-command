@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "weapons": [
+    { "id": "wpn_small_arms", "range": 120, "minRange": 0, "reloadSec": 0.8, "burstCount": 1, "burstInterval": 0.0,
+      "baseDamage": 8, "damageType": "SmallArms", "targetTags": ["ground","infantry","structure"],
+      "preferredTags": ["infantry"], "projectileId": null, "splashRadius": 0, "splashFalloff": "",
+      "requiresLineOfSight": true, "aimTime": 0.2, "turnRateModifier": 3.0 },
+    { "id": "wpn_autocannon", "range": 160, "minRange": 0, "reloadSec": 1.1, "burstCount": 1, "burstInterval": 0.0,
+      "baseDamage": 18, "damageType": "AutoCannon", "targetTags": ["ground","structure","air","infantry","vehicle"],
+      "preferredTags": ["vehicle","infantry"], "projectileId": null, "splashRadius": 0, "splashFalloff": "",
+      "requiresLineOfSight": true, "aimTime": 0.3, "turnRateModifier": 3.5 },
+    { "id": "wpn_anti_armor", "range": 170, "minRange": 0, "reloadSec": 1.4, "burstCount": 1, "burstInterval": 0.0,
+      "baseDamage": 30, "damageType": "AntiArmor", "targetTags": ["ground","vehicle","structure"],
+      "preferredTags": ["vehicle","heavy"], "projectileId": null, "splashRadius": 0, "splashFalloff": "",
+      "requiresLineOfSight": true, "aimTime": 0.4, "turnRateModifier": 2.2 },
+    { "id": "wpn_explosive", "range": 150, "minRange": 0, "reloadSec": 1.6, "burstCount": 1, "burstInterval": 0.0,
+      "baseDamage": 25, "damageType": "Explosive", "targetTags": ["ground","structure","vehicle","infantry"],
+      "preferredTags": ["structure","heavy"], "projectileId": "proj_shell", "splashRadius": 40, "splashFalloff": "linear",
+      "requiresLineOfSight": true, "aimTime": 0.5, "turnRateModifier": 1.5 },
+    { "id": "wpn_energy_beam", "range": 140, "minRange": 0, "reloadSec": 1.2, "burstCount": 1, "burstInterval": 0.0,
+      "baseDamage": 16, "damageType": "Energy", "targetTags": ["ground","structure","vehicle","infantry"],
+      "preferredTags": ["vehicle"], "projectileId": null, "splashRadius": 0, "splashFalloff": "",
+      "requiresLineOfSight": true, "aimTime": 0.25, "turnRateModifier": 4.0 },
+    { "id": "wpn_turret_gun", "range": 150, "minRange": 0, "reloadSec": 1.0, "burstCount": 1, "burstInterval": 0.0,
+      "baseDamage": 12, "damageType": "AutoCannon", "targetTags": ["ground","infantry","structure"],
+      "preferredTags": ["infantry","light"], "projectileId": null, "splashRadius": 0, "splashFalloff": "",
+      "requiresLineOfSight": true, "aimTime": 0.35, "turnRateModifier": 2.0 },
+    { "id": "wpn_fpv_strike", "range": 130, "minRange": 0, "reloadSec": 0.01, "burstCount": 1, "burstInterval": 0.0,
+      "baseDamage": 60, "damageType": "Explosive", "targetTags": ["ground","vehicle","structure"],
+      "preferredTags": ["vehicle","heavy"], "projectileId": "proj_shell", "splashRadius": 30, "splashFalloff": "linear",
+      "requiresLineOfSight": true, "aimTime": 0.1, "turnRateModifier": 4.0 }
+  ]
+}
