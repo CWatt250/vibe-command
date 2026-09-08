@@ -2,6 +2,449 @@
   "version": 1,
   "units": [
     {
+      "id": "FC-SRV",
+      "displayName": "Harvester Truck",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 700,
+      "buildTimeSec": 20.0,
+      "reserveCapacity": 0,
+      "maxHealth": 340,
+      "armorClass": "Light",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 220,
+      "detectionRadius": 110,
+      "weaponSlots": [],
+      "abilityIds": [],
+      "componentFlags": [
+        "Harvester"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 2,
+      "harvest": true,
+      "harvestCapacity": 500.0,
+      "harvestRatePerSec": 60.0,
+      "harvestRadius": 45.0,
+      "depositRadius": 70.0
+    },
+    {
+      "id": "FC-U01",
+      "displayName": "Rifle Squad",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 350,
+      "buildTimeSec": 10.0,
+      "reserveCapacity": 0,
+      "maxHealth": 140,
+      "armorClass": "Infantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 200,
+      "detectionRadius": 100,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_frag",
+        "ability_garrison"
+      ],
+      "componentFlags": [
+        "Garrisonable"
+      ],
+      "populationWeight": 1,
+      "wreckDefinitionId": null,
+      "selectionPriority": 1,
+      "garrisonCapable": true
+    },
+    {
+      "id": "FC-U02",
+      "displayName": "Combat Engineer",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 300,
+      "buildTimeSec": 9.0,
+      "reserveCapacity": 0,
+      "maxHealth": 130,
+      "armorClass": "Infantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 200,
+      "detectionRadius": 100,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_capture",
+        "ability_repair",
+        "ability_demo"
+      ],
+      "componentFlags": [
+        "Repairer",
+        "Capturer",
+        "Garrisonable"
+      ],
+      "populationWeight": 1,
+      "wreckDefinitionId": null,
+      "selectionPriority": 2,
+      "garrisonCapable": true
+    },
+    {
+      "id": "FC-U03",
+      "displayName": "Javelin Team",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 500,
+      "buildTimeSec": 14.0,
+      "reserveCapacity": 0,
+      "maxHealth": 120,
+      "armorClass": "Infantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 220,
+      "detectionRadius": 120,
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "abilityIds": [
+        "ability_lockon",
+        "ability_garrison"
+      ],
+      "componentFlags": [
+        "Garrisonable"
+      ],
+      "populationWeight": 1,
+      "wreckDefinitionId": null,
+      "selectionPriority": 3,
+      "garrisonCapable": true
+    },
+    {
+      "id": "FC-U04",
+      "displayName": "Heavy Gunner Team",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 450,
+      "buildTimeSec": 13.0,
+      "reserveCapacity": 0,
+      "maxHealth": 130,
+      "armorClass": "Infantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 220,
+      "detectionRadius": 110,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_bipod",
+        "ability_suppress"
+      ],
+      "componentFlags": [
+        "Infantry",
+        "Garrisonable"
+      ],
+      "populationWeight": 1,
+      "wreckDefinitionId": null,
+      "selectionPriority": 3,
+      "garrisonCapable": true
+    },
+    {
+      "id": "FC-U05",
+      "displayName": "Humvee",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 650,
+      "buildTimeSec": 15.0,
+      "reserveCapacity": 0,
+      "maxHealth": 240,
+      "armorClass": "Light",
+      "moveProfileId": "prof_vehicle_fast",
+      "visionRadius": 250,
+      "detectionRadius": 100,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_smoke"
+      ],
+      "componentFlags": [
+        "Vehicle",
+        "Transport"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 4
+    },
+    {
+      "id": "FC-U06",
+      "displayName": "IFV",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 1000,
+      "buildTimeSec": 22.0,
+      "reserveCapacity": 2,
+      "maxHealth": 380,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 260,
+      "detectionRadius": 120,
+      "weaponSlots": [
+        "wpn_autocannon",
+        "wpn_small_arms"
+      ],
+      "abilityIds": [],
+      "componentFlags": [
+        "Vehicle",
+        "Transport"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5
+    },
+    {
+      "id": "FC-U07",
+      "displayName": "M1X Main Battle Tank",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 1700,
+      "buildTimeSec": 32.0,
+      "reserveCapacity": 3,
+      "maxHealth": 560,
+      "armorClass": "Heavy",
+      "moveProfileId": "prof_vehicle_heavy",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_explosive",
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_smoke",
+        "ability_halldown"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6
+    },
+    {
+      "id": "FC-U08",
+      "displayName": "Mobile AA",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 1100,
+      "buildTimeSec": 25.0,
+      "reserveCapacity": 2,
+      "maxHealth": 320,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 260,
+      "detectionRadius": 200,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_radar"
+      ],
+      "componentFlags": [
+        "Vehicle",
+        "AA"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 7
+    },
+    {
+      "id": "FC-U09",
+      "displayName": "Self-Propelled Artillery",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 1450,
+      "buildTimeSec": 30.0,
+      "reserveCapacity": 2,
+      "maxHealth": 300,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 240,
+      "detectionRadius": 100,
+      "weaponSlots": [
+        "wpn_explosive"
+      ],
+      "abilityIds": [
+        "ability_barrage"
+      ],
+      "componentFlags": [
+        "Vehicle",
+        "Siege"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 8
+    },
+    {
+      "id": "FC-U10",
+      "displayName": "MLRS Battery",
+      "factionId": "FC",
+      "techTier": 3,
+      "costCredits": 1900,
+      "buildTimeSec": 38.0,
+      "reserveCapacity": 4,
+      "maxHealth": 340,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 260,
+      "detectionRadius": 130,
+      "weaponSlots": [
+        "wpn_explosive"
+      ],
+      "abilityIds": [
+        "ability_ripple_fire"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6
+    },
+    {
+      "id": "FC-U11",
+      "displayName": "Blackhawk Transport",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 1300,
+      "buildTimeSec": 26.0,
+      "reserveCapacity": 3,
+      "maxHealth": 400,
+      "armorClass": "AirHeavy",
+      "moveProfileId": "prof_air",
+      "visionRadius": 280,
+      "detectionRadius": 150,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_fastrope"
+      ],
+      "componentFlags": [
+        "Aircraft",
+        "Transport"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5
+    },
+    {
+      "id": "FC-U12",
+      "displayName": "Apache Gunship",
+      "factionId": "FC",
+      "techTier": 3,
+      "costCredits": 1900,
+      "buildTimeSec": 35.0,
+      "reserveCapacity": 4,
+      "maxHealth": 440,
+      "armorClass": "AirHeavy",
+      "moveProfileId": "prof_air",
+      "visionRadius": 300,
+      "detectionRadius": 170,
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "abilityIds": [
+        "ability_hellfire_salvo"
+      ],
+      "componentFlags": [
+        "Aircraft"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6
+    },
+    {
+      "id": "FC-U13",
+      "displayName": "Fighter",
+      "factionId": "FC",
+      "techTier": 3,
+      "costCredits": 2200,
+      "buildTimeSec": 42.0,
+      "reserveCapacity": 4,
+      "maxHealth": 380,
+      "armorClass": "AirHeavy",
+      "moveProfileId": "prof_air_fast",
+      "visionRadius": 340,
+      "detectionRadius": 200,
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "abilityIds": [
+        "ability_afterburner",
+        "ability_patrol_cap"
+      ],
+      "componentFlags": [
+        "Aircraft"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6
+    },
+    {
+      "id": "FC-U14",
+      "displayName": "Special Operations Team",
+      "factionId": "FC",
+      "techTier": 3,
+      "costCredits": 1500,
+      "buildTimeSec": 32.0,
+      "reserveCapacity": 3,
+      "maxHealth": 260,
+      "armorClass": "HeavyInfantry",
+      "moveProfileId": "prof_infantry_fast",
+      "visionRadius": 280,
+      "detectionRadius": 160,
+      "weaponSlots": [
+        "wpn_small_arms",
+        "wpn_explosive"
+      ],
+      "abilityIds": [
+        "ability_laser_designate",
+        "ability_satchel",
+        "ability_cloak"
+      ],
+      "componentFlags": [
+        "Infantry",
+        "Capturer",
+        "Garrisonable"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5,
+      "garrisonCapable": true
+    },
+    {
+      "id": "VC-SRV",
+      "displayName": "Salvage Rig",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 700,
+      "buildTimeSec": 20.0,
+      "reserveCapacity": 0,
+      "maxHealth": 320,
+      "armorClass": "Light",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 220,
+      "detectionRadius": 110,
+      "weaponSlots": [],
+      "abilityIds": [],
+      "componentFlags": [
+        "Harvester"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 2,
+      "harvest": true,
+      "harvestCapacity": 500.0,
+      "harvestRatePerSec": 65.0,
+      "harvestRadius": 45.0,
+      "depositRadius": 70.0
+    },
+    {
       "id": "VC-U01",
       "displayName": "Maker Crew",
       "factionId": "VC",
@@ -212,6 +655,33 @@
       "selectionPriority": 8
     },
     {
+      "id": "VC-U09",
+      "displayName": "Swarm Carrier",
+      "factionId": "VC",
+      "techTier": 2,
+      "costCredits": 1400,
+      "buildTimeSec": 30.0,
+      "reserveCapacity": 3,
+      "maxHealth": 360,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 260,
+      "detectionRadius": 130,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_launch_swarm",
+        "ability_recall"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5
+    },
+    {
       "id": "VC-U10",
       "displayName": "Atlas Bot",
       "factionId": "VC",
@@ -240,154 +710,41 @@
       "garrisonCapable": true
     },
     {
-      "id": "FC-U01",
-      "displayName": "Rifle Squad",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 350,
-      "buildTimeSec": 10.0,
-      "reserveCapacity": 0,
-      "maxHealth": 140,
-      "armorClass": "Infantry",
-      "moveProfileId": "prof_infantry",
-      "visionRadius": 200,
-      "detectionRadius": 100,
-      "weaponSlots": [
-        "wpn_small_arms"
-      ],
-      "abilityIds": [
-        "ability_frag",
-        "ability_garrison"
-      ],
-      "componentFlags": [
-        "Garrisonable"
-      ],
-      "populationWeight": 1,
-      "wreckDefinitionId": null,
-      "selectionPriority": 1,
-      "garrisonCapable": true
-    },
-    {
-      "id": "FC-U02",
-      "displayName": "Combat Engineer",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 300,
-      "buildTimeSec": 9.0,
-      "reserveCapacity": 0,
-      "maxHealth": 130,
-      "armorClass": "Infantry",
-      "moveProfileId": "prof_infantry",
-      "visionRadius": 200,
-      "detectionRadius": 100,
-      "weaponSlots": [
-        "wpn_small_arms"
-      ],
-      "abilityIds": [
-        "ability_capture",
-        "ability_repair",
-        "ability_demo"
-      ],
-      "componentFlags": [
-        "Repairer",
-        "Capturer",
-        "Garrisonable"
-      ],
-      "populationWeight": 1,
-      "wreckDefinitionId": null,
-      "selectionPriority": 2,
-      "garrisonCapable": true
-    },
-    {
-      "id": "FC-U03",
-      "displayName": "Javelin Team",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 500,
-      "buildTimeSec": 14.0,
-      "reserveCapacity": 0,
-      "maxHealth": 120,
-      "armorClass": "Infantry",
-      "moveProfileId": "prof_infantry",
-      "visionRadius": 220,
-      "detectionRadius": 120,
+      "id": "VC-U11",
+      "displayName": "Hunter Drone",
+      "factionId": "VC",
+      "techTier": 3,
+      "costCredits": 1500,
+      "buildTimeSec": 28.0,
+      "reserveCapacity": 4,
+      "maxHealth": 420,
+      "armorClass": "AirHeavy",
+      "moveProfileId": "prof_air",
+      "visionRadius": 300,
+      "detectionRadius": 180,
       "weaponSlots": [
         "wpn_anti_armor"
       ],
       "abilityIds": [
         "ability_lockon",
-        "ability_garrison"
+        "ability_emergency_return"
       ],
       "componentFlags": [
-        "Garrisonable"
+        "Aircraft"
       ],
-      "populationWeight": 1,
+      "populationWeight": 3,
       "wreckDefinitionId": null,
-      "selectionPriority": 3,
-      "garrisonCapable": true
+      "selectionPriority": 6
     },
     {
-      "id": "FC-U05",
-      "displayName": "Humvee",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 650,
-      "buildTimeSec": 15.0,
-      "reserveCapacity": 0,
-      "maxHealth": 240,
-      "armorClass": "Light",
-      "moveProfileId": "prof_vehicle_fast",
-      "visionRadius": 250,
-      "detectionRadius": 100,
-      "weaponSlots": [
-        "wpn_small_arms"
-      ],
-      "abilityIds": [
-        "ability_smoke"
-      ],
-      "componentFlags": [
-        "Vehicle",
-        "Transport"
-      ],
-      "populationWeight": 2,
-      "wreckDefinitionId": null,
-      "selectionPriority": 4
-    },
-    {
-      "id": "FC-U06",
-      "displayName": "IFV",
-      "factionId": "FC",
-      "techTier": 2,
-      "costCredits": 1000,
-      "buildTimeSec": 22.0,
-      "reserveCapacity": 2,
-      "maxHealth": 380,
-      "armorClass": "Medium",
-      "moveProfileId": "prof_vehicle",
-      "visionRadius": 260,
-      "detectionRadius": 120,
-      "weaponSlots": [
-        "wpn_autocannon",
-        "wpn_small_arms"
-      ],
-      "abilityIds": [],
-      "componentFlags": [
-        "Vehicle",
-        "Transport"
-      ],
-      "populationWeight": 2,
-      "wreckDefinitionId": null,
-      "selectionPriority": 5
-    },
-    {
-      "id": "FC-U07",
-      "displayName": "M1X Main Battle Tank",
-      "factionId": "FC",
-      "techTier": 2,
-      "costCredits": 1700,
-      "buildTimeSec": 32.0,
-      "reserveCapacity": 3,
-      "maxHealth": 560,
+      "id": "VC-U12",
+      "displayName": "AI Battle Tank",
+      "factionId": "VC",
+      "techTier": 3,
+      "costCredits": 1900,
+      "buildTimeSec": 36.0,
+      "reserveCapacity": 5,
+      "maxHealth": 600,
       "armorClass": "Heavy",
       "moveProfileId": "prof_vehicle_heavy",
       "visionRadius": 280,
@@ -397,8 +754,8 @@
         "wpn_small_arms"
       ],
       "abilityIds": [
-        "ability_smoke",
-        "ability_halldown"
+        "ability_predictive_fire",
+        "ability_remote_repair"
       ],
       "componentFlags": [
         "Vehicle"
@@ -408,56 +765,57 @@
       "selectionPriority": 6
     },
     {
-      "id": "FC-U08",
-      "displayName": "Mobile AA",
-      "factionId": "FC",
-      "techTier": 2,
-      "costCredits": 1100,
-      "buildTimeSec": 25.0,
-      "reserveCapacity": 2,
-      "maxHealth": 320,
-      "armorClass": "Medium",
-      "moveProfileId": "prof_vehicle",
-      "visionRadius": 260,
-      "detectionRadius": 200,
+      "id": "VC-U13",
+      "displayName": "Drone Mothership",
+      "factionId": "VC",
+      "techTier": 3,
+      "costCredits": 3100,
+      "buildTimeSec": 55.0,
+      "reserveCapacity": 6,
+      "maxHealth": 700,
+      "armorClass": "AirHeavy",
+      "moveProfileId": "prof_air",
+      "visionRadius": 320,
+      "detectionRadius": 180,
       "weaponSlots": [
-        "wpn_autocannon"
+        "wpn_small_arms"
       ],
       "abilityIds": [
-        "ability_radar"
+        "ability_drone_screen",
+        "ability_recall_all"
       ],
       "componentFlags": [
-        "Vehicle",
-        "AA"
+        "Aircraft"
       ],
-      "populationWeight": 2,
+      "populationWeight": 4,
       "wreckDefinitionId": null,
       "selectionPriority": 7
     },
     {
-      "id": "FC-U09",
-      "displayName": "Self-Propelled Artillery",
-      "factionId": "FC",
-      "techTier": 2,
-      "costCredits": 1450,
-      "buildTimeSec": 30.0,
-      "reserveCapacity": 2,
-      "maxHealth": 300,
-      "armorClass": "Medium",
-      "moveProfileId": "prof_vehicle",
-      "visionRadius": 240,
-      "detectionRadius": 100,
+      "id": "VC-U14",
+      "displayName": "Titan Rig",
+      "factionId": "VC",
+      "techTier": 3,
+      "costCredits": 5200,
+      "buildTimeSec": 90.0,
+      "reserveCapacity": 8,
+      "maxHealth": 1100,
+      "armorClass": "Heavy",
+      "moveProfileId": "prof_vehicle_heavy",
+      "visionRadius": 300,
+      "detectionRadius": 160,
       "weaponSlots": [
+        "wpn_energy_beam",
         "wpn_explosive"
       ],
       "abilityIds": [
-        "ability_barrage"
+        "ability_siege_mode",
+        "ability_emergency_overclock"
       ],
       "componentFlags": [
-        "Vehicle",
-        "Siege"
+        "Vehicle"
       ],
-      "populationWeight": 2,
+      "populationWeight": 5,
       "wreckDefinitionId": null,
       "selectionPriority": 8
     }

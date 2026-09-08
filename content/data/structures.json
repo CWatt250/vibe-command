@@ -1,6 +1,459 @@
 {
   "structures": [
     {
+      "id": "FC-B01",
+      "displayName": "Continuity HQ",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 20.0,
+      "maxHealth": 850,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "HQ",
+      "function": "Build radius, Command Capacity, strategic ability access",
+      "componentFlags": [
+        "HQ",
+        "BuilderNetwork",
+        "Dropoff"
+      ],
+      "commandCapacity": 20
+    },
+    {
+      "id": "FC-B02",
+      "displayName": "Logistics Depot",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 650,
+      "buildTimeSec": 22.0,
+      "maxHealth": 650,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Economy",
+      "function": "Harvester dropoff and truck production.",
+      "componentFlags": [
+        "Dropoff",
+        "ProducesHarvester"
+      ],
+      "trainsUnits": [
+        "FC-SRV"
+      ]
+    },
+    {
+      "id": "FC-B03",
+      "displayName": "Field Generator",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 350,
+      "buildTimeSec": 12.0,
+      "maxHealth": 380,
+      "armorClass": "StructureLight",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Power",
+      "powerProduced": 10,
+      "componentFlags": [
+        "PowerSource"
+      ]
+    },
+    {
+      "id": "FC-B04",
+      "displayName": "Barracks",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 18.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        3
+      ],
+      "class": "Infantry",
+      "trainsUnits": [
+        "FC-U01",
+        "FC-U02",
+        "FC-U03"
+      ],
+      "componentFlags": [
+        "ProductionInfantry"
+      ]
+    },
+    {
+      "id": "FC-B05",
+      "displayName": "Motor Pool",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 850,
+      "buildTimeSec": 24.0,
+      "maxHealth": 560,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Vehicle",
+      "trainsUnits": [
+        "FC-U05",
+        "FC-U06",
+        "FC-U07",
+        "FC-U08",
+        "FC-U09"
+      ],
+      "componentFlags": [
+        "ProductionVehicle"
+      ]
+    },
+    {
+      "id": "FC-B06",
+      "displayName": "Armor Depot",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 1000,
+      "buildTimeSec": 26.0,
+      "maxHealth": 600,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Vehicle",
+      "function": "Produces MBTs and heavy support.",
+      "componentFlags": [
+        "ProductionVehicle"
+      ],
+      "trainsUnits": [
+        "FC-U07",
+        "FC-U08",
+        "FC-U09"
+      ]
+    },
+    {
+      "id": "FC-B07",
+      "displayName": "Artillery Battery",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 24.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        2
+      ],
+      "class": "Siege",
+      "function": "Produces artillery and MLRS; enables counter-battery sensors.",
+      "componentFlags": [
+        "ProductionVehicle",
+        "Siege"
+      ],
+      "trainsUnits": [
+        "FC-U09",
+        "FC-U10"
+      ]
+    },
+    {
+      "id": "FC-B08",
+      "displayName": "Air Operations Center",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 950,
+      "buildTimeSec": 25.0,
+      "maxHealth": 540,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Air",
+      "function": "Aircraft production / reinforcement abstraction.",
+      "componentFlags": [
+        "ProductionAir"
+      ],
+      "trainsUnits": [
+        "FC-U11",
+        "FC-U12",
+        "FC-U13"
+      ]
+    },
+    {
+      "id": "FC-B09",
+      "displayName": "Command Post",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 20.0,
+      "maxHealth": 480,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Tech",
+      "commandCapacity": 20,
+      "powerDrawn": 3,
+      "componentFlags": [
+        "CommandSource"
+      ],
+      "unlocksTechTier": 2,
+      "function": "Generates Command Capacity and unlocks T2 powers."
+    },
+    {
+      "id": "FC-B10",
+      "displayName": "Joint Operations Center",
+      "factionId": "FC",
+      "techTier": 3,
+      "costCredits": 1400,
+      "buildTimeSec": 30.0,
+      "maxHealth": 700,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Tech",
+      "function": "Unlocks elite air, special operations, EMP and strategic strikes.",
+      "componentFlags": [
+        "TechSource",
+        "CommandSource"
+      ],
+      "unlocksTechTier": 3,
+      "commandCapacity": 15
+    },
+    {
+      "id": "FC-B11",
+      "displayName": "Repair Depot",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 700,
+      "buildTimeSec": 18.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Support",
+      "repairRadius": 220.0,
+      "repairPerSec": 60.0,
+      "componentFlags": [
+        "Support",
+        "Repair"
+      ]
+    },
+    {
+      "id": "FC-B12",
+      "displayName": "Forward Operating Base",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 700,
+      "buildTimeSec": 20.0,
+      "maxHealth": 560,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Expansion",
+      "function": "Extends build area, limited healing and infantry reinforcement.",
+      "componentFlags": [
+        "Expansion",
+        "Dropoff"
+      ]
+    },
+    {
+      "id": "FC-D01",
+      "displayName": "Sandbag Wall",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 100,
+      "buildTimeSec": 6.0,
+      "maxHealth": 150,
+      "armorClass": "StructureLight",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Wall",
+      "componentFlags": [
+        "Wall"
+      ]
+    },
+    {
+      "id": "FC-D02",
+      "displayName": "Guard Tower",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 450,
+      "buildTimeSec": 14.0,
+      "maxHealth": 380,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "weaponSlots": [
+        "wpn_turret_gun"
+      ],
+      "garrisoned": 4,
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "Garrisonable"
+      ]
+    },
+    {
+      "id": "FC-D03",
+      "displayName": "Machine Gun Nest",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 15.0,
+      "maxHealth": 320,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Strong anti-infantry fixed arc.",
+      "componentFlags": [
+        "Defense",
+        "Turret"
+      ],
+      "weaponSlots": [
+        "wpn_small_arms"
+      ]
+    },
+    {
+      "id": "FC-D04",
+      "displayName": "AT Emplacement",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 18.0,
+      "maxHealth": 300,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Heavy anti-vehicle missile/gun.",
+      "componentFlags": [
+        "Defense",
+        "Turret"
+      ],
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ]
+    },
+    {
+      "id": "FC-D05",
+      "displayName": "Bunker",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 1000,
+      "buildTimeSec": 22.0,
+      "maxHealth": 700,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "Garrison 6; high health; firing ports.",
+      "componentFlags": [
+        "Defense",
+        "Garrisonable"
+      ],
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "garrisoned": 6
+    },
+    {
+      "id": "FC-D06",
+      "displayName": "SAM Site",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 950,
+      "buildTimeSec": 18.0,
+      "maxHealth": 340,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "Long-range anti-air, weak vs ground.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "AntiAir"
+      ],
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ]
+    },
+    {
+      "id": "FC-D07",
+      "displayName": "Counter-UAS Station",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 800,
+      "buildTimeSec": 16.0,
+      "maxHealth": 320,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Anti-drone gun + jammer.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "Jammer"
+      ],
+      "weaponSlots": [
+        "wpn_autocannon"
+      ]
+    },
+    {
+      "id": "FC-D08",
+      "displayName": "Patriot Battery",
+      "factionId": "FC",
+      "techTier": 3,
+      "costCredits": 1800,
+      "buildTimeSec": 28.0,
+      "maxHealth": 500,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "T3 air/missile defense with interceptor charges.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "AntiAir"
+      ],
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ]
+    },
+    {
       "id": "VC-B01",
       "displayName": "Garage Core",
       "factionId": "VC",
@@ -173,101 +626,37 @@
       ]
     },
     {
-      "id": "FC-B01",
-      "displayName": "Continuity HQ",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 550,
-      "buildTimeSec": 20.0,
-      "maxHealth": 850,
-      "armorClass": "StructureHeavy",
-      "footprint": [
-        3,
-        3
-      ],
-      "class": "HQ",
-      "function": "Build radius, Command Capacity, strategic ability access",
-      "componentFlags": [
-        "HQ",
-        "BuilderNetwork",
-        "Dropoff"
-      ],
-      "commandCapacity": 20
-    },
-    {
-      "id": "FC-B03",
-      "displayName": "Field Generator",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 350,
-      "buildTimeSec": 12.0,
-      "maxHealth": 380,
-      "armorClass": "StructureLight",
-      "footprint": [
-        2,
-        2
-      ],
-      "class": "Power",
-      "powerProduced": 10,
-      "componentFlags": [
-        "PowerSource"
-      ]
-    },
-    {
-      "id": "FC-B04",
-      "displayName": "Barracks",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 550,
-      "buildTimeSec": 18.0,
+      "id": "VC-B09",
+      "displayName": "Drone Farm",
+      "factionId": "VC",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 24.0,
       "maxHealth": 520,
       "armorClass": "StructureHeavy",
       "footprint": [
-        2,
-        3
-      ],
-      "class": "Infantry",
-      "trainsUnits": [
-        "FC-U01",
-        "FC-U02",
-        "FC-U03"
-      ],
-      "componentFlags": [
-        "ProductionInfantry"
-      ]
-    },
-    {
-      "id": "FC-B05",
-      "displayName": "Motor Pool",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 850,
-      "buildTimeSec": 24.0,
-      "maxHealth": 560,
-      "armorClass": "StructureHeavy",
-      "footprint": [
         3,
         3
       ],
-      "class": "Vehicle",
-      "trainsUnits": [
-        "FC-U05",
-        "FC-U06",
-        "FC-U07",
-        "FC-U08",
-        "FC-U09"
-      ],
+      "class": "Air",
+      "function": "Produces Scout Quads, FPV drones, Hunter Drones and Mothership components.",
       "componentFlags": [
-        "ProductionVehicle"
+        "ProductionAir"
+      ],
+      "trainsUnits": [
+        "VC-U02",
+        "VC-U03",
+        "VC-U11",
+        "VC-U13"
       ]
     },
     {
-      "id": "FC-B09",
-      "displayName": "Command Post",
-      "factionId": "FC",
+      "id": "VC-B10",
+      "displayName": "Autonomy Lab",
+      "factionId": "VC",
       "techTier": 2,
-      "costCredits": 900,
-      "buildTimeSec": 20.0,
+      "costCredits": 950,
+      "buildTimeSec": 22.0,
       "maxHealth": 480,
       "armorClass": "StructureHeavy",
       "footprint": [
@@ -275,13 +664,74 @@
         2
       ],
       "class": "Tech",
-      "commandCapacity": 20,
-      "powerDrawn": 3,
+      "function": "Unlocks T2/T3 adaptive algorithms, predictive targeting, advanced bots.",
       "componentFlags": [
-        "CommandSource"
+        "TechSource"
       ],
-      "unlocksTechTier": 2,
-      "function": "Generates Command Capacity and unlocks T2 powers."
+      "unlocksTechTier": 3
+    },
+    {
+      "id": "VC-B11",
+      "displayName": "Repair Bay",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 650,
+      "buildTimeSec": 18.0,
+      "maxHealth": 480,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Support",
+      "repairRadius": 220.0,
+      "repairPerSec": 60.0,
+      "componentFlags": [
+        "Support",
+        "Repair"
+      ]
+    },
+    {
+      "id": "VC-B12",
+      "displayName": "Expansion Node",
+      "factionId": "VC",
+      "techTier": 2,
+      "costCredits": 600,
+      "buildTimeSec": 18.0,
+      "maxHealth": 500,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Expansion",
+      "function": "Extends build radius and provides limited power/data relay.",
+      "componentFlags": [
+        "Expansion",
+        "PowerSource"
+      ],
+      "powerProduced": 40
+    },
+    {
+      "id": "VC-D01",
+      "displayName": "Camera Pole",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 250,
+      "buildTimeSec": 6.0,
+      "maxHealth": 150,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Detection / vision. Cheap and almost no damage.",
+      "componentFlags": [
+        "Defense",
+        "Sensor"
+      ],
+      "visionRadius": 400
     },
     {
       "id": "VC-D02",
@@ -307,87 +757,140 @@
       ]
     },
     {
-      "id": "FC-D02",
-      "displayName": "Guard Tower",
-      "factionId": "FC",
+      "id": "VC-D03",
+      "displayName": "Drone Nest",
+      "factionId": "VC",
+      "techTier": 2,
+      "costCredits": 850,
+      "buildTimeSec": 18.0,
+      "maxHealth": 340,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "Launches 6 reusable interceptors against ground/air within radius.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "DroneLauncher"
+      ],
+      "weaponSlots": [
+        "wpn_autocannon"
+      ]
+    },
+    {
+      "id": "VC-D04",
+      "displayName": "Smart Mine Node",
+      "factionId": "VC",
       "techTier": 1,
-      "costCredits": 450,
-      "buildTimeSec": 14.0,
-      "maxHealth": 380,
+      "costCredits": 350,
+      "buildTimeSec": 10.0,
+      "maxHealth": 200,
       "armorClass": "StructureHeavy",
       "footprint": [
         1,
         1
       ],
       "class": "Defense",
-      "weaponSlots": [
-        "wpn_turret_gun"
-      ],
-      "garrisoned": 4,
+      "function": "Places/replenishes limited smart mines in a small field.",
       "componentFlags": [
         "Defense",
-        "Turret",
-        "Garrisonable"
+        "MineLayer"
       ]
     },
     {
-      "id": "FC-D01",
-      "displayName": "Sandbag Wall",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 100,
-      "buildTimeSec": 6.0,
-      "maxHealth": 150,
-      "armorClass": "StructureLight",
+      "id": "VC-D05",
+      "displayName": "AT Launcher",
+      "factionId": "VC",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 18.0,
+      "maxHealth": 300,
+      "armorClass": "StructureHeavy",
       "footprint": [
         1,
         1
       ],
-      "class": "Wall",
+      "class": "Defense",
+      "function": "Guided anti-vehicle turret; vulnerable to infantry swarms.",
       "componentFlags": [
-        "Wall"
-      ]
-    },
-    {
-      "id": "FC-B10",
-      "displayName": "Repair Depot",
-      "factionId": "FC",
-      "techTier": 1,
-      "costCredits": 700,
-      "buildTimeSec": 18.0,
-      "maxHealth": 520,
-      "armorClass": "StructureHeavy",
-      "footprint": [
-        2,
-        2
+        "Defense",
+        "Turret"
       ],
-      "class": "Support",
-      "repairRadius": 220.0,
-      "repairPerSec": 60.0,
-      "componentFlags": [
-        "Support",
-        "Repair"
+      "weaponSlots": [
+        "wpn_anti_armor"
       ]
     },
     {
-      "id": "VC-B10",
-      "displayName": "Repair Bay",
+      "id": "VC-D06",
+      "displayName": "Counter-Drone Mast",
       "factionId": "VC",
-      "techTier": 1,
-      "costCredits": 650,
-      "buildTimeSec": 18.0,
-      "maxHealth": 480,
+      "techTier": 2,
+      "costCredits": 800,
+      "buildTimeSec": 16.0,
+      "maxHealth": 320,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Electronic anti-drone / anti-missile pulse tower.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "Jammer"
+      ],
+      "weaponSlots": [
+        "wpn_energy_beam"
+      ]
+    },
+    {
+      "id": "VC-D07",
+      "displayName": "Predictive Turret",
+      "factionId": "VC",
+      "techTier": 3,
+      "costCredits": 1450,
+      "buildTimeSec": 24.0,
+      "maxHealth": 460,
       "armorClass": "StructureHeavy",
       "footprint": [
         2,
         2
       ],
-      "class": "Support",
-      "repairRadius": 220.0,
-      "repairPerSec": 60.0,
+      "class": "Defense",
+      "function": "T3 adaptive cannon. Accuracy ramps against repeated target classes.",
       "componentFlags": [
-        "Support",
-        "Repair"
+        "Defense",
+        "Turret"
+      ],
+      "weaponSlots": [
+        "wpn_autocannon"
+      ]
+    },
+    {
+      "id": "VC-D08",
+      "displayName": "Rail Emplacement",
+      "factionId": "VC",
+      "techTier": 3,
+      "costCredits": 2100,
+      "buildTimeSec": 32.0,
+      "maxHealth": 560,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "Late anti-heavy / anti-structure defensive weapon with slow recharge.",
+      "componentFlags": [
+        "Defense",
+        "Turret"
+      ],
+      "weaponSlots": [
+        "wpn_energy_beam"
       ]
     }
   ]

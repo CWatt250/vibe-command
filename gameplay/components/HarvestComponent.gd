@@ -5,6 +5,13 @@ extends RefCounted
 
 enum State { IDLE, TRAVEL_FIELD, HARVEST, TRAVEL_DROPOFF, DEPOSIT }
 
+# Simple-constant aliases for readability across systems.
+const S_IDLE := State.IDLE
+const S_TO_FIELD := State.TRAVEL_FIELD
+const S_HARVESTING := State.HARVEST
+const S_TO_DROPOFF := State.TRAVEL_DROPOFF
+const S_DEPOSIT := State.DEPOSIT
+
 var state: int = State.IDLE
 var capacity: float = 500.0        # max credits carried per trip
 var harvest_rate: float = 60.0     # credits harvested per second at full rate

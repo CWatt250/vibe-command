@@ -17,6 +17,8 @@ var compute_sys: ComputeSystem
 var command_sys: CommandCapacitySystem
 var combat: CombatSystem
 var fog_sys: FogOfWarSystem
+var economy_sys: EconomySystem
+var skirmish_ai: SkirmishAI = null
 var compute_deficit: Dictionary = {}   # faction -> bool (or global combat penalty source)
 var dt: float = 0.0                   # last step's delta (read by systems) 
 var control_groups: Dictionary = {}     # group_index (0-9) -> Array[int] entity ids
@@ -45,6 +47,8 @@ func _init(registry_: ContentRegistry, events_: GameEvents, grid_h: int, grid_w:
 	compute_sys = ComputeSystem.new()
 	command_sys = CommandCapacitySystem.new(registry)
 	combat = CombatSystem.new(self, registry, events)
+	economy_sys = EconomySystem.new()
+	# Skirmish AI is attached by the world/tests via attach_skirmish_ai().
 
 # --- Players / resources ---
 func add_player(faction: String) -> void:
@@ -122,6 +126,21 @@ func _block_footprint(e: Entity) -> void:
 	var c: Vector2i = grid_map.world_to_cell(e.position.x, e.position.y)
 	grid_map.block_rect(c.x - w / 2, c.y - h / 2, w, h)
 
+## Attach a Phase 6 skirmish opponent directing `faction`, targeting `enemy`.
+func attach_skirmish_ai(faction: String, enemy: String) -> SkirmishAI:
+	skirmish_ai = SkirmishAI.new(self, faction, enemy)
+	return skirmish_ai
+
+## Spawn a depletable resource field (Blueprint §5.4) as a structure with a
+## ResourceNodeComponent. Harvesters mine it for credits.
+func spawn_resource_field(pos: Vector2, quantity: float = 3000.0) -> int:
+	var def_id := "RESOURCE_FIELD"
+	var e := Entity.new({}, "", _next_id)
+	e.kind = "structure"
+	e._attach_components(registry, { "resource": true, "quantity": quantity, "harvestRadius": 60.0, "minDistance": 30.0 })
+	_register_entity(e, def_id, pos)
+	return e.id
+
 func _unblock_footprint(e: Entity) -> void:
 	var fp: Array = e.def_data.get("footprint", [1, 1])
 	var w: int = fp[0] if fp.size() > 0 else 1
@@ -166,6 +185,11 @@ func step(dt: float) -> void:
 	# Combat is resolved by the sim itself (authoritative, Blueprint §2) so a
 	# headless sim fully simulates without an external driver.
 	combat.tick_all()
+	# Economy (passive income + harvester loop) drives credits each tick.
+	economy_sys.tick(self, dt)
+	# Skirmish opponent (Phase 6) decides + issues orders.
+	if skirmish_ai != null:
+		skirmish_ai.update(dt)
 	_cleanup_control_groups()
 
 func _recompute_fog() -> void:
@@ -320,7 +344,11 @@ func _issue_move(self_id: int, targets: Array, destination: Vector2) -> void:
 
 func _formation_offsets(n: int) -> Array[Vector2]:
 	var offsets: Array[Vector2] = []
-	if n <= 1:
+	if n <= 0:
+		return offsets
+	if n == 1:
+		# Single-unit orders still index offsets[0] in _issue_move.
+		offsets.append(Vector2.ZERO)
 		return offsets
 	var spacing := 22.0
 	var cols := int(ceil(sqrt(float(n))))

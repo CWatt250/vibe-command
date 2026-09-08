@@ -113,7 +113,7 @@ func _init() -> void:
 		push_error("expect 0 occupants after ungarrison, got %d" % tower_ent.garrison.occupant_count())
 
 	# --- Test 5: Repair — repair depot heals a damaged friendly in radius ---
-	var depot := sim.spawn_build_site("FC-B10", "FC", Vector2(1600, 1200))
+	var depot := sim.spawn_build_site("FC-B11", "FC", Vector2(1600, 1200))
 	_construct(sim, depot)
 	var victim: Entity = sim.entities.get(sim.spawn_unit("FC-U05", "FC", Vector2(1650, 1200)))
 	# Apply damage to bring it below full.
