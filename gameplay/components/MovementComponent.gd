@@ -12,6 +12,7 @@ var path: Array[Vector2] = []
 var path_index: int = 0
 var goal: Vector2 = Vector2.ZERO
 var has_goal: bool = false
+var facing: Vector2 = Vector2.RIGHT
 var _current_speed: float = 0.0
 
 func setup(def: Dictionary, profile: Dictionary) -> void:
@@ -52,6 +53,8 @@ func update(dt: float, pos: Vector2) -> Vector2:
 	var target: Vector2 = path[path_index]
 	var dir := target - pos
 	var dist := dir.length()
+	if dist > 0.001:
+		facing = dir / dist
 	if dist <= 1.0:
 		path_index += 1
 		return pos

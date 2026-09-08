@@ -13,6 +13,10 @@ var events: GameEvents
 var grid_map: NavGrid
 var spatial: SpatialIndex
 
+## Transient UI/selection state (owned by sim as the single authority on entities/factions).
+var selected_ids: Array = []
+var selected_faction: String = ""
+
 var entities: Dictionary = {}          # entity id -> Entity
 var _next_id: int = 1
 var _players: Dictionary = {}          # faction -> {resources:{}, ...}
