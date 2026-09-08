@@ -9,6 +9,9 @@ const WeaponComponent := preload("res://gameplay/components/WeaponComponent.gd")
 const SensorComponent := preload("res://gameplay/components/SensorComponent.gd")
 const ProductionComponent := preload("res://gameplay/components/ProductionComponent.gd")
 const ConstructionComponent := preload("res://gameplay/components/ConstructionComponent.gd")
+const GarrisonComponent := preload("res://gameplay/components/GarrisonComponent.gd")
+const GarrisonableComponent := preload("res://gameplay/components/GarrisonableComponent.gd")
+const VeterancyComponent := preload("res://gameplay/components/VeterancyComponent.gd")
 
 ## Runtime refs — bound by Simulation at spawn.
 var grid: NavGrid = null
@@ -30,7 +33,14 @@ var weapon: WeaponComponent = null
 var sensor: SensorComponent = null
 var production: ProductionComponent = null
 var construction: ConstructionComponent = null
+var garrison: GarrisonComponent = null
+var garrisonable: GarrisonableComponent = null
+var veterancy: VeterancyComponent = null
 var def_data: Dictionary = {}
+
+## Garrison / repair runtime state (§5.7, repair).
+var garrisoned_into: int = -1          # id of structure this unit is garrisoned in (-1 = free)
+var repair_target: int = -1            # id that is repairing this unit (-1 = none)
 
 func _init(def: Dictionary, owner: String, entity_id: int) -> void:
 	def_id = def.get("id", "")
@@ -75,3 +85,18 @@ func _attach_components(reg: ContentRegistry, def: Dictionary, start_built: bool
 		var c := ConstructionComponent.new()
 		c.setup(def, start_built)
 		construction = c
+	# Garrison (structures with slots: infantry can occupy + fire)
+	if def.has("garrisoned"):
+		var g := GarrisonComponent.new()
+		g.setup(def)
+		garrison = g
+	# Garrisonable (units/infantry that can enter a garrison structure)
+	if def.has("garrisonCapable") and def.get("garrisonCapable", false):
+		var gb := GarrisonableComponent.new()
+		gb.setup(def)
+		garrisonable = gb
+	# Veterancy (combat XP + ranks) — attached to combat units, not produced structures.
+	if def.get("kind", "unit") == "unit" and def.get("veterancyCapable", true) and def.has("weaponSlots"):
+		var v := VeterancyComponent.new()
+		v.setup(def, self)
+		veterancy = v

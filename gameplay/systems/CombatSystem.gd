@@ -18,6 +18,8 @@ func tick_all() -> void:
 		var e: Entity = sim.entities.get(id)
 		if e == null or not e.alive:
 			continue
+		# Repair structures heal friendly entities in radius (§5.7 repair).
+		_apply_repair(e)
 		# Only entities with a weapon shoot automatically.
 		if e.weapon == null:
 			continue
@@ -42,6 +44,22 @@ func tick_all() -> void:
 		# 3. Fire when in range and cooldown ready.
 		if w.can_fire() and w.target_in_range(target.position, e.position):
 			_resolve_fire(e, w, target)
+
+func _apply_repair(structure: Entity) -> void:
+	## A repair structure heals all friendly, damaged entities within repairRadius (§5.7).
+	var r_radius: float = structure.def_data.get("repairRadius", 0.0)
+	var r_per_sec: float = structure.def_data.get("repairPerSec", 0.0)
+	if r_radius <= 0.0 or r_per_sec <= 0.0:
+		return
+	for id in sim.spatial.query_radius(structure.position, r_radius):
+		var e: Entity = sim.entities.get(id)
+		if e == null or not e.alive or e.faction_id != structure.faction_id:
+			continue
+		if e.health == null or e.health.is_full():
+			continue
+		if e == structure:
+			continue
+		e.health.heal(r_per_sec * sim.dt)
 
 func _chase(e: Entity, target: Entity) -> void:
 	# Path toward the target so the attacker closes to firing range.
@@ -113,11 +131,27 @@ func _resolve_fire(e: Entity, w: WeaponComponent, target: Entity) -> void:
 	w.begin_cooldown()
 	var mult := registry.armor_multiplier(w.damage_type, target.def_data.get("armorClass", "Infantry"))
 	var dmg: float = w.base_damage * mult
+	# Garrison fire proxy (§5.7): a garrisoned structure fires harder per occupant
+	# (each infantry adds its weapon's base damage as a scaling proxy).
+	var garrison_occupants: int = 0
+	if e.garrison != null:
+		garrison_occupants = e.garrison.occupant_count()
+		if garrison_occupants > 0:
+			dmg += w.base_damage * 0.5 * float(garrison_occupants)
+	# Veteran damage multiplier (§5.9), sim-authoritative.
+	if e.veterancy != null:
+		dmg *= e.veterancy.damage_mult()
+	# Damage contribution award: 1 XP per point of damage dealt.
+	if e.veterancy != null:
+		e.veterancy.add_xp(dmg)
 	var died: bool = target.health.apply_damage(dmg)
 	events.combat_occurred.emit(e.id, target.id, w.weapon_id, dmg)
 	if w.splash_radius > 0.0:
 		_apply_splash(e, w, target.position, target.faction_id)
 	if died:
+		# Kill award: flat XP bonus to the attacker.
+		if e.veterancy != null:
+			e.veterancy.add_xp(50.0)
 		_sim_destroy(target)
 
 func _apply_splash(e: Entity, w: WeaponComponent, center: Vector2, attacker_faction: String) -> void:
@@ -136,6 +170,10 @@ func _apply_splash(e: Entity, w: WeaponComponent, center: Vector2, attacker_fact
 			_sim_destroy(t)
 
 func _sim_destroy(e: Entity) -> void:
+	# Eject any garrisoned occupants before the structure is removed (§5.7) —
+	# they retain health/veterancy and are respawned adjacent.
+	if e.garrison != null and e.garrison.occupant_count() > 0:
+		sim.ungarrison_units(e.id)
 	# A destroyed unit removes itself from sim (structural destruction handled via base-destroy gate elsewhere).
 	events.unit_died.emit(e.id, e.def_id, e.faction_id, e.position)
 	sim.remove_entity(e.id)

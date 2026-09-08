@@ -1,71 +1,394 @@
 {
-  "version": 1,
   "structures": [
-    { "id": "VC-B01", "displayName": "Garage Core", "factionId": "VC", "techTier": 1,
-      "costCredits": 500, "buildTimeSec": 20.0, "maxHealth": 800, "armorClass": "StructureHeavy",
-      "footprint": [3,3], "class": "HQ", "function": "Build radius, builder network, resource dropoff",
-      "componentFlags": ["HQ","BuilderNetwork","Dropoff"] },
-    { "id": "VC-B02", "displayName": "Fabrication Yard", "factionId": "VC", "techTier": 1,
-      "costCredits": 650, "buildTimeSec": 22.0, "maxHealth": 650, "armorClass": "StructureHeavy",
-      "footprint": [3,3], "class": "Economy", "function": "Primary resource dropoff; produces Salvage Rigs",
-      "componentFlags": ["Dropoff","ProducesHarvester"] },
-    { "id": "VC-B03", "displayName": "Generator Bank", "factionId": "VC", "techTier": 1,
-      "costCredits": 300, "buildTimeSec": 12.0, "maxHealth": 350, "armorClass": "StructureLight",
-      "footprint": [2,2], "class": "Power", "powerProduced": 10,
-      "componentFlags": ["PowerSource"] },
-    { "id": "VC-B04", "displayName": "Cooling Plant", "factionId": "VC", "techTier": 1,
-      "costCredits": 500, "buildTimeSec": 16.0, "maxHealth": 400, "armorClass": "StructureLight",
-      "footprint": [2,2], "class": "Cooling", "powerDrawn": 2, "coolingProvided": 6,
-      "componentFlags": ["CoolingSource"],
-      "function": "Required for high-density compute; losing cooling reduces usable Compute before health damage." },
-    { "id": "VC-B05", "displayName": "Server Rack Hall", "factionId": "VC", "techTier": 1,
-      "costCredits": 700, "buildTimeSec": 20.0, "maxHealth": 420, "armorClass": "StructureLight",
-      "footprint": [2,3], "class": "Compute", "powerDrawn": 4, "computeProduced": 15, "coolingNeed": 1,
-      "componentFlags": ["ComputeSource"] },
-    { "id": "VC-B06", "displayName": "AI Cluster", "factionId": "VC", "techTier": 2,
-      "costCredits": 1200, "buildTimeSec": 26.0, "maxHealth": 700, "armorClass": "StructureHeavy",
-      "footprint": [3,2], "class": "Compute", "powerDrawn": 8, "computeProduced": 45, "coolingNeed": 2,
-      "componentFlags": ["ComputeSource"],
-      "function": "High compute output; unlocks advanced AI upgrades." },
-    { "id": "VC-B07", "displayName": "Maker Space", "factionId": "VC", "techTier": 1,
-      "costCredits": 500, "buildTimeSec": 18.0, "maxHealth": 500, "armorClass": "StructureHeavy",
-      "footprint": [2,3], "class": "Infantry", "trainsUnits": ["VC-U01","VC-U02","VC-U03"],
-      "componentFlags": ["ProductionInfantry"] },
-    { "id": "VC-B08", "displayName": "Robot Shop", "factionId": "VC", "techTier": 1,
-      "costCredits": 800, "buildTimeSec": 24.0, "maxHealth": 550, "armorClass": "StructureHeavy",
-      "footprint": [3,3], "class": "Vehicle", "trainsUnits": ["VC-U04","VC-U05","VC-U06","VC-U07","VC-U08"],
-      "componentFlags": ["ProductionVehicle"] },
-    { "id": "FC-B01", "displayName": "Continuity HQ", "factionId": "FC", "techTier": 1,
-      "costCredits": 550, "buildTimeSec": 20.0, "maxHealth": 850, "armorClass": "StructureHeavy",
-      "footprint": [3,3], "class": "HQ", "function": "Build radius, Command Capacity, strategic ability access",
-      "componentFlags": ["HQ","BuilderNetwork","Dropoff"], "commandCapacity": 20 },
-    { "id": "FC-B03", "displayName": "Field Generator", "factionId": "FC", "techTier": 1,
-      "costCredits": 350, "buildTimeSec": 12.0, "maxHealth": 380, "armorClass": "StructureLight",
-      "footprint": [2,2], "class": "Power", "powerProduced": 10,
-      "componentFlags": ["PowerSource"] },
-    { "id": "FC-B04", "displayName": "Barracks", "factionId": "FC", "techTier": 1,
-      "costCredits": 550, "buildTimeSec": 18.0, "maxHealth": 520, "armorClass": "StructureHeavy",
-      "footprint": [2,3], "class": "Infantry", "trainsUnits": ["FC-U01","FC-U02","FC-U03"],
-      "componentFlags": ["ProductionInfantry"] },
-    { "id": "FC-B05", "displayName": "Motor Pool", "factionId": "FC", "techTier": 1,
-      "costCredits": 850, "buildTimeSec": 24.0, "maxHealth": 560, "armorClass": "StructureHeavy",
-      "footprint": [3,3], "class": "Vehicle", "trainsUnits": ["FC-U05","FC-U06","FC-U07","FC-U08","FC-U09"],
-      "componentFlags": ["ProductionVehicle"] },
-    { "id": "FC-B09", "displayName": "Command Post", "factionId": "FC", "techTier": 2,
-      "costCredits": 900, "buildTimeSec": 20.0, "maxHealth": 480, "armorClass": "StructureHeavy",
-      "footprint": [2,2], "class": "Tech", "commandCapacity": 20, "powerDrawn": 3,
-      "componentFlags": ["CommandSource"], "unlocksTechTier": 2,
-      "function": "Generates Command Capacity and unlocks T2 powers." },
-    { "id": "VC-D02", "displayName": "Auto Turret", "factionId": "VC", "techTier": 1,
-      "costCredits": 600, "buildTimeSec": 15.0, "maxHealth": 260, "armorClass": "StructureLight",
-      "footprint": [1,1], "class": "Defense", "weaponSlots": ["wpn_turret_gun"], "powerDrawn": 2,
-      "componentFlags": ["Defense","Turret"] },
-    { "id": "FC-D02", "displayName": "Guard Tower", "factionId": "FC", "techTier": 1,
-      "costCredits": 450, "buildTimeSec": 14.0, "maxHealth": 380, "armorClass": "StructureHeavy",
-      "footprint": [1,1], "class": "Defense", "weaponSlots": ["wpn_turret_gun"], "garrisoned": 4,
-      "componentFlags": ["Defense","Turret","Garrisonable"] },
-    { "id": "FC-D01", "displayName": "Sandbag Wall", "factionId": "FC", "techTier": 1,
-      "costCredits": 100, "buildTimeSec": 6.0, "maxHealth": 150, "armorClass": "StructureLight",
-      "footprint": [1,1], "class": "Wall", "componentFlags": ["Wall"] }
+    {
+      "id": "VC-B01",
+      "displayName": "Garage Core",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 500,
+      "buildTimeSec": 20.0,
+      "maxHealth": 800,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "HQ",
+      "function": "Build radius, builder network, resource dropoff",
+      "componentFlags": [
+        "HQ",
+        "BuilderNetwork",
+        "Dropoff"
+      ]
+    },
+    {
+      "id": "VC-B02",
+      "displayName": "Fabrication Yard",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 650,
+      "buildTimeSec": 22.0,
+      "maxHealth": 650,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Economy",
+      "function": "Primary resource dropoff; produces Salvage Rigs",
+      "componentFlags": [
+        "Dropoff",
+        "ProducesHarvester"
+      ]
+    },
+    {
+      "id": "VC-B03",
+      "displayName": "Generator Bank",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 300,
+      "buildTimeSec": 12.0,
+      "maxHealth": 350,
+      "armorClass": "StructureLight",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Power",
+      "powerProduced": 10,
+      "componentFlags": [
+        "PowerSource"
+      ]
+    },
+    {
+      "id": "VC-B04",
+      "displayName": "Cooling Plant",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 500,
+      "buildTimeSec": 16.0,
+      "maxHealth": 400,
+      "armorClass": "StructureLight",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Cooling",
+      "powerDrawn": 2,
+      "coolingProvided": 6,
+      "componentFlags": [
+        "CoolingSource"
+      ],
+      "function": "Required for high-density compute; losing cooling reduces usable Compute before health damage."
+    },
+    {
+      "id": "VC-B05",
+      "displayName": "Server Rack Hall",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 700,
+      "buildTimeSec": 20.0,
+      "maxHealth": 420,
+      "armorClass": "StructureLight",
+      "footprint": [
+        2,
+        3
+      ],
+      "class": "Compute",
+      "powerDrawn": 4,
+      "computeProduced": 15,
+      "coolingNeed": 1,
+      "componentFlags": [
+        "ComputeSource"
+      ]
+    },
+    {
+      "id": "VC-B06",
+      "displayName": "AI Cluster",
+      "factionId": "VC",
+      "techTier": 2,
+      "costCredits": 1200,
+      "buildTimeSec": 26.0,
+      "maxHealth": 700,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        2
+      ],
+      "class": "Compute",
+      "powerDrawn": 8,
+      "computeProduced": 45,
+      "coolingNeed": 2,
+      "componentFlags": [
+        "ComputeSource"
+      ],
+      "function": "High compute output; unlocks advanced AI upgrades."
+    },
+    {
+      "id": "VC-B07",
+      "displayName": "Maker Space",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 500,
+      "buildTimeSec": 18.0,
+      "maxHealth": 500,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        3
+      ],
+      "class": "Infantry",
+      "trainsUnits": [
+        "VC-U01",
+        "VC-U02",
+        "VC-U03"
+      ],
+      "componentFlags": [
+        "ProductionInfantry"
+      ]
+    },
+    {
+      "id": "VC-B08",
+      "displayName": "Robot Shop",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 800,
+      "buildTimeSec": 24.0,
+      "maxHealth": 550,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Vehicle",
+      "trainsUnits": [
+        "VC-U04",
+        "VC-U05",
+        "VC-U06",
+        "VC-U07",
+        "VC-U08"
+      ],
+      "componentFlags": [
+        "ProductionVehicle"
+      ]
+    },
+    {
+      "id": "FC-B01",
+      "displayName": "Continuity HQ",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 20.0,
+      "maxHealth": 850,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "HQ",
+      "function": "Build radius, Command Capacity, strategic ability access",
+      "componentFlags": [
+        "HQ",
+        "BuilderNetwork",
+        "Dropoff"
+      ],
+      "commandCapacity": 20
+    },
+    {
+      "id": "FC-B03",
+      "displayName": "Field Generator",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 350,
+      "buildTimeSec": 12.0,
+      "maxHealth": 380,
+      "armorClass": "StructureLight",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Power",
+      "powerProduced": 10,
+      "componentFlags": [
+        "PowerSource"
+      ]
+    },
+    {
+      "id": "FC-B04",
+      "displayName": "Barracks",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 18.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        3
+      ],
+      "class": "Infantry",
+      "trainsUnits": [
+        "FC-U01",
+        "FC-U02",
+        "FC-U03"
+      ],
+      "componentFlags": [
+        "ProductionInfantry"
+      ]
+    },
+    {
+      "id": "FC-B05",
+      "displayName": "Motor Pool",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 850,
+      "buildTimeSec": 24.0,
+      "maxHealth": 560,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Vehicle",
+      "trainsUnits": [
+        "FC-U05",
+        "FC-U06",
+        "FC-U07",
+        "FC-U08",
+        "FC-U09"
+      ],
+      "componentFlags": [
+        "ProductionVehicle"
+      ]
+    },
+    {
+      "id": "FC-B09",
+      "displayName": "Command Post",
+      "factionId": "FC",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 20.0,
+      "maxHealth": 480,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Tech",
+      "commandCapacity": 20,
+      "powerDrawn": 3,
+      "componentFlags": [
+        "CommandSource"
+      ],
+      "unlocksTechTier": 2,
+      "function": "Generates Command Capacity and unlocks T2 powers."
+    },
+    {
+      "id": "VC-D02",
+      "displayName": "Auto Turret",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 600,
+      "buildTimeSec": 15.0,
+      "maxHealth": 260,
+      "armorClass": "StructureLight",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "weaponSlots": [
+        "wpn_turret_gun"
+      ],
+      "powerDrawn": 2,
+      "componentFlags": [
+        "Defense",
+        "Turret"
+      ]
+    },
+    {
+      "id": "FC-D02",
+      "displayName": "Guard Tower",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 450,
+      "buildTimeSec": 14.0,
+      "maxHealth": 380,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "weaponSlots": [
+        "wpn_turret_gun"
+      ],
+      "garrisoned": 4,
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "Garrisonable"
+      ]
+    },
+    {
+      "id": "FC-D01",
+      "displayName": "Sandbag Wall",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 100,
+      "buildTimeSec": 6.0,
+      "maxHealth": 150,
+      "armorClass": "StructureLight",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Wall",
+      "componentFlags": [
+        "Wall"
+      ]
+    },
+    {
+      "id": "FC-B10",
+      "displayName": "Repair Depot",
+      "factionId": "FC",
+      "techTier": 1,
+      "costCredits": 700,
+      "buildTimeSec": 18.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Support",
+      "repairRadius": 220.0,
+      "repairPerSec": 60.0,
+      "componentFlags": [
+        "Support",
+        "Repair"
+      ]
+    },
+    {
+      "id": "VC-B10",
+      "displayName": "Repair Bay",
+      "factionId": "VC",
+      "techTier": 1,
+      "costCredits": 650,
+      "buildTimeSec": 18.0,
+      "maxHealth": 480,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Support",
+      "repairRadius": 220.0,
+      "repairPerSec": 60.0,
+      "componentFlags": [
+        "Support",
+        "Repair"
+      ]
+    }
   ]
 }

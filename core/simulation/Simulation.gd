@@ -16,7 +16,13 @@ var power_sys: PowerSystem
 var compute_sys: ComputeSystem
 var command_sys: CommandCapacitySystem
 var combat: CombatSystem
+var fog_sys: FogOfWarSystem
 var compute_deficit: Dictionary = {}   # faction -> bool (or global combat penalty source)
+var dt: float = 0.0                   # last step's delta (read by systems) 
+var control_groups: Dictionary = {}     # group_index (0-9) -> Array[int] entity ids
+
+## Control-group / garrison event bus hooks (emitted by the sim this tick).
+var _pending_garrison: Array = []       # [{structure_id, unit_ids[]}] to resolve each tick
 
 ## Transient UI/selection state (owned by sim as the single authority on entities/factions).
 var selected_ids: Array = []
@@ -34,6 +40,7 @@ func _init(registry_: ContentRegistry, events_: GameEvents, grid_h: int, grid_w:
 	events = events_
 	grid_map = NavGrid.new(grid_w, grid_h)
 	spatial = SpatialIndex.new()
+	fog_sys = FogOfWarSystem.new(grid_w, grid_h, NavGrid.CELL)
 	power_sys = PowerSystem.new()
 	compute_sys = ComputeSystem.new()
 	command_sys = CommandCapacitySystem.new(registry)
@@ -143,6 +150,7 @@ func remove_entity(id: int) -> void:
 
 # --- Main fixed tick ---
 func step(dt: float) -> void:
+	self.dt = dt
 	tick += 1
 	time += dt
 	events.game_tick.emit(tick, dt)
@@ -154,9 +162,34 @@ func step(dt: float) -> void:
 		_tick_entity(e, dt)
 	_recompute_power()
 	_recompute_compute()
+	_recompute_fog()
 	# Combat is resolved by the sim itself (authoritative, Blueprint §2) so a
 	# headless sim fully simulates without an external driver.
 	combat.tick_all()
+	_cleanup_control_groups()
+
+func _recompute_fog() -> void:
+	## Update each faction's visibility grid from its entities' sensor radii.
+	var by_faction: Dictionary = {}
+	for id in entities:
+		var e: Entity = entities[id]
+		if e == null or not e.alive:
+			continue
+		if not by_faction.has(e.faction_id):
+			by_faction[e.faction_id] = true
+	for faction in by_faction.keys():
+		if fog_sys != null:
+			fog_sys.update(entities, faction)
+
+func _cleanup_control_groups() -> void:
+	## Control groups store entity ids; auto-remove destroyed entities (§ line 341).
+	for g in control_groups.keys():
+		var group: Array = control_groups[g]
+		var kept: Array = []
+		for id in group:
+			if entities.has(id):
+				kept.append(id)
+		control_groups[g] = kept
 
 func _recompute_power() -> void:
 	## Per-faction power ratio -> production speed_scale (Blueprint §5.5 / §6).
@@ -258,6 +291,16 @@ func run_commands(id: int, commands: Array) -> void:
 				_issue_train(id, targets, cmd)
 			"SET_RALLY":
 				_issue_set_rally(id, targets, cmd.get("position", Vector2.ZERO))
+			"CONTROL_ASSIGN":
+				_assign_control_group(cmd.get("group", 0), targets)
+			"CONTROL_RECALL":
+				_recall_control_group(cmd.get("group", 0))
+			"GARRISON":
+				_issue_garrison(id, targets, cmd.get("targetEntityId", -1))
+			"UNGARRISON":
+				_issue_ungarrison(id, targets)
+			"REPAIR":
+				_issue_repair(id, targets, cmd.get("targetEntityId", -1))
 			_:
 				pass
 
@@ -413,3 +456,100 @@ func _issue_set_rally(self_id: int, targets: Array, position: Vector2) -> void:
 		var e: Entity = entities.get(t)
 		if e != null and e.production != null:
 			e.production.rally_point = position
+
+# ---- Control groups (§ M1: "control groups", line 341) ----
+## Assign selected entity ids to a control group index (0-9), overwriting it.
+func assign_control_group(group: int, entity_ids: Array) -> void:
+	control_groups[group] = entity_ids.duplicate()
+
+func _assign_control_group(group: int, targets: Array) -> void:
+	var ids: Array = []
+	for t in targets:
+		var e: Entity = entities.get(t)
+		if e != null and e.alive:
+			ids.append(t)
+	control_groups[group] = ids
+
+## Recall a control group: select its (still-alive) members.
+func recall_control_group(group: int) -> Array:
+	if control_groups.has(group):
+		selected_ids = []
+		for id in control_groups[group]:
+			if entities.has(id):
+				selected_ids.append(id)
+		return selected_ids
+	return []
+
+func _recall_control_group(group: int) -> void:
+	recall_control_group(group)
+
+# ---- Garrison (§ "Garrison" M1 gate, §5.7 "buildings with garrison slots") ----
+## Move infantry into a garrisonable structure. Slotted by the structure def's
+## `garrisoned` capacity. The building must be owned by the same faction, built,
+## and have a free slot. Eject on structure destroy is handled by the sim owner.
+func garrison_units(structure_id: int, unit_ids: Array) -> int:
+	var s: Entity = entities.get(structure_id)
+	if s == null or s.garrison == null:
+		return 0
+	var capacity: int = s.garrison.capacity
+	var loaded: int = 0
+	for uid in unit_ids:
+		var u: Entity = entities.get(uid)
+		if u == null or not u.alive:
+			continue
+		if u.garrisonable == null or not u.garrisonable.can_garrison:
+			continue
+		if u.faction_id != s.faction_id:
+			continue
+		if not s.garrison.has_space():
+			break
+		s.garrison.add_occupant(uid)
+		u.garrisoned_into = structure_id
+		u.alive = false  # hidden; structure fires for them (§5.7 proxy)
+		loaded += 1
+		events.log.emit("GARRISON: unit " + str(uid) + " entered " + str(structure_id))
+	return loaded
+
+func _issue_garrison(self_id: int, targets: Array, structure_id: int) -> void:
+	garrison_units(structure_id, targets)
+
+## Release all garrisoned units, spawning them adjacent to the structure.
+func ungarrison_units(structure_id: int) -> void:
+	var s: Entity = entities.get(structure_id)
+	if s == null or s.garrison == null:
+		return
+	for uid in s.garrison.occupants.duplicate():
+		var u: Entity = entities.get(uid)
+		if u == null:
+			continue
+		u.alive = true
+		u.garrisoned_into = -1
+		u.position = s.position + Vector2(_rand_offset(), _rand_offset())
+		s.garrison.remove_occupant(uid)
+		events.log.emit("UNGARRISON: unit " + str(uid) + " exited " + str(structure_id))
+
+func _issue_ungarrison(self_id: int, targets: Array) -> void:
+	if targets.size() > 0:
+		for t in targets:
+			var e: Entity = entities.get(t)
+			if e != null and e.garrison != null:
+				ungarrison_units(t)
+	else:
+		for g in control_groups.keys():
+			pass
+
+# ---- Repair (§ "repair" M1 gate) ----
+## Order a repair-capable structure/unit to repair a friendly target to full.
+## Heals over time each tick while in range and (for structures) powered.
+func repair_entity(self_id: int, target_id: int) -> void:
+	var unit: Entity = entities.get(target_id)
+	if unit == null or not unit.alive:
+		return
+	unit.repair_target = self_id
+
+func _issue_repair(self_id: int, targets: Array, target_id: int) -> void:
+	repair_entity(self_id, target_id)
+
+func _rand_offset() -> float:
+	# Deterministic-ish small offset for ejection placement.
+	return (randf() - 0.5) * 30.0

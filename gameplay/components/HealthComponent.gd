@@ -18,6 +18,9 @@ func is_alive() -> bool:
 func ratio() -> float:
 	return current / max_health if max_health > 0 else 0.0
 
+func is_full() -> bool:
+	return current >= max_health
+
 ## Apply raw damage (already armor-resolved by CombatSystem). Returns true if now dead.
 func apply_damage(amount: float) -> bool:
 	if not is_alive():
