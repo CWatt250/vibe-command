@@ -5,6 +5,8 @@ class_name EntityRenderer
 
 var sim: Simulation
 var rts_cam: RTSCamera
+var fog_sys: FogOfWarSystem = null
+var player_faction: String = "VC"
 
 const FC_COLORS := {
 	"VC": Color(0.0, 0.82, 1.0),       # Vibe Coder (00d1ff)
@@ -20,10 +22,20 @@ func _draw() -> void:
 		return
 	var cam_rect := _visible_world_rect()
 	for e in sim.entities.values():
+		if not e.alive:
+			continue   # garrisoned occupants are hidden; skip them
 		if e.position.x < cam_rect.position.x or e.position.x > cam_rect.end.x:
 			continue
 		if e.position.y < cam_rect.position.y or e.position.y > cam_rect.end.y:
 			continue
+		# Fog: structures persist as silhouettes through explored fog; units vanish
+		# unless currently visible to the player (§5.6).
+		if fog_sys != null and e.faction_id != player_faction:
+			var vis := fog_sys.is_visible(player_faction, e.position)
+			if e.kind == "unit" and not vis:
+				continue
+			if e.kind == "structure" and fog_sys.state_at(player_faction, e.position) == 0:
+				continue
 		if e.kind == "structure":
 			_draw_structure(e)
 		elif e.kind == "unit":

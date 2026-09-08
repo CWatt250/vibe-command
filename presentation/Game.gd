@@ -14,6 +14,11 @@ var rts_cam: RTSCamera
 var selection_input: SelectionInput
 var map_renderer: MapRenderer
 var entity_renderer: EntityRenderer
+var fog_renderer: FogRenderer
+var minimap_layer: CanvasLayer
+var minimap: MiniMapRenderer
+
+const PLAYER_FACTION := "VC"
 
 var _accum: float = 0.0
 var _world: Vector2 = Vector2(2000, 2000)
@@ -47,6 +52,19 @@ func _ready() -> void:
 	add_child(map_renderer)
 	entity_renderer = EntityRenderer.new(sim, rts_cam)
 	add_child(entity_renderer)
+
+	# Fog overlay (world space) + minimap (screen space). Both key off the player faction.
+	var player_faction := PLAYER_FACTION
+	sim.selected_faction = player_faction
+	fog_renderer = FogRenderer.new(sim.fog_sys, player_faction)
+	add_child(fog_renderer)
+	entity_renderer.fog_sys = sim.fog_sys
+	entity_renderer.player_faction = player_faction
+	minimap_layer = CanvasLayer.new()
+	minimap_layer.layer = 20
+	add_child(minimap_layer)
+	minimap = MiniMapRenderer.new(sim, sim.fog_sys, player_faction, rts_cam)
+	minimap_layer.add_child(minimap)
 
 	# Input
 	selection_input = SelectionInput.new(rts_cam, sim)
@@ -113,7 +131,9 @@ func _process(delta: float) -> void:
 		sim.step(step)
 		_accum -= step
 		entity_renderer.queue_redraw()
-	_frame += 1
+		fog_renderer.queue_redraw()
+		minimap.queue_redraw()
+		_frame += 1
 	if _capture_at > 0 and _frame >= _capture_at:
 		_capture_at = -1  # prevent re-entry
 		_capture_now()
