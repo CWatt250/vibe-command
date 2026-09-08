@@ -25,6 +25,7 @@ var burst_left: int = 0
 var burst_timer: float = 0.0
 var current_target_id: int = -1
 var acquire_radius: float = 220.0   # acquisition > weapon range (Blueprint §3.5)
+var reaction_scale: float = 1.0     # compute-deficit penalty: >1.0 = slower cooldown
 
 func setup(def: Dictionary, _owner) -> void:
 	weapon_id = def.get("id", "")
@@ -65,4 +66,7 @@ func begin_cooldown() -> void:
 	if burst_count > 1:
 		burst_left = burst_count - 1
 		burst_timer = burst_interval
-	cooldown_left = reload_sec
+	cooldown_left = reload_sec * reaction_scale
+
+func set_reaction_scale(scale: float) -> void:
+	reaction_scale = scale

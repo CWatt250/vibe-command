@@ -13,7 +13,9 @@ var events: GameEvents
 var grid_map: NavGrid
 var spatial: SpatialIndex
 var power_sys: PowerSystem
+var compute_sys: ComputeSystem
 var combat: CombatSystem
+var compute_deficit: Dictionary = {}   # faction -> bool (or global combat penalty source)
 
 ## Transient UI/selection state (owned by sim as the single authority on entities/factions).
 var selected_ids: Array = []
@@ -32,6 +34,7 @@ func _init(registry_: ContentRegistry, events_: GameEvents, grid_h: int, grid_w:
 	grid_map = NavGrid.new(grid_w, grid_h)
 	spatial = SpatialIndex.new()
 	power_sys = PowerSystem.new()
+	compute_sys = ComputeSystem.new()
 	combat = CombatSystem.new(self, registry, events)
 
 # --- Players / resources ---
@@ -148,6 +151,7 @@ func step(dt: float) -> void:
 			continue
 		_tick_entity(e, dt)
 	_recompute_power()
+	_recompute_compute()
 	# Combat is resolved by the sim itself (authoritative, Blueprint §2) so a
 	# headless sim fully simulates without an external driver.
 	combat.tick_all()
@@ -169,6 +173,44 @@ func _recompute_power() -> void:
 			if e.production != null:
 				e.production.set_speed_scale(scale)
 				e.production.set_powered(r["powered"])
+
+func _recompute_compute() -> void:
+	## Per-faction compute economy (Blueprint §6.1): produced vs reserved, reduced by
+	## power brownout and cooling shortfall. Under deficit, apply a deterministic
+	## global reaction/cooldown penalty (not random shutdown).
+	var by_faction: Dictionary = {}
+	for id in entities:
+		var e: Entity = entities[id]
+		if not by_faction.has(e.faction_id):
+			by_faction[e.faction_id] = true
+	for faction in by_faction.keys():
+		var armed: bool = _is_armed(faction)
+		var power_ratio: float = 1.0
+		if power_sys != null:
+			var pr: Dictionary = power_sys._compute(entities, faction)
+			power_ratio = pr.get("ratio", 1.0)
+		var c: Dictionary = compute_sys._compute(entities, faction, power_ratio)
+		var deficit: bool = c.get("deficit", false)
+		compute_deficit[faction] = deficit
+		# Apply the global cooldown penalty across the faction's weapons.
+		if armed or deficit:
+			for eid in entities:
+				var e: Entity = entities[eid]
+				if e.faction_id != faction or e.weapon == null:
+					continue
+				e.weapon.set_reaction_scale(compute_sys.reaction_scale(deficit))
+
+func _is_armed(faction: String) -> bool:
+	## A faction is "armed" for compute purposes once it has ANY compute-producing structure.
+	for id in entities:
+		var e: Entity = entities[id]
+		if e.faction_id != faction:
+			continue
+		if e.kind != "structure":
+			continue
+		if e.def_data.get("computeProduced", 0.0) > 0.0:
+			return true
+	return false
 
 func _tick_entity(e: Entity, dt: float) -> void:
 	# Construction progress (build sites) — emits completion when built.
