@@ -418,6 +418,808 @@
       "garrisonCapable": true
     },
     {
+      "id": "SG-U01",
+      "displayName": "Skitter",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 180,
+      "buildTimeSec": 6.0,
+      "reserveCapacity": 2,
+      "maxHealth": 240,
+      "armorClass": "Light",
+      "moveProfileId": "prof_vehicle_fast",
+      "visionRadius": 255,
+      "detectionRadius": 128,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_burrow_hide"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 4,
+      "bibleRole": "T1 Swarm",
+      "bibleText": "Tiny fast melee/short-range machine. Strong in numbers."
+    },
+    {
+      "id": "SG-U02",
+      "displayName": "Watcher",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 250,
+      "buildTimeSec": 8.0,
+      "reserveCapacity": 2,
+      "maxHealth": 240,
+      "armorClass": "Light",
+      "moveProfileId": "prof_vehicle_fast",
+      "visionRadius": 255,
+      "detectionRadius": 128,
+      "weaponSlots": [],
+      "abilityIds": [
+        "ability_mark_prey"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 4,
+      "bibleRole": "T1 Scout",
+      "bibleText": "Fast sensor machine; no serious weapon."
+    },
+    {
+      "id": "SG-U03",
+      "displayName": "Harvester",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 500,
+      "buildTimeSec": 14.0,
+      "reserveCapacity": 0,
+      "maxHealth": 330,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 220,
+      "detectionRadius": 110,
+      "weaponSlots": [],
+      "abilityIds": [
+        "ability_consume_wreck"
+      ],
+      "componentFlags": [
+        "Harvester"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 2,
+      "bibleRole": "T1 Economy",
+      "bibleText": "Collects fields and dismantles wreckage.",
+      "harvest": true,
+      "harvestCapacity": 500.0,
+      "harvestRatePerSec": 60.0,
+      "harvestRadius": 45.0,
+      "depositRadius": 70.0
+    },
+    {
+      "id": "SG-U04",
+      "displayName": "Replicant",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 420,
+      "buildTimeSec": 12.0,
+      "reserveCapacity": 0,
+      "maxHealth": 600,
+      "armorClass": "HeavyInfantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_scavenge_armor"
+      ],
+      "componentFlags": [
+        "Infantry"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T1 Infantry Analog",
+      "bibleText": "Humanoid ranged machine."
+    },
+    {
+      "id": "SG-U05",
+      "displayName": "Stalker",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 750,
+      "buildTimeSec": 18.0,
+      "reserveCapacity": 2,
+      "maxHealth": 240,
+      "armorClass": "Light",
+      "moveProfileId": "prof_vehicle_fast",
+      "visionRadius": 255,
+      "detectionRadius": 128,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_phase_cloak",
+        "ability_leap"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 4,
+      "bibleRole": "T2 Raider",
+      "bibleText": "Fast stealth predator vs infantry/support."
+    },
+    {
+      "id": "SG-U06",
+      "displayName": "Assimilator",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 22.0,
+      "reserveCapacity": 2,
+      "maxHealth": 350,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 270,
+      "detectionRadius": 135,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_assimilate",
+        "ability_corrupt_systems"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5,
+      "bibleRole": "T2 Support",
+      "bibleText": "Converts wrecks and disables damaged machines."
+    },
+    {
+      "id": "SG-U07",
+      "displayName": "Walker",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 1200,
+      "buildTimeSec": 26.0,
+      "reserveCapacity": 2,
+      "maxHealth": 350,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 270,
+      "detectionRadius": 135,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_climb_rubble",
+        "ability_brace"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5,
+      "bibleRole": "T2 Assault",
+      "bibleText": "Four-legged combat platform; all-terrain movement."
+    },
+    {
+      "id": "SG-U08",
+      "displayName": "Shard Tank",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 1700,
+      "buildTimeSec": 34.0,
+      "reserveCapacity": 2,
+      "maxHealth": 590,
+      "armorClass": "Heavy",
+      "moveProfileId": "prof_vehicle_heavy",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "abilityIds": [
+        "ability_shard_burst"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T2 Heavy",
+      "bibleText": "Heavy direct-fire machine with strange composite armor."
+    },
+    {
+      "id": "SG-U09",
+      "displayName": "Spore Drone",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 20.0,
+      "reserveCapacity": 0,
+      "maxHealth": 65,
+      "armorClass": "AirLight",
+      "moveProfileId": "prof_air_fast",
+      "visionRadius": 275,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_seed_nodelet"
+      ],
+      "componentFlags": [
+        "Aircraft"
+      ],
+      "populationWeight": 0,
+      "wreckDefinitionId": null,
+      "selectionPriority": 3,
+      "bibleRole": "T2 Air",
+      "bibleText": "Air harassment / corruption spread."
+    },
+    {
+      "id": "SG-U10",
+      "displayName": "Seeder",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 1100,
+      "buildTimeSec": 28.0,
+      "reserveCapacity": 2,
+      "maxHealth": 350,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 270,
+      "detectionRadius": 135,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_deploy_node"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5,
+      "bibleRole": "T2 Expansion",
+      "bibleText": "Mobile construction organism; unfolds into Node structures."
+    },
+    {
+      "id": "SG-U11",
+      "displayName": "Reclaimer",
+      "factionId": "SG",
+      "techTier": 3,
+      "costCredits": 1900,
+      "buildTimeSec": 36.0,
+      "reserveCapacity": 2,
+      "maxHealth": 590,
+      "armorClass": "Heavy",
+      "moveProfileId": "prof_vehicle_heavy",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_explosive"
+      ],
+      "abilityIds": [
+        "ability_strip_armor"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T3 Siege",
+      "bibleText": "Long-range dismantling beam / artillery analog."
+    },
+    {
+      "id": "SG-U12",
+      "displayName": "Swarm Host",
+      "factionId": "SG",
+      "techTier": 3,
+      "costCredits": 2200,
+      "buildTimeSec": 42.0,
+      "reserveCapacity": 2,
+      "maxHealth": 590,
+      "armorClass": "Heavy",
+      "moveProfileId": "prof_vehicle_heavy",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "abilityIds": [
+        "ability_release_brood",
+        "ability_recall"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T3 Heavy",
+      "bibleText": "Carries and releases Skitters."
+    },
+    {
+      "id": "SG-U13",
+      "displayName": "Leviathan",
+      "factionId": "SG",
+      "techTier": 3,
+      "costCredits": 4800,
+      "buildTimeSec": 85.0,
+      "reserveCapacity": 4,
+      "maxHealth": 1100,
+      "armorClass": "Heavy",
+      "moveProfileId": "prof_vehicle_heavy",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_energy_beam",
+        "wpn_explosive"
+      ],
+      "abilityIds": [
+        "ability_ground_lance",
+        "ability_spawn_nodelet"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 5,
+      "wreckDefinitionId": null,
+      "selectionPriority": 8,
+      "bibleRole": "T3 Epic",
+      "bibleText": "Massive walker that produces local node growth and siege fire."
+    },
+    {
+      "id": "SG-U14",
+      "displayName": "Echo",
+      "factionId": "SG",
+      "techTier": 3,
+      "costCredits": 1600,
+      "buildTimeSec": 32.0,
+      "reserveCapacity": 0,
+      "maxHealth": 600,
+      "armorClass": "HeavyInfantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_mimic",
+        "ability_break_signal"
+      ],
+      "componentFlags": [
+        "Infantry"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T3 Infiltrator",
+      "bibleText": "Copies enemy electronic signature and temporarily mimics a captured unit profile."
+    },
+    {
+      "id": "TS-U01",
+      "displayName": "Corporate Security Team",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 425,
+      "buildTimeSec": 11.0,
+      "reserveCapacity": 0,
+      "maxHealth": 130,
+      "armorClass": "Infantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 210,
+      "detectionRadius": 105,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_flashbang",
+        "ability_garrison"
+      ],
+      "componentFlags": [
+        "Infantry",
+        "Garrisonable"
+      ],
+      "populationWeight": 1,
+      "wreckDefinitionId": null,
+      "selectionPriority": 3,
+      "bibleRole": "T1 Infantry",
+      "bibleText": "4-person disciplined security team."
+    },
+    {
+      "id": "TS-U02",
+      "displayName": "Combat Technician",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 350,
+      "buildTimeSec": 10.0,
+      "reserveCapacity": 0,
+      "maxHealth": 130,
+      "armorClass": "Infantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 210,
+      "detectionRadius": 105,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_repair",
+        "ability_capture",
+        "ability_deploy_beacon"
+      ],
+      "componentFlags": [
+        "Infantry",
+        "Garrisonable"
+      ],
+      "populationWeight": 1,
+      "wreckDefinitionId": null,
+      "selectionPriority": 3,
+      "bibleRole": "T1 Support",
+      "bibleText": "Repair/capture/network support."
+    },
+    {
+      "id": "TS-U03",
+      "displayName": "Recon Drone",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 300,
+      "buildTimeSec": 8.0,
+      "reserveCapacity": 0,
+      "maxHealth": 65,
+      "armorClass": "AirLight",
+      "moveProfileId": "prof_air_fast",
+      "visionRadius": 275,
+      "detectionRadius": 140,
+      "weaponSlots": [],
+      "abilityIds": [
+        "ability_designate"
+      ],
+      "componentFlags": [
+        "Aircraft"
+      ],
+      "populationWeight": 0,
+      "wreckDefinitionId": null,
+      "selectionPriority": 3,
+      "bibleRole": "T1 Drone",
+      "bibleText": "Excellent sensor drone with target marking."
+    },
+    {
+      "id": "TS-U04",
+      "displayName": "Security SUV",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 700,
+      "buildTimeSec": 16.0,
+      "reserveCapacity": 2,
+      "maxHealth": 240,
+      "armorClass": "Light",
+      "moveProfileId": "prof_vehicle_fast",
+      "visionRadius": 255,
+      "detectionRadius": 128,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_sensor_mast",
+        "ability_carry_4"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 4,
+      "bibleRole": "T1 Light Vehicle",
+      "bibleText": "Fast armed transport."
+    },
+    {
+      "id": "TS-U05",
+      "displayName": "Sentinel APC",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 1250,
+      "buildTimeSec": 24.0,
+      "reserveCapacity": 2,
+      "maxHealth": 350,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 270,
+      "detectionRadius": 135,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_aps_burst",
+        "ability_carry_6"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5,
+      "bibleRole": "T2 Medium Vehicle",
+      "bibleText": "Premium APC with active protection."
+    },
+    {
+      "id": "TS-U06",
+      "displayName": "Exosuit Trooper",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 22.0,
+      "reserveCapacity": 0,
+      "maxHealth": 600,
+      "armorClass": "HeavyInfantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_kinetic_brace"
+      ],
+      "componentFlags": [
+        "Infantry"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T2 Heavy Infantry",
+      "bibleText": "Durable elite infantry; anti-light / breach."
+    },
+    {
+      "id": "TS-U07",
+      "displayName": "Paladin Tank",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 2000,
+      "buildTimeSec": 36.0,
+      "reserveCapacity": 2,
+      "maxHealth": 590,
+      "armorClass": "Heavy",
+      "moveProfileId": "prof_vehicle_heavy",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "abilityIds": [
+        "ability_active_protection",
+        "ability_designated_shot"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T2 Heavy Vehicle",
+      "bibleText": "High-accuracy premium MBT."
+    },
+    {
+      "id": "TS-U08",
+      "displayName": "Rail Hunter",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 1850,
+      "buildTimeSec": 34.0,
+      "reserveCapacity": 2,
+      "maxHealth": 350,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 270,
+      "detectionRadius": 135,
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "abilityIds": [
+        "ability_anchor",
+        "ability_overpenetrate"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5,
+      "bibleRole": "T2 Tank Destroyer",
+      "bibleText": "Long-range precision anti-heavy platform."
+    },
+    {
+      "id": "TS-U09",
+      "displayName": "Aegis EW Vehicle",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 1450,
+      "buildTimeSec": 30.0,
+      "reserveCapacity": 2,
+      "maxHealth": 350,
+      "armorClass": "Medium",
+      "moveProfileId": "prof_vehicle",
+      "visionRadius": 270,
+      "detectionRadius": 135,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_ew_bubble"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 2,
+      "wreckDefinitionId": null,
+      "selectionPriority": 5,
+      "bibleRole": "T2 Support",
+      "bibleText": "Protects nearby units from drones/missiles and reveals stealth."
+    },
+    {
+      "id": "TS-U10",
+      "displayName": "Autonomous Gunship",
+      "factionId": "TS",
+      "techTier": 3,
+      "costCredits": 2200,
+      "buildTimeSec": 40.0,
+      "reserveCapacity": 0,
+      "maxHealth": 420,
+      "armorClass": "AirHeavy",
+      "moveProfileId": "prof_air",
+      "visionRadius": 320,
+      "detectionRadius": 160,
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "abilityIds": [
+        "ability_precision_orbit"
+      ],
+      "componentFlags": [
+        "Aircraft"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T3 Aircraft",
+      "bibleText": "Premium anti-ground gunship."
+    },
+    {
+      "id": "TS-U11",
+      "displayName": "Interceptor Drone Wing",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 1000,
+      "buildTimeSec": 20.0,
+      "reserveCapacity": 0,
+      "maxHealth": 65,
+      "armorClass": "AirLight",
+      "moveProfileId": "prof_air_fast",
+      "visionRadius": 275,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "abilityIds": [
+        "ability_intercept_mode"
+      ],
+      "componentFlags": [
+        "Aircraft"
+      ],
+      "populationWeight": 0,
+      "wreckDefinitionId": null,
+      "selectionPriority": 3,
+      "bibleRole": "T2 Air",
+      "bibleText": "Reusable fast anti-air/anti-drone squadron."
+    },
+    {
+      "id": "TS-U12",
+      "displayName": "Heavy Exoskeleton",
+      "factionId": "TS",
+      "techTier": 3,
+      "costCredits": 1800,
+      "buildTimeSec": 34.0,
+      "reserveCapacity": 0,
+      "maxHealth": 600,
+      "armorClass": "HeavyInfantry",
+      "moveProfileId": "prof_infantry",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "abilityIds": [
+        "ability_breach_shield"
+      ],
+      "componentFlags": [
+        "Infantry"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T3 Heavy Infantry",
+      "bibleText": "Walking weapons platform for urban fighting."
+    },
+    {
+      "id": "TS-U13",
+      "displayName": "Prototype Mech",
+      "factionId": "TS",
+      "techTier": 3,
+      "costCredits": 3800,
+      "buildTimeSec": 65.0,
+      "reserveCapacity": 4,
+      "maxHealth": 1100,
+      "armorClass": "Heavy",
+      "moveProfileId": "prof_vehicle_heavy",
+      "visionRadius": 280,
+      "detectionRadius": 140,
+      "weaponSlots": [
+        "wpn_energy_beam",
+        "wpn_explosive"
+      ],
+      "abilityIds": [
+        "ability_weapon_cycle",
+        "ability_stabilize"
+      ],
+      "componentFlags": [
+        "Vehicle"
+      ],
+      "populationWeight": 5,
+      "wreckDefinitionId": null,
+      "selectionPriority": 8,
+      "bibleRole": "T3 Epic",
+      "bibleText": "Rare walking heavy combat unit with modular weapons."
+    },
+    {
+      "id": "TS-U14",
+      "displayName": "Skyhook Command Craft",
+      "factionId": "TS",
+      "techTier": 3,
+      "costCredits": 3000,
+      "buildTimeSec": 55.0,
+      "reserveCapacity": 0,
+      "maxHealth": 420,
+      "armorClass": "AirHeavy",
+      "moveProfileId": "prof_air",
+      "visionRadius": 320,
+      "detectionRadius": 160,
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "abilityIds": [
+        "ability_battle_network",
+        "ability_recall_drone"
+      ],
+      "componentFlags": [
+        "Aircraft"
+      ],
+      "populationWeight": 3,
+      "wreckDefinitionId": null,
+      "selectionPriority": 6,
+      "bibleRole": "T3 Air Support",
+      "bibleText": "Flying sensor/command platform; buffs networked forces."
+    },
+    {
       "id": "VC-SRV",
       "displayName": "Salvage Rig",
       "factionId": "VC",

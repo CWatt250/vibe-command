@@ -520,11 +520,14 @@ def gen_support():
     im, d = canvas(52); shadow(d, 26, 27, 28, 22, 2); tracked(d, 26, 27, 28, 20, (96, 104, 84), FC, barrel=0, turret=(20, 18)); d.rounded_rectangle([32, 12, 42, 22], radius=3, fill=(120, 128, 108), outline=shade(FC, 0.5), width=2); save(im, "FC-SRV_harvester")
 
 
-gen_vehicles()
-gen_vc_garage()
-gen_structures()
-gen_support()
-gen_human_characters()
+def main():
+    gen_vehicles()
+    gen_vc_garage()
+    gen_structures()
+    gen_support()
+    gen_human_characters()
+    write_manifest()
+
 
 M = {
     # ---- Vibe Coder units: "The Garage" ----
@@ -550,7 +553,12 @@ M = {
     # ---- shared support ----
     "SRV": "SRV_harvester", "VC-SRV": "VC-SRV_harvester", "FC-SRV": "FC-SRV_harvester",
 }
-with open(os.path.join(OUT, "manifest.json"), "w") as f:
-    json.dump({k: (v + ".png") for k, v in M.items()}, f, indent=2)
-print("Total sprite files:", len([x for x in os.listdir(OUT) if x.endswith(".png")]))
-print("Manifest entries:", len(M))
+def write_manifest():
+    with open(os.path.join(OUT, "manifest.json"), "w") as f:
+        json.dump({k: (v + ".png") for k, v in M.items()}, f, indent=2)
+    print("Total sprite files:", len([x for x in os.listdir(OUT) if x.endswith(".png")]))
+    print("Manifest entries:", len(M))
+
+
+if __name__ == "__main__":
+    main()

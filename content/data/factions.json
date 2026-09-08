@@ -2,18 +2,68 @@
   "version": 1,
   "factions": [
     {
-      "id": "VC", "displayName": "Vibe Coder", "color": "00d1ff",
-      "resourceIds": ["credits", "power", "compute"],
-      "startCredits": 1500, "harvesterUnitId": "VC-SRV", "builderUnitId": "VC-U01",
-      "defenseTag": "improvised", "techTiers": 3,
-      "desc": "Improvised garage tech evolving into autonomous machine warfare. Compute is a real system."
+      "id": "FC",
+      "displayName": "Federal Command",
+      "color": "e8e8e8",
+      "resourceIds": [
+        "credits",
+        "power",
+        "command"
+      ],
+      "startCredits": 1500,
+      "harvesterUnitId": "FC-SRV",
+      "builderUnitId": "FC-U02",
+      "defenseTag": "conventional",
+      "techTiers": 3,
+      "desc": "Conventional combined-arms military. Command Capacity gates elite production."
     },
     {
-      "id": "FC", "displayName": "Federal Command", "color": "e8e8e8",
-      "resourceIds": ["credits", "power", "command"],
-      "startCredits": 1500, "harvesterUnitId": "FC-SRV", "builderUnitId": "FC-U02",
-      "defenseTag": "conventional", "techTiers": 3,
-      "desc": "Conventional combined-arms military. Command Capacity gates elite production."
+      "id": "SG",
+      "displayName": "The Signal",
+      "color": "d6532e",
+      "resourceIds": [
+        "credits",
+        "energy",
+        "assimilation"
+      ],
+      "startCredits": 1500,
+      "harvesterUnitId": "SG-U03",
+      "builderUnitId": "SG-U10",
+      "defenseTag": "assimilated",
+      "techTiers": 3,
+      "desc": "Assimilation Intelligence built from stolen technology. Matter and Energy in place of credits and power."
+    },
+    {
+      "id": "TS",
+      "displayName": "Titan Systems",
+      "color": "2fa8a0",
+      "resourceIds": [
+        "credits",
+        "power",
+        "network"
+      ],
+      "startCredits": 1500,
+      "harvesterUnitId": null,
+      "builderUnitId": "TS-U02",
+      "defenseTag": "corporate",
+      "techTiers": 3,
+      "desc": "Premium corporate war machine. Network Licenses gate elite production."
+    },
+    {
+      "id": "VC",
+      "displayName": "Vibe Coder",
+      "color": "00d1ff",
+      "resourceIds": [
+        "credits",
+        "power",
+        "compute"
+      ],
+      "startCredits": 1500,
+      "harvesterUnitId": "VC-SRV",
+      "builderUnitId": "VC-U01",
+      "defenseTag": "improvised",
+      "techTiers": 3,
+      "desc": "Improvised garage tech evolving into autonomous machine warfare. Compute is a real system."
     }
   ]
 }
