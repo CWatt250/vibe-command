@@ -17,6 +17,7 @@ var entity_renderer: EntityRenderer
 var fog_renderer: FogRenderer
 var minimap_layer: CanvasLayer
 var minimap: MiniMapRenderer
+var hud: HUD
 
 const PLAYER_FACTION := "VC"
 
@@ -65,6 +66,10 @@ func _ready() -> void:
 	add_child(minimap_layer)
 	minimap = MiniMapRenderer.new(sim, sim.fog_sys, player_faction, rts_cam)
 	minimap_layer.add_child(minimap)
+
+	# HUD shell (Phase 7): resources top-left, selection info bottom-right.
+	hud = HUD.new(sim, events, player_faction)
+	add_child(hud)
 
 	# Input
 	selection_input = SelectionInput.new(rts_cam, sim)
@@ -189,3 +194,7 @@ func _on_orders(orders: Array) -> void:
 func _on_selection(ids: Array) -> void:
 	sim.selected_ids = ids
 	entity_renderer.queue_redraw()
+	# Put selection on the event bus so HUD panels can rebind without touching input.
+	var typed: Array[int] = []
+	typed.assign(ids)
+	events.entity_selected.emit(typed)

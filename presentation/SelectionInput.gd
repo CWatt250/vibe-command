@@ -71,6 +71,8 @@ func _units_in_rect(box: Rect2) -> Array:
 			out.append(e.id)
 	return out
 
+## Click-select: units win within 24px; otherwise a structure whose footprint contains
+## the point. Drag-select stays units-only (C&C convention) via _units_in_rect.
 func _unit_at_world(p: Vector2) -> int:
 	var best := -1
 	var best_d := 24.0 * 24.0
@@ -81,7 +83,19 @@ func _unit_at_world(p: Vector2) -> int:
 		if d < best_d:
 			best_d = d
 			best = e.id
-	return best
+	if best >= 0:
+		return best
+	return _structure_at_world(p)
+
+func _structure_at_world(p: Vector2) -> int:
+	for e in sim.entities.values():
+		if e.kind != "structure":
+			continue
+		var fp: Array = e.def_data.get("footprint", [1, 1])
+		var half := Vector2(fp[0], fp[1] if fp.size() > 1 else fp[0]) * NavGrid.CELL * 0.5
+		if Rect2(e.position - half, half * 2.0).has_point(p):
+			return e.id
+	return -1
 
 func _merge_selection(add: Array) -> Array:
 	var cur: Array = sim.selected_ids

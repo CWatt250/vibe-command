@@ -105,19 +105,18 @@ func spawn_structure(def_id: String, faction: String, pos: Vector2, start_built:
 	e.kind = "structure"
 	e._attach_components(registry, def, start_built)
 	_register_entity(e, def_id, pos)
+	# Every structure blocks its footprint, built or not — pre-placed HQs were
+	# walk-through and build-over before this (found by the Phase 7 can_place test).
+	_block_footprint(e)
 	if start_built:
 		events.structure_placed.emit(e.id, def_id, faction, pos)
 	else:
 		events.log.emit("Construction started: " + def_id)
 	return e.id
 
-## Spawn a build site (structure under construction). Blocks its footprint in the grid.
+## Spawn a build site (structure under construction).
 func spawn_build_site(def_id: String, faction: String, pos: Vector2) -> int:
-	var id := spawn_structure(def_id, faction, pos, false)
-	if id == -1:
-		return -1
-	_block_footprint(entities[id])
-	return id
+	return spawn_structure(def_id, faction, pos, false)
 
 func _block_footprint(e: Entity) -> void:
 	var fp: Array = e.def_data.get("footprint", [1, 1])
@@ -164,6 +163,8 @@ func remove_entity(id: int) -> void:
 	var e: Entity = entities[id]
 	e.alive = false
 	spatial.remove(id)
+	if e.kind == "structure":
+		_unblock_footprint(e)
 	entities.erase(id)
 	events.entity_destroyed.emit(id, e.def_id, e.position)
 
@@ -313,6 +314,8 @@ func run_commands(id: int, commands: Array) -> void:
 				_issue_build(id, cmd)
 			"TRAIN":
 				_issue_train(id, targets, cmd)
+			"CANCEL_TRAIN":
+				_issue_cancel_train(id, targets, cmd.get("index", 0))
 			"SET_RALLY":
 				_issue_set_rally(id, targets, cmd.get("position", Vector2.ZERO))
 			"CONTROL_ASSIGN":
@@ -433,6 +436,28 @@ func _placement_valid(def: Dictionary, pos: Vector2, faction: String) -> bool:
 			return false
 	return true
 
+## Public placement check for the HUD's placement ghost (no side effects, no credit spend).
+func can_place(def_id: String, pos: Vector2, faction: String) -> bool:
+	var def = registry.get_structure(def_id)
+	if def.is_empty():
+		return false
+	return _placement_valid(def, pos, faction)
+
+## Per-faction economy snapshot for HUD display. Pure read; mirrors what the
+## per-tick recomputes derive but nothing caches, so the HUD calls this on demand.
+## Returns {credits, power:{produced,drawn,ratio,powered}, compute:{...}, command:{...}}.
+func faction_status(faction: String) -> Dictionary:
+	var res: Dictionary = get_resources(faction)
+	var power: Dictionary = power_sys._compute(entities, faction)
+	var compute: Dictionary = compute_sys._compute(entities, faction, power.get("ratio", 1.0))
+	var command: Dictionary = command_sys._compute(entities, faction)
+	return {
+		"credits": res.get("credits", 0.0),
+		"power": power,
+		"compute": compute,
+		"command": command,
+	}
+
 func _build_radius_for(faction: String) -> float:
 	# From the faction's HQ/"BuilderNetwork" config; default 1200 if present.
 	var f = registry.get_faction(faction)
@@ -478,6 +503,20 @@ func _issue_train(self_id: int, targets: Array, cmd: Dictionary) -> void:
 			continue
 		e.production.enqueue(unit_id, cost, build_time)
 		events.production_queued.emit(e.id, unit_id, cost)
+
+## Cancel a queued item on each target producer and refund what it reserved.
+## Only the head item has progress; cancelling it forfeits that progress, not the credits.
+func _issue_cancel_train(self_id: int, targets: Array, index: int) -> void:
+	for t in targets:
+		var e: Entity = entities.get(t)
+		if e == null or e.production == null:
+			continue
+		var item: Dictionary = e.production.cancel(index)
+		if item.is_empty():
+			continue
+		e.production.remove_at(index)
+		add_credits(e.faction_id, item.get("paid_cost", 0.0))
+		events.log.emit("TRAIN cancelled: " + String(item.get("unit", "")) + " on " + str(e.id))
 
 func _issue_set_rally(self_id: int, targets: Array, position: Vector2) -> void:
 	for t in targets:
