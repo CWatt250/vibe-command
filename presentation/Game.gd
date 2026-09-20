@@ -18,6 +18,8 @@ var fog_renderer: FogRenderer
 var minimap_layer: CanvasLayer
 var minimap: MiniMapRenderer
 var hud: HUD
+var placement_ghost: PlacementGhost
+var pause_menu: PauseMenu
 
 const PLAYER_FACTION := "VC"
 
@@ -26,6 +28,7 @@ var _world: Vector2 = Vector2(2000, 2000)
 var _frame: int = 0
 var _capture_at: int = -1
 var _capture_out: String = ""
+var _debug_pause: bool = false
 
 func _ready() -> void:
 	# Load content
@@ -77,6 +80,14 @@ func _ready() -> void:
 	selection_input.orders_issued.connect(_on_orders)
 	selection_input.selection_changed.connect(_on_selection)
 
+	# Structure placement: HUD build grid asks, the ghost previews + issues BUILD.
+	placement_ghost = PlacementGhost.new(sim, rts_cam, player_faction)
+	add_child(placement_ghost)
+	hud.build_grid.place_requested.connect(placement_ghost.begin)
+
+	pause_menu = PauseMenu.new()
+	add_child(pause_menu)
+
 	# Spawn starter forces: 12 Vibe Coder infantry + a Garage Core (Vibe base)
 	_spawn_starter_force()
 
@@ -85,9 +96,12 @@ func _ready() -> void:
 	# Optional screenshot capture: godot -- --capture=/abs/out.png [--frame=N]
 	# Debug selection for HUD captures: --select=<def_id> [--train=<unit_id>] selects the
 	# first entity with that def and (optionally) queues that unit on it twice.
+	# --place=<structure_def_id> starts the placement ghost with the cursor warped to centre.
 	var args := OS.get_cmdline_user_args()
 	var debug_select := ""
 	var debug_train := ""
+	var debug_place := ""
+	var debug_pause := false
 	for a in args:
 		if a.begins_with("--capture="):
 			_capture_out = a.trim_prefix("--capture=")
@@ -97,6 +111,10 @@ func _ready() -> void:
 			debug_select = a.trim_prefix("--select=")
 		elif a.begins_with("--train="):
 			debug_train = a.trim_prefix("--train=")
+		elif a.begins_with("--place="):
+			debug_place = a.trim_prefix("--place=")
+		elif a == "--pause":
+			debug_pause = true
 	if _capture_at < 0:
 		_capture_at = 180
 	if debug_select != "":
@@ -107,6 +125,10 @@ func _ready() -> void:
 					var order := {"type": "TRAIN", "entityIds": [e.id], "unitDefId": debug_train}
 					sim.run_commands(0, [order, order])
 				break
+	if debug_place != "":
+		Input.warp_mouse(get_viewport_rect().size * 0.5)
+		placement_ghost.begin(debug_place)
+	_debug_pause = debug_pause  # applied at capture time; pausing now would stall _process
 
 func _build_map(grid: NavGrid) -> void:
 	sim.grid_map = grid
@@ -175,6 +197,8 @@ func _process(delta: float) -> void:
 		_frame += 1
 	if _capture_at > 0 and _frame >= _capture_at:
 		_capture_at = -1  # prevent re-entry
+		if _debug_pause:
+			pause_menu.toggle()  # menu draws on the frame _capture_now awaits
 		_capture_now()
 
 func _capture_now() -> void:
