@@ -41,30 +41,56 @@ func _draw() -> void:
 		elif e.kind == "unit":
 			_draw_unit(e, cam_rect)
 
+# --- Readability (visual-roadmap V1) ---
+# Unit sprite size (max dimension, world px) by armor class. Infantry stays small so
+# armies read as armies; vehicles and air get the room they need to be identified.
+const UNIT_PX := {
+	"Infantry": 30.0, "HeavyInfantry": 36.0,
+	"Light": 46.0, "Medium": 56.0, "Heavy": 68.0,
+	"AirLight": 40.0, "AirHeavy": 64.0,
+}
+const UNIT_PX_DEFAULT := 46.0
+const STRUCTURE_FILL := 0.94          # of the footprint rect; leaves a sliver of pad visible
+const SHADOW_GROUND := Color(0, 0, 0, 0.42)
+const SHADOW_AIR := Color(0, 0, 0, 0.22)
+const SEL_COLOR := Color(0.0, 1.0, 0.4)
+
 func _draw_structure(e: Entity) -> void:
 	var col: Color = FC_COLORS.get(e.faction_id, Color.WHITE)
+	var fp := _footprint_rect(e)
+	var center := fp.get_center()
+	# Contact shadow: the footprint, nudged toward lower-right (sun upper-left).
+	draw_rect(Rect2(fp.position + Vector2(3, 4), fp.size), SHADOW_GROUND)
 	var tex := SpriteAtlas.texture(e.def_id)
 	if tex != null:
-		# faction-tint the structure sprite, draw centered on footprint
-		var box := _scaled_sprite_box(e, tex, 60.0)
+		var region := SpriteAtlas.region(e.def_id)
+		var box := _fit_sprite_box(center, region.size, fp.size * STRUCTURE_FILL)
 		var tint := Color.WHITE.lerp(col, 0.22)
-		draw_texture_rect(tex, box, false, tint)
+		if e.construction != null and not e.construction.is_built():
+			tint.a = 0.45 + 0.55 * e.construction.fraction()   # build site fades in
+		draw_texture_rect_region(tex, box, region, tint)
 	else:
-		var half := 28.0
-		draw_rect(Rect2(e.position.x - half, e.position.y - half, half * 2.0, half * 2.0), col.darkened(0.45))
-		draw_rect(Rect2(e.position.x - half, e.position.y - half, half * 2.0, half * 2.0), col, false, 3.0)
-	if e.health != null:
-		_draw_health(e.position, e.health.current / e.health.max_health)
+		draw_rect(fp, col.darkened(0.45))
+		draw_rect(fp, col, false, 3.0)
+	if _show_health(e):
+		_draw_health(Vector2(center.x, fp.position.y - 4.0), e.health.current / e.health.max_health, fp.size.x * 0.8)
 	if sim.selected_ids.has(e.id):
-		var half := 28.0
-		draw_arc(e.position, half + 6.0, 0, TAU, 24, Color(0.0, 1.0, 0.4), 2.0)
+		_draw_brackets(fp.grow(3.0))
 
 func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 	var col: Color = FC_COLORS.get(e.faction_id, Color.WHITE)
+	var size_px: float = UNIT_PX.get(e.def_data.get("armorClass", ""), UNIT_PX_DEFAULT)
+	# Contact shadow: tight and dark on the ground, wide and faint for airborne (reads as hover).
+	var shadow_off := Vector2(6, 10) if e.is_airborne else Vector2(2, 3)
+	var shadow_col := SHADOW_AIR if e.is_airborne else SHADOW_GROUND
+	draw_set_transform(e.position + shadow_off, 0.0, Vector2(1.0, 0.55))
+	draw_circle(Vector2.ZERO, size_px * 0.42, shadow_col)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	var tex := SpriteAtlas.texture(e.def_id)
 	if tex != null:
 		var angle := _facing_angle(e)
-		var box := _scaled_sprite_box(e, tex, 42.0)
+		var region := SpriteAtlas.region(e.def_id)
+		var box := _scaled_sprite_box(e, region.size, size_px)
 		var draw_pos := box.get_center()
 		var tint := Color.WHITE
 		# Character/vehicle tint: faction hue washed over a mostly-neutral sprite.
@@ -72,20 +98,58 @@ func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 			tint = Color(1.0, 1.0, 1.0).lerp(col, 0.55)
 		# Rotation: sprites face up (-Y). Godot rotation 0 = up; angle from facing.
 		draw_set_transform(draw_pos, angle, Vector2.ONE)
-		draw_texture_rect(tex, Rect2(-box.size * 0.5, box.size), false, tint)
+		draw_texture_rect_region(tex, Rect2(-box.size * 0.5, box.size), region, tint)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
-		draw_circle(e.position, 12.0, col)
-		draw_arc(e.position, 12.0, 0, TAU, 24, col.darkened(0.4), 1.5)
-	if e.health != null:
-		_draw_health(e.position, e.health.current / e.health.max_health)
+		draw_circle(e.position, size_px * 0.3, col)
+		draw_arc(e.position, size_px * 0.3, 0, TAU, 24, col.darkened(0.4), 1.5)
+	if _show_health(e):
+		_draw_health(Vector2(e.position.x, e.position.y - size_px * 0.5 - 5.0), e.health.current / e.health.max_health, size_px * 0.8)
 	if sim.selected_ids.has(e.id):
-		draw_arc(e.position, 16.0, 0, TAU, 24, Color(0.0, 1.0, 0.4), 2.0)
+		draw_arc(e.position, size_px * 0.55, 0, TAU, 32, SEL_COLOR, 2.0)
 
-## World-space rect to draw a sprite at its entity position, scaled so the max
-## dimension is `target_px` world units (keeps unit readable at cell=20).
-func _scaled_sprite_box(e: Entity, tex: Texture2D, target_px: float) -> Rect2:
-	var sz := tex.get_size()
+## Health bars are noise at full HP. Show when selected, hurt, or Alt is held.
+func _show_health(e: Entity) -> bool:
+	if e.health == null:
+		return false
+	if sim.selected_ids.has(e.id) or Input.is_key_pressed(KEY_ALT):
+		return true
+	return e.health.current < e.health.max_health
+
+## The structure's blocked cells in world space — same anchor-cell math as the sim
+## (Simulation._block_footprint / PlacementGhost), so sprites sit on what they block.
+## Even footprints are offset half a cell from e.position; this is where they really are.
+func _footprint_rect(e: Entity) -> Rect2:
+	var fp: Array = e.def_data.get("footprint", [1, 1])
+	var w: int = int(fp[0]) if fp.size() > 0 else 1
+	var h: int = int(fp[1]) if fp.size() > 1 else w
+	var c: Vector2i = sim.grid_map.world_to_cell(e.position.x, e.position.y)
+	return Rect2(Vector2(c.x - w / 2, c.y - h / 2) * NavGrid.CELL, Vector2(w, h) * NavGrid.CELL)
+
+## Largest rect with source aspect `sz` that fits inside `bounds`, centred on `center`.
+func _fit_sprite_box(center: Vector2, sz: Vector2, bounds: Vector2) -> Rect2:
+	var scale := 1.0
+	if sz.x > 0 and sz.y > 0:
+		scale = minf(bounds.x / sz.x, bounds.y / sz.y)
+	var size := sz * scale
+	return Rect2(center - size * 0.5, size)
+
+## C&C-style corner brackets around a selected structure.
+func _draw_brackets(r: Rect2) -> void:
+	var len := minf(r.size.x, r.size.y) * 0.25
+	var corners := [
+		[r.position, Vector2(1, 0), Vector2(0, 1)],
+		[Vector2(r.end.x, r.position.y), Vector2(-1, 0), Vector2(0, 1)],
+		[Vector2(r.position.x, r.end.y), Vector2(1, 0), Vector2(0, -1)],
+		[r.end, Vector2(-1, 0), Vector2(0, -1)],
+	]
+	for c in corners:
+		draw_line(c[0], c[0] + c[1] * len, SEL_COLOR, 2.0)
+		draw_line(c[0], c[0] + c[2] * len, SEL_COLOR, 2.0)
+
+## World-space rect to draw a sprite of source size `sz` at its entity position,
+## scaled so the max dimension is `target_px` world units.
+func _scaled_sprite_box(e: Entity, sz: Vector2, target_px: float) -> Rect2:
 	var scale := 1.0
 	if sz.x > 0 and sz.y > 0:
 		scale = target_px / max(sz.x, sz.y)
@@ -100,12 +164,11 @@ func _facing_angle(e: Entity) -> float:
 		return e.movement.facing.angle() + PI * 0.5
 	return 0.0
 
-func _draw_health(pos: Vector2, pct: float) -> void:
-	var w := 24.0
-	var y := pos.y - 20.0
-	draw_rect(Rect2(pos.x - w * 0.5, y, w, 4.0), Color(0.1, 0.1, 0.1))
+## Bar centred on pos.x with its top edge at pos.y; width scales with the entity.
+func _draw_health(pos: Vector2, pct: float, w: float = 24.0) -> void:
+	draw_rect(Rect2(pos.x - w * 0.5, pos.y, w, 4.0), Color(0.1, 0.1, 0.1))
 	var col := Color(0.2, 0.9, 0.3) if pct > 0.5 else (Color(0.9, 0.8, 0.2) if pct > 0.25 else Color(0.9, 0.2, 0.2))
-	draw_rect(Rect2(pos.x - w * 0.5, y, w * pct, 4.0), col)
+	draw_rect(Rect2(pos.x - w * 0.5, pos.y, w * pct, 4.0), col)
 
 func _facing_for(e: Entity) -> Vector2:
 	if e.movement != null and not e.movement.facing.is_zero_approx():

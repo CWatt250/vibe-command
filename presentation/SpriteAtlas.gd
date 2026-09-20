@@ -7,6 +7,7 @@ const MANIFEST_PATH := "res://assets/sprites/manifest.json"
 const SPRITE_DIR := "res://assets/sprites"
 
 static var _textures: Dictionary = {}
+static var _regions: Dictionary = {}    # id -> Rect2 of opaque pixels (canvases carry ~30% margin)
 static var _loaded := false
 
 static func _load() -> void:
@@ -25,6 +26,11 @@ static func _load() -> void:
 		var tex := load(SPRITE_DIR + "/" + String(data[key]))
 		if tex is Texture2D:
 			_textures[key] = tex
+			var img: Image = tex.get_image()
+			var used: Rect2i = img.get_used_rect() if img != null else Rect2i()
+			if used.size.x <= 0 or used.size.y <= 0:
+				used = Rect2i(Vector2i.ZERO, Vector2i(tex.get_size()))
+			_regions[key] = Rect2(used)
 
 static func has(id: String) -> bool:
 	_load()
@@ -33,6 +39,12 @@ static func has(id: String) -> bool:
 static func texture(id: String) -> Texture2D:
 	_load()
 	return _textures.get(id)
+
+## Opaque region of the sprite in texture pixels — draw this, not the full canvas,
+## so size targets are the art's size and not the art plus its padding.
+static func region(id: String) -> Rect2:
+	_load()
+	return _regions.get(id, Rect2(Vector2.ZERO, px_size(id)))
 
 ## Pixel size of a given content-id sprite (or Vector2.ZERO if missing).
 static func px_size(id: String) -> Vector2:

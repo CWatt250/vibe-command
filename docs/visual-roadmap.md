@@ -16,12 +16,14 @@ the assets do; putting nicer sprites into a flat presentation layer wastes them.
 
 ## Passes, in order
 
-### V1 — Readability quick wins (hours)
-- Hide health bars at full HP; show when selected, damaged (<100%), or Alt held. `EntityRenderer._draw_health`.
-- Contact shadow: dark ellipse at ~40% alpha under every unit/structure, offset +2/+3 px.
-- Selection ring per footprint size for structures (today it's a fixed 34px arc regardless of 1×1 vs 3×3).
-- Default camera zoom and sprite scale pass: infantry 28–36 px, vehicles 45–70, structures 90–180.
-  Bump `_scaled_sprite_box` targets and `RTSCamera` default zoom together; re-shoot `docs/screenshot_*.png`.
+### V1 — Readability quick wins — DONE 2026-09-20 (`docs/screenshot_v1*.png`)
+- Health bars only when selected, hurt, or Alt held (`EntityRenderer._show_health`).
+- Contact shadows: footprint-shaped under structures; ellipse under units, wider/fainter for airborne.
+- Structures draw to their real footprint rect (`_footprint_rect`, same anchor-cell math as the sim), so
+  even footprints no longer sit half a cell off their blocked cells. Build sites fade in with progress.
+- Unit size by armor class (`UNIT_PX`: Infantry 30 … Heavy 68, AirHeavy 64); health-bar width and
+  selection ring scale with it. C&C corner brackets on selected structures.
+- Camera zoom left alone — the size table did the work.
 
 ### V2 — Fog of war (half a day)
 - `FogRenderer` currently draws per-cell rects → staircase edges. Render the fog grid into an `Image`
