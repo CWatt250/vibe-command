@@ -129,6 +129,28 @@ Qwen-Image-2.1 is here; use it where consistency doesn't matter and volume does:
 - A real font (pixel-military or Blizzard-style serif for WC feel); the default Godot font screams
   prototype.
 
+## Step 0 result — Pipeline B on the Garage Core (2026-09-20)
+
+Colton's call: try the AI pipeline on a structure first (one facing, so the "AI can't hold 16
+facings" objection doesn't apply). Result: **it works, first try.**
+
+- Four candidates from Qwen-Image-2.1, 22 steps, 1024², ~80 s each warm (105 s incl. cold load), prompt
+  in `tools/`-adjacent scratch (3/4 view, plywood/OSB, open roll-up door with monitors, battery
+  packs, PVC antenna with cyan LED, hard upper-left sun, flat magenta background). All four are
+  usable; `docs/concepts/garage_core_qwen_*.png` (raw) and `garage_core_sprite_*.png` (keyed).
+- `tools/ai_sprite_prep.py` keys the magenta by hue ratio (so the near-black baked shadow goes too),
+  despills edges, crops, resizes to 256 wide. `#101` shipped as `assets/sprites/VC-B01_hq_ai.png`.
+- Manifest entries can now be `{"file", "scale", "tint"}`: the Garage Core draws at 1.3× its pad
+  width (C&C buildings overhang their footprint) with no faction wash (the LEDs carry the colour).
+  `SpriteAtlas.scale()/tint()`, `EntityRenderer._draw_structure` bottom-anchors 3/4 art on the pad.
+- In-game: `docs/screenshot_poc_garage_selected.png`. Portrait and build cameo come from the same
+  sprite for free.
+
+What it tells us: **structures can go through Pipeline B wholesale** — 40 of them, one prompt
+template with the def's `displayName` + `function` + faction language, ~1 hour of GPU. Units still
+need facings → Pipeline A, *but* the AI renders are the concept sheets the 3D kitbash should match.
+Next: batch all VC structures with a shared prompt prefix so they look like one faction, then FC.
+
 ## Order of work
 
 | # | Step | Output | Effort |

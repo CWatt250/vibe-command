@@ -554,8 +554,16 @@ M = {
     "SRV": "SRV_harvester", "VC-SRV": "VC-SRV_harvester", "FC-SRV": "FC-SRV_harvester",
 }
 def write_manifest():
-    with open(os.path.join(OUT, "manifest.json"), "w") as f:
-        json.dump({k: (v + ".png") for k, v in M.items()}, f, indent=2)
+    # Preserve dict entries (AI / pre-rendered sprites with scale/tint options,
+    # see tools/ai_sprite_prep.py) so regenerating the flat set doesn't revert them.
+    path = os.path.join(OUT, "manifest.json")
+    keep = {}
+    if os.path.exists(path):
+        keep = {k: v for k, v in json.load(open(path)).items() if isinstance(v, dict)}
+    out = {k: (v + ".png") for k, v in M.items()}
+    out.update(keep)
+    with open(path, "w") as f:
+        json.dump(out, f, indent=2)
     print("Total sprite files:", len([x for x in os.listdir(OUT) if x.endswith(".png")]))
     print("Manifest entries:", len(M))
 

@@ -67,8 +67,12 @@ func _draw_structure(e: Entity) -> void:
 	var tex := SpriteAtlas.texture(e.def_id)
 	if tex != null:
 		var region := SpriteAtlas.region(e.def_id)
-		var box := _fit_sprite_box(center, region.size, fp.size * STRUCTURE_FILL)
-		var tint := Color.WHITE.lerp(col, 0.22)
+		# Width fits the footprint; height follows the art. A 3/4-view building stands on
+		# its pad and rises above it, a top-down one just fills it (aspect ≈ 1).
+		var w: float = fp.size.x * STRUCTURE_FILL * SpriteAtlas.scale(e.def_id)
+		var h: float = w * region.size.y / maxf(region.size.x, 1.0)
+		var box := Rect2(Vector2(center.x - w * 0.5, fp.end.y - fp.size.y * (1.0 - STRUCTURE_FILL) * 0.5 - h), Vector2(w, h))
+		var tint := Color.WHITE.lerp(col, SpriteAtlas.tint(e.def_id, 0.22))
 		if e.construction != null and not e.construction.is_built():
 			tint.a = 0.45 + 0.55 * e.construction.fraction()   # build site fades in
 		draw_texture_rect_region(tex, box, region, tint)
@@ -132,14 +136,6 @@ func _footprint_rect(e: Entity) -> Rect2:
 	var h: int = int(fp[1]) if fp.size() > 1 else w
 	var c: Vector2i = sim.grid_map.world_to_cell(e.position.x, e.position.y)
 	return Rect2(Vector2(c.x - w / 2, c.y - h / 2) * NavGrid.CELL, Vector2(w, h) * NavGrid.CELL)
-
-## Largest rect with source aspect `sz` that fits inside `bounds`, centred on `center`.
-func _fit_sprite_box(center: Vector2, sz: Vector2, bounds: Vector2) -> Rect2:
-	var scale := 1.0
-	if sz.x > 0 and sz.y > 0:
-		scale = minf(bounds.x / sz.x, bounds.y / sz.y)
-	var size := sz * scale
-	return Rect2(center - size * 0.5, size)
 
 ## C&C-style corner brackets around a selected structure.
 func _draw_brackets(r: Rect2) -> void:
