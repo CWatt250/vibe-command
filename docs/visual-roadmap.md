@@ -32,12 +32,14 @@ the assets do; putting nicer sprites into a flat presentation layer wastes them.
 - `MiniMapRenderer` draws a one-texel-per-cell terrain silhouette from `NavGrid.land_types` (open /
   street / blocked incl. structure pads) with `FogRenderer.texture` over it — one fog authority.
 
-### V3 — Terrain (1–2 days)
-- Replace `MapRenderer`'s three flat colours with a `TileMapLayer` and a small CC0 tileset (Kenney
-  top-down or roguelike-city). Base tiles: dirt, cracked concrete, asphalt. Roads from
-  `NavGrid.land_types == 1`. Darker "pad" tiles under structure footprints.
-- Prop scatter (rocks, scrap, fencing, tire marks) from a seeded RNG so screenshots are reproducible.
-- Minimap draws the terrain silhouette; faction dots become small structure rectangles.
+### V3 — Terrain — DONE 2026-09-20 (`docs/screenshot_v3_terrain.png`)
+- Procedural tile set via `tools/generate_terrain.py` → `assets/terrain/` (no external tileset; same
+  pipeline as the sprites). 4 dirt variants, auto-tiled roads (h/v/x), concrete pad, 6 props.
+- `MapRenderer` draws tiles per visible cell (nearest filter), dirt variant by cell hash, pad wherever
+  the grid is blocked (structures and rubble alike), props from a fixed-seed scatter on open cells.
+  Falls back to the old flat colours if the tile set is missing.
+- Roads are now painted in `Game._build_map` (land type 1 was never set before).
+- Minimap terrain silhouette landed in V2. Structure rectangles instead of dots: still open.
 
 ### V4 — Rendering framework (1–2 days)
 - `CanvasModulate` sun tint (warm upper-left) + per-sprite shadow direction matching.

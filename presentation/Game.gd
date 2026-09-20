@@ -143,6 +143,18 @@ func _build_map(grid: NavGrid) -> void:
 	]
 	for o in obstacles:
 		grid.block_rect(o.x, o.y, 2, 2)
+	# Roads (land type 1, purely visual — passability is unchanged). One east-west
+	# artery south of both bases, two north-south feeders; painted before structures
+	# so pads win where they overlap.
+	_paint_road(grid, 0, 33, 50, 1)
+	_paint_road(grid, 10, 0, 1, 50)
+	_paint_road(grid, 38, 0, 1, 34)
+
+func _paint_road(grid: NavGrid, cx: int, cy: int, w: int, h: int) -> void:
+	for y in range(cy, cy + h):
+		for x in range(cx, cx + w):
+			if grid.in_bounds(x, y) and grid.land_types[y][x] == 0:
+				grid.land_types[y][x] = 1
 
 func _spawn_starter_force() -> void:
 	sim.add_player("VC")

@@ -1,0 +1,16 @@
+{
+ "bush": "bush.png",
+ "dirt_0": "dirt_0.png",
+ "dirt_1": "dirt_1.png",
+ "dirt_2": "dirt_2.png",
+ "dirt_3": "dirt_3.png",
+ "pad": "pad.png",
+ "road_h": "road_h.png",
+ "road_v": "road_v.png",
+ "road_x": "road_x.png",
+ "rock_0": "rock_0.png",
+ "rock_1": "rock_1.png",
+ "scrap_0": "scrap_0.png",
+ "scrap_1": "scrap_1.png",
+ "tiremarks": "tiremarks.png"
+}
