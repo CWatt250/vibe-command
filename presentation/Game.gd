@@ -83,14 +83,30 @@ func _ready() -> void:
 	events.game_tick.connect(_on_game_tick)
 
 	# Optional screenshot capture: godot -- --capture=/abs/out.png [--frame=N]
+	# Debug selection for HUD captures: --select=<def_id> [--train=<unit_id>] selects the
+	# first entity with that def and (optionally) queues that unit on it twice.
 	var args := OS.get_cmdline_user_args()
+	var debug_select := ""
+	var debug_train := ""
 	for a in args:
 		if a.begins_with("--capture="):
 			_capture_out = a.trim_prefix("--capture=")
 		elif a.begins_with("--frame="):
 			_capture_at = int(a.trim_prefix("--frame="))
+		elif a.begins_with("--select="):
+			debug_select = a.trim_prefix("--select=")
+		elif a.begins_with("--train="):
+			debug_train = a.trim_prefix("--train=")
 	if _capture_at < 0:
 		_capture_at = 180
+	if debug_select != "":
+		for e in sim.entities.values():
+			if e.def_id == debug_select:
+				_on_selection([e.id])
+				if debug_train != "":
+					var order := {"type": "TRAIN", "entityIds": [e.id], "unitDefId": debug_train}
+					sim.run_commands(0, [order, order])
+				break
 
 func _build_map(grid: NavGrid) -> void:
 	sim.grid_map = grid
@@ -114,6 +130,7 @@ func _spawn_starter_force() -> void:
 	sim.spawn_structure("VC-B01", "VC", Vector2(24, 24) * NavGrid.CELL)
 	sim.spawn_structure("VC-B02", "VC", Vector2(21, 27) * NavGrid.CELL)
 	sim.spawn_structure("VC-B03", "VC", Vector2(27, 27) * NavGrid.CELL)
+	sim.spawn_structure("VC-B07", "VC", Vector2(24, 17) * NavGrid.CELL)  # Maker Space: trains U01-U03
 
 	# Garage roster showcase: one of every Vibe Coder unit rings the HQ.
 	var roster: Array = ["VC-U02", "VC-U03", "VC-U04", "VC-U05", "VC-U06", "VC-U07",

@@ -10,6 +10,8 @@ var events: GameEvents
 var faction: String
 
 var resource_bar: ResourceBar
+var queue_panel: ProductionQueuePanel
+var build_grid: BuildGrid
 var _selection_label: Label
 
 func _init(simulation: Simulation, ev: GameEvents, player_faction: String) -> void:
@@ -41,10 +43,17 @@ func _ready() -> void:
 	add_child(bottom_left)
 	var panel := PanelContainer.new()
 	bottom_left.add_child(panel)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 6)
+	panel.add_child(column)
 	_selection_label = Label.new()
 	_selection_label.custom_minimum_size = Vector2(220, 0)
 	_selection_label.text = "Nothing selected"
-	panel.add_child(_selection_label)
+	column.add_child(_selection_label)
+	queue_panel = ProductionQueuePanel.new(sim, events, faction)
+	column.add_child(queue_panel)
+	build_grid = BuildGrid.new(sim, events, faction)
+	column.add_child(build_grid)
 
 	events.entity_selected.connect(_on_entity_selected)
 	events.game_tick.connect(_on_game_tick)
@@ -74,6 +83,7 @@ func _refresh_selection(ids: Array) -> void:
 		line += "\nBuilding %d%%" % int(e.construction.fraction() * 100.0)
 	elif e.production != null and e.production.queue_size() > 0:
 		var head: Dictionary = e.production.peek_first()
+		var unit_name: String = sim.registry.get_unit(head.get("unit", "")).get("displayName", head.get("unit", "?"))
 		line += "\nTraining %s %d%% (+%d queued)" % [
-			head.get("unit", ""), int(e.production.progress() * 100.0), e.production.queue_size() - 1]
+			unit_name, int(e.production.progress() * 100.0), e.production.queue_size() - 1]
 	_selection_label.text = line

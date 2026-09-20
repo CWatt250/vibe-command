@@ -72,9 +72,9 @@ Code-built (no .tscn), matching the rest of `presentation/`:
 ui/
   HUD.gd                  DONE  CanvasLayer(layer=30). Resources top-left, selection info bottom-left.
   ResourceBar.gd          DONE  Columns from factions.json resourceIds (+command for FC); reads faction_status().
-  BuildGrid.gd                  4×N grid. Mode A (structure selected w/ trainsUnits): TRAIN buttons.
+  BuildGrid.gd            DONE  4×N grid. Mode A (structure selected w/ trainsUnits): TRAIN buttons, greyed if unaffordable.
                                 Mode B (builder/HQ selected): BUILD buttons → enters placement mode.
-  ProductionQueuePanel.gd       Observer pattern from open-rts; elements cancel via CANCEL_TRAIN.
+  ProductionQueuePanel.gd DONE  Observer pattern from open-rts; head shows live %, click cancels via CANCEL_TRAIN.
   PlacementGhost.gd             Node2D in world space; footprint rect at cursor cell; can_place() colour.
   PauseMenu.gd                  Port of open-rts Menu.gd.
 ```
@@ -85,7 +85,8 @@ ui/
 
 1. ~~Sim gaps 1–4~~ DONE — `tests/test_phase7.gd`.
 2. ~~`HUD` skeleton + `ResourceBar`~~ DONE — `docs/screenshot_hud.png`.
-3. `BuildGrid` TRAIN mode + `ProductionQueuePanel`.
+3. ~~`BuildGrid` TRAIN mode + `ProductionQueuePanel`~~ DONE — `docs/screenshot_hud_build.png`.
+   Debug capture args for HUD screenshots: `-- --capture=<png> --frame=N --select=<def_id> [--train=<unit_id>]`.
 4. `BuildGrid` BUILD mode + `PlacementGhost`.
 5. `PauseMenu`.
 
