@@ -68,6 +68,7 @@ func _ready() -> void:
 	minimap_layer.layer = 20
 	add_child(minimap_layer)
 	minimap = MiniMapRenderer.new(sim, sim.fog_sys, player_faction, rts_cam)
+	minimap.fog_texture = fog_renderer.texture
 	minimap_layer.add_child(minimap)
 
 	# HUD shell (Phase 7): resources top-left, selection info bottom-right.

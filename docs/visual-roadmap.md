@@ -25,12 +25,12 @@ the assets do; putting nicer sprites into a flat presentation layer wastes them.
   selection ring scale with it. C&C corner brackets on selected structures.
 - Camera zoom left alone — the size table did the work.
 
-### V2 — Fog of war (half a day)
-- `FogRenderer` currently draws per-cell rects → staircase edges. Render the fog grid into an `Image`
-  (one pixel per cell), upload as an `ImageTexture` with linear filtering, draw it scaled to the world.
-  Feathering comes free from the filter. Three states: visible = clear, explored = ~55% darkened +
-  desaturated, unexplored = near-black.
-- Minimap reads the same texture instead of re-deriving cells.
+### V2 — Fog of war — DONE 2026-09-20 (`docs/screenshot_v2_fog.png`)
+- `FogRenderer` packs the fog grid into a grid-sized `Image` → `ImageTexture`, drawn scaled with
+  `TEXTURE_FILTER_LINEAR`; the edge feathers across one cell. Re-packs only when a cell changes.
+  Explored = blue-black at 65% (cooled, not just darker); unexplored = black.
+- `MiniMapRenderer` draws a one-texel-per-cell terrain silhouette from `NavGrid.land_types` (open /
+  street / blocked incl. structure pads) with `FogRenderer.texture` over it — one fog authority.
 
 ### V3 — Terrain (1–2 days)
 - Replace `MapRenderer`'s three flat colours with a `TileMapLayer` and a small CC0 tileset (Kenney

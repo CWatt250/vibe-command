@@ -13,9 +13,12 @@ var rts_cam: RTSCamera
 const MAP_SIZE := 220.0
 const MARGIN := 16.0
 
-const COL_UNEXPLORED := Color(0.03, 0.035, 0.04)
-const COL_EXPLORED := Color(0.10, 0.12, 0.11)
-const COL_TERRAIN := Color(0.20, 0.22, 0.18)
+const COL_TERRAIN := Color(0.28, 0.30, 0.26)   # match MapRenderer so the silhouette is honest
+const COL_STREET := Color(0.36, 0.34, 0.28)
+const COL_BLOCK := Color(0.14, 0.15, 0.14)
+
+var fog_texture: Texture2D = null          # FogRenderer.texture, set by Game.gd
+var _terrain_tex: ImageTexture = null      # built lazily once the nav grid exists
 const COL_BORDER := Color(0.5, 0.5, 0.45)
 const COL_CAM_BOX := Color(0.9, 0.9, 0.8, 0.85)
 
@@ -32,6 +35,22 @@ func _init(_sim: Simulation, fog: FogOfWarSystem, faction: String, cam: RTSCamer
 	# Draw above everything (Control-free, plain Node2D in screen space).
 	z_index = 100
 
+## One texel per cell from NavGrid.land_types: open / street / blocked (incl. structure pads).
+func _build_terrain_texture(gw: int, gh: int) -> void:
+	if sim.grid_map == null or sim.grid_map.land_types.is_empty():
+		return
+	var img := Image.create_empty(gw, gh, false, Image.FORMAT_RGBA8)
+	for y in range(gh):
+		for x in range(gw):
+			var lt: int = sim.grid_map.land_types[y][x]
+			var col := COL_TERRAIN
+			if lt == 1:
+				col = COL_STREET
+			elif lt >= 2:
+				col = COL_BLOCK
+			img.set_pixel(x, y, col)
+	_terrain_tex = ImageTexture.create_from_image(img)
+
 func _draw() -> void:
 	if sim == null or fog_sys == null:
 		return
@@ -39,22 +58,19 @@ func _draw() -> void:
 	var origin := Vector2(vp.x - MAP_SIZE - MARGIN, vp.y - MAP_SIZE - MARGIN)
 	var rect := Rect2(origin, Vector2(MAP_SIZE, MAP_SIZE))
 
-	# Fog + terrain background (one pixel rect per cell).
+	# Terrain silhouette (built once from the nav grid's land types), then the shared
+	# fog texture over it — same authority as the world overlay.
 	var gw := fog_sys.grid_width()
 	var gh := fog_sys.grid_height()
 	var cell := fog_sys.cell_size()
-	var xscale := MAP_SIZE / (gw * cell)
-	var yscale := MAP_SIZE / (gh * cell)
-	var bytes := fog_sys.state_bytes(player_faction)
-	for y in range(gh):
-		for x in range(gw):
-			var st: int = bytes[y * gw + x]
-			var col := COL_TERRAIN
-			if st == 0:
-				col = COL_UNEXPLORED
-			elif st == 1:
-				col = COL_EXPLORED
-			draw_rect(Rect2(origin.x + x * xscale, origin.y + y * yscale, xscale + 0.5, yscale + 0.5), col)
+	if _terrain_tex == null:
+		_build_terrain_texture(gw, gh)
+	if _terrain_tex != null:
+		draw_texture_rect(_terrain_tex, rect, false)
+	else:
+		draw_rect(rect, COL_TERRAIN)
+	if fog_texture != null:
+		draw_texture_rect(fog_texture, rect, false)
 
 	# Border
 	draw_rect(rect, COL_BORDER, false, 2.0)
