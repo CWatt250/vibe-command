@@ -22,7 +22,7 @@ func _init(simulation: Simulation, ev: GameEvents, player_faction: String) -> vo
 	sim = simulation
 	events = ev
 	faction = player_faction
-	columns = 4
+	columns = 5
 	add_theme_constant_override("h_separation", 4)
 	add_theme_constant_override("v_separation", 4)
 
@@ -75,12 +75,22 @@ func _rebind(ids: Array) -> void:
 
 func _add_button(id: String, d: Dictionary, on_pressed: Callable) -> void:
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(100, 44)
+	b.custom_minimum_size = Vector2(64, 64)
 	b.focus_mode = Control.FOCUS_NONE
-	b.text = "%s\n$%d" % [d.get("displayName", id), int(d.get("costCredits", 0.0))]
+	# Sprite on top, cost underneath; the name lives in the tooltip.
+	var icon := UiTheme.icon_for(id)
+	if icon != null:
+		b.icon = icon
+		b.expand_icon = true
+		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+		b.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	b.text = "$" + UiTheme.money(d.get("costCredits", 0.0))
+	b.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.tooltip_text = "%s\n%s\nHP %d · %s · %.0fs" % [
 		d.get("displayName", id), d.get("role", d.get("function", d.get("desc", ""))),
 		int(d.get("maxHealth", 0)), d.get("armorClass", "?"), d.get("buildTimeSec", 0.0)]
+	UiTheme.style_button(b, faction)
 	b.pressed.connect(on_pressed)
 	add_child(b)
 	_buttons[id] = b

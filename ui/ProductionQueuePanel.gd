@@ -61,17 +61,26 @@ func _rebuild() -> void:
 	for i in range(e.production.queue_size()):
 		var item: Dictionary = e.production.queue[i]
 		var b := Button.new()
-		b.custom_minimum_size = Vector2(72, 44)
+		b.custom_minimum_size = Vector2(52, 52)
 		b.focus_mode = Control.FOCUS_NONE
+		var icon := UiTheme.icon_for(item.get("unit", ""))
+		if icon != null:
+			b.icon = icon
+			b.expand_icon = true
+			b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			b.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+			b.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		b.text = _label(item, e.production.progress() if i == 0 else 0.0)
-		b.tooltip_text = "Click to cancel (refunds $%d)" % int(item.get("paid_cost", 0.0))
+		b.alignment = HORIZONTAL_ALIGNMENT_CENTER
+		var unit_name: String = sim.registry.get_unit(item.get("unit", "")).get("displayName", "?")
+		b.tooltip_text = "%s — click to cancel (refunds $%d)" % [unit_name, int(item.get("paid_cost", 0.0))]
+		UiTheme.style_button(b, faction)
 		b.pressed.connect(_on_cancel.bind(i))
 		add_child(b)
 	show()
 
-func _label(item: Dictionary, progress: float) -> String:
-	var d: Dictionary = sim.registry.get_unit(item.get("unit", ""))
-	return "%s\n%d%%" % [d.get("displayName", item.get("unit", "?")), int(progress * 100.0)]
+func _label(_item: Dictionary, progress: float) -> String:
+	return "%d%%" % int(progress * 100.0)
 
 func _on_cancel(index: int) -> void:
 	if _producer_id < 0:

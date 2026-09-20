@@ -58,17 +58,23 @@ the assets do; putting nicer sprites into a flat presentation layer wastes them.
   wrecks from `wreckDefinitionId`.
 - Debug: `-- --attack` drops an FC squad inside the base's acquire radius; capture at frame 25–45.
 
-### V6 — Faction art language (generator work, 1–2 days)
-- VC "Garage": plywood armor panels, exposed battery packs, mismatched wheels, duct-tape stripes,
-  laptops strapped on, PVC antennas. Oversized silhouettes, big readable features.
-- FC: clean, matte, angular, amber lights. Same generator, different palette + part library.
-- TS / SG when their slices are playable.
+### V6 — Faction art language (generator work) — MOSTLY THERE, needs Colton's eye
+- The VC "Garage" language is already in `generate_sprites.py` (OSB / plywood / cardboard / duct tape /
+  zip ties / battery cells / LED helpers) and shows on screen. Refinement is taste, not a build.
+- **Gap that is a build:** these VC structures have no sprite in `assets/sprites/manifest.json` and
+  show as blank buttons in the build grid — VC-B09 Drone Farm, B10 Autonomy Lab, B12 Expansion Node,
+  D01 Camera Pole, D03 Drone Nest, D04 Smart Mine Node, D05 AT Launcher, D06 Counter-Drone Mast,
+  D07 Predictive Turret, D08 Rail Emplacement. Add them to the generator.
+- FC clean/matte/angular pass and TS / SG when their slices are playable.
 
-### V7 — HUD restyle (1 day)
-- The panels from the HUD phase are functionally done; this is a skin. Compact metal/glass frame,
-  icons instead of two-line text buttons, resource bar as `[ $1,524 ] [ POWER 10/10 ] [ COMPUTE 0/15 ]`
-  chips, command buttons (Move / Attack / Stop / Rally) next to the selection card.
-- Nothing selected → the bottom panel collapses to just the minimap.
+### V7 — HUD restyle — DONE 2026-09-20 (`docs/screenshot_hud_place.png`, `screenshot_hud_build.png`)
+- `ui/UiTheme.gd`: glass panels with a faction hairline, chip buttons, `icon_for(def_id)` (an
+  `AtlasTexture` over the sprite's opaque region), `money()` formatting.
+- Resource bar is chips: `[ $1,518 ] [ POWER 10 / 0 ] [ COMPUTE 0 / 15 ]`, red on deficit.
+- Selection card: portrait + name + HP/armor + state line; group selection shows counts by type.
+  STOP button (units only). Card collapses entirely when nothing is selected.
+- Build grid and queue are 5-wide sprite-icon buttons with the cost / % under the icon; names in
+  tooltips. Still open: Move / Attack / Rally buttons need a click-target mode in `SelectionInput`.
 
 ## Not doing
 - Normal-mapped 2D lighting, 3D, or a renderer rewrite. The C&C look is readability, not fidelity.
