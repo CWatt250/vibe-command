@@ -14,6 +14,7 @@ var rts_cam: RTSCamera
 var selection_input: SelectionInput
 var map_renderer: MapRenderer
 var entity_renderer: EntityRenderer
+var fx_renderer: FxRenderer
 var fog_renderer: FogRenderer
 var minimap_layer: CanvasLayer
 var minimap: MiniMapRenderer
@@ -56,6 +57,14 @@ func _ready() -> void:
 	add_child(map_renderer)
 	entity_renderer = EntityRenderer.new(sim, rts_cam)
 	add_child(entity_renderer)
+	# Effects over the entities; renderer reads hit flashes from it.
+	fx_renderer = FxRenderer.new(sim, events)
+	add_child(fx_renderer)
+	entity_renderer.fx = fx_renderer
+	# Sun: a warm tint on the world canvas only (CanvasLayers — HUD, minimap — are unaffected).
+	var sun := CanvasModulate.new()
+	sun.color = Color(1.0, 0.97, 0.91)
+	add_child(sun)
 
 	# Fog overlay (world space) + minimap (screen space). Both key off the player faction.
 	var player_faction := PLAYER_FACTION
@@ -98,6 +107,7 @@ func _ready() -> void:
 	# Debug selection for HUD captures: --select=<def_id> [--train=<unit_id>] selects the
 	# first entity with that def and (optionally) queues that unit on it twice.
 	# --place=<structure_def_id> starts the placement ghost with the cursor warped to centre.
+	# --attack spawns an enemy squad next to the base; --pause opens the pause menu at capture.
 	var args := OS.get_cmdline_user_args()
 	var debug_select := ""
 	var debug_train := ""
@@ -116,6 +126,10 @@ func _ready() -> void:
 			debug_place = a.trim_prefix("--place=")
 		elif a == "--pause":
 			debug_pause = true
+		elif a == "--attack":
+			# Drop an FC squad inside the VC roster's acquire radius so combat FX show.
+			for i in range(6):
+				sim.spawn_unit("FC-U01", "FC", Vector2(33, 22 + i) * NavGrid.CELL)
 	if _capture_at < 0:
 		_capture_at = 180
 	if debug_select != "":

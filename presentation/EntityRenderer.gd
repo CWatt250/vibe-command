@@ -7,6 +7,9 @@ var sim: Simulation
 var rts_cam: RTSCamera
 var fog_sys: FogOfWarSystem = null
 var player_faction: String = "VC"
+var fx: FxRenderer = null            # hit-flash source (set by Game.gd)
+
+const HIT_FLASH := Color(1.0, 1.0, 1.0, 0.65)
 
 const FC_COLORS := {
 	"VC": Color(0.0, 0.82, 1.0),       # Vibe Coder (00d1ff)
@@ -72,6 +75,8 @@ func _draw_structure(e: Entity) -> void:
 	else:
 		draw_rect(fp, col.darkened(0.45))
 		draw_rect(fp, col, false, 3.0)
+	if fx != null and fx.flash_left(e.id) > 0.0:
+		draw_rect(fp.grow(-fp.size.x * 0.06), HIT_FLASH)
 	if _show_health(e):
 		_draw_health(Vector2(center.x, fp.position.y - 4.0), e.health.current / e.health.max_health, fp.size.x * 0.8)
 	if sim.selected_ids.has(e.id):
@@ -103,6 +108,8 @@ func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 	else:
 		draw_circle(e.position, size_px * 0.3, col)
 		draw_arc(e.position, size_px * 0.3, 0, TAU, 24, col.darkened(0.4), 1.5)
+	if fx != null and fx.flash_left(e.id) > 0.0:
+		draw_circle(e.position, size_px * 0.45, HIT_FLASH)
 	if _show_health(e):
 		_draw_health(Vector2(e.position.x, e.position.y - size_px * 0.5 - 5.0), e.health.current / e.health.max_health, size_px * 0.8)
 	if sim.selected_ids.has(e.id):

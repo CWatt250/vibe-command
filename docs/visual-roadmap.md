@@ -41,18 +41,22 @@ the assets do; putting nicer sprites into a flat presentation layer wastes them.
 - Roads are now painted in `Game._build_map` (land type 1 was never set before).
 - Minimap terrain silhouette landed in V2. Structure rectangles instead of dots: still open.
 
-### V4 — Rendering framework (1–2 days)
-- `CanvasModulate` sun tint (warm upper-left) + per-sprite shadow direction matching.
-- Unit facing: rotate sprite to `movement` heading (already tracked); 8-direction snap reads better
-  than continuous for chunky sprites.
-- Emissive layer: a second `_draw` pass with `BLEND_ADD` for faction LEDs (cyan for VC, amber for FC),
-  generator flicker, screen glow. Data-driven from a per-def `emissive` sprite in the manifest.
-- Particles: dust behind moving vehicles, smoke from Generator Bank, hover shimmer under drones.
+### V4 — Rendering framework — DONE 2026-09-20 (with V5, `presentation/FxRenderer.gd`)
+- `CanvasModulate` warm sun tint on the world canvas (HUD/minimap layers unaffected).
+- Unit facing was already continuous from `movement.facing`; left as-is (8-dir snap is a taste call).
+- Faction LED pulse on every built structure (cyan VC / amber FC) — drawn, not a manifest sprite yet.
+  Per-def emissive sprites stay with the generator work in V6.
+- Particles: dust behind moving ground units, smoke from `PowerSource` structures. Plain dictionary
+  particles stepped in `_process`; no GPUParticles2D.
 
-### V5 — Combat feedback (1 day)
-- Muzzle flash sprite on `combat_occurred`; tracer line for guns, projectile sprite for rockets.
-- Hit flash: white modulate for 2 frames on the target; damage-state overlay below 50% HP.
-- Death: small explosion sprite sheet + debris that fades; wrecks if `wreckDefinitionId` is set.
+### V5 — Combat feedback — DONE 2026-09-20 (`docs/screenshot_v5_combat.png`)
+- `combat_occurred` → muzzle flash at the attacker, tracer to the target for non-projectile weapons,
+  four impact sparks, and a 0.1 s white hit flash the `EntityRenderer` overlays via `fx.flash_left()`.
+- `unit_died` (fires for structures too; `structure_destroyed` is declared but never emitted) →
+  expanding ring + flash + smoke + debris, scaled ×2.2 for structures.
+- Still open: projectile sprites for rocket/artillery weapons, damage-state overlay below 50%,
+  wrecks from `wreckDefinitionId`.
+- Debug: `-- --attack` drops an FC squad inside the base's acquire radius; capture at frame 25–45.
 
 ### V6 — Faction art language (generator work, 1–2 days)
 - VC "Garage": plywood armor panels, exposed battery packs, mismatched wheels, duct-tape stripes,
