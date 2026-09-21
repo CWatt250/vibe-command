@@ -24,7 +24,12 @@ func _draw() -> void:
 	if sim == null:
 		return
 	var cam_rect := _visible_world_rect()
-	for e in sim.entities.values():
+	# 3/4-view sprites overlap; draw back-to-front by ground position so a unit in
+	# front of a building covers it, not the other way round. Structures sort by the
+	# bottom of their footprint (where they touch the ground).
+	var ordered: Array = sim.entities.values()
+	ordered.sort_custom(func(a: Entity, b: Entity) -> bool: return _sort_y(a) < _sort_y(b))
+	for e in ordered:
 		if not e.alive:
 			continue   # garrisoned occupants are hidden; skip them
 		if e.position.x < cam_rect.position.x or e.position.x > cam_rect.end.x:
@@ -107,6 +112,11 @@ func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 			k += facings
 		var region := SpriteAtlas.facing_region(e.def_id, k)
 		var box := _scaled_sprite_box(e, region.size, size_px)
+		# Infantry walk bob: a 2-phase vertical hop while moving so a static mesh
+		# doesn't slide. Phase from the sim tick so it's deterministic per unit.
+		var armor: String = e.def_data.get("armorClass", "")
+		if (armor == "Infantry" or armor == "HeavyInfantry") and e.movement != null and e.movement.is_moving():
+			box.position.y -= 1.5 if ((sim.tick + e.id) / 4) % 2 == 0 else 0.0
 		draw_texture_rect_region(tex, box, region, Color.WHITE)
 	elif tex != null:
 		var angle := _facing_angle(e)
@@ -130,6 +140,11 @@ func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 		_draw_health(Vector2(e.position.x, e.position.y - size_px * 0.5 - 5.0), e.health.current / e.health.max_health, size_px * 0.8)
 	if sim.selected_ids.has(e.id):
 		draw_arc(e.position, size_px * 0.55, 0, TAU, 32, SEL_COLOR, 2.0)
+
+func _sort_y(e: Entity) -> float:
+	if e.kind == "structure":
+		return _footprint_rect(e).end.y
+	return e.position.y + (1000.0 if e.is_airborne else 0.0)   # air always on top
 
 ## Health bars are noise at full HP. Show when selected, hurt, or Alt is held.
 func _show_health(e: Entity) -> bool:

@@ -173,11 +173,32 @@ def kit_technical_kenney():
 GENERATED = os.path.expanduser("~/Dev/assets/generated3d")
 
 
-def kit_generated(uid, length=3.0, material="paint", yaw_deg=0.0):
-    """A Hunyuan3D-2 mesh from tools/image_to_3d.py: import, normalise so the longest
-    horizontal extent is `length`, sit it on z=0, give it one flat material (the
-    native nodes produce shape only, no texture)."""
+UNITS_JSON = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                          "content", "data", "units.json")
+# World size (largest extent, any axis) per armor class. Infantry stands ~2 units tall;
+# vehicles run ~3 long; heavies a bit more. Keeps every mesh inside the 3.4 ortho frame.
+FIT_BY_ARMOR = {"Infantry": 2.0, "HeavyInfantry": 2.3, "Light": 2.8, "Medium": 3.0,
+                "Heavy": 3.2, "AirLight": 2.4, "AirHeavy": 3.2}
+
+
+def fit_for(uid):
+    try:
+        import json
+        for d in json.load(open(UNITS_JSON))["units"]:
+            if d["id"] == uid:
+                return FIT_BY_ARMOR.get(d.get("armorClass", ""), 3.0)
+    except Exception:
+        pass
+    return 3.0
+
+
+def kit_generated(uid, length=None, material="paint", yaw_deg=0.0):
+    """A Hunyuan3D-2 mesh from tools/image_to_3d.py: import, normalise so the LARGEST
+    extent on any axis is `length` (default from the unit's armor class), sit it on
+    z=0, paint it from its portrait (or one flat material if that fails)."""
     from mathutils import Vector
+    if length is None:
+        length = fit_for(uid)
     root = bpy.data.objects.new(uid, None)
     bpy.context.scene.collection.objects.link(root)
     before = set(bpy.context.scene.objects)
@@ -188,7 +209,7 @@ def kit_generated(uid, length=3.0, material="paint", yaw_deg=0.0):
     mn = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
     mx = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
     ext = mx - mn
-    s = length / max(ext.x, ext.y, 1e-6)
+    s = length / max(ext.x, ext.y, ext.z, 1e-6)
     holder = bpy.data.objects.new(uid + "_mesh", None)
     bpy.context.scene.collection.objects.link(holder)
     holder.parent = root
@@ -221,26 +242,51 @@ def project_portrait(obj, image_path):
         img = bpy.data.images.load(image_path)
     except Exception:
         return False
+    import numpy as np
     w, h = img.size
     px = list(img.pixels)  # RGBA floats, bottom-up rows
     me = obj.data
-    view = Vector((-0.55, -1.0, 0.75)).normalized()      # from camera toward object
-    up = Vector((0, 0, 1))
-    right = view.cross(up).normalized()
-    up2 = right.cross(view).normalized()
-    coords = [obj.matrix_world @ v.co for v in me.vertices]
-    us = [c.dot(right) for c in coords]
-    vs = [c.dot(up2) for c in coords]
-    u0, u1, v0, v1 = min(us), max(us), min(vs), max(vs)
-    # Fit the mesh's projected bbox to the portrait's opaque bbox.
-    xs, ys = [], []
-    for y in range(h):
-        for x in range(w):
-            if px[(y * w + x) * 4 + 3] > 0.5:
-                xs.append(x); ys.append(y)
-    if not xs:
+    coords = np.array([obj.matrix_world @ v.co for v in me.vertices], dtype=np.float32)
+    alpha = np.array(px[3::4], dtype=np.float32).reshape(h, w) > 0.5
+    ys_, xs_ = np.nonzero(alpha)
+    if xs_.size == 0:
         return False
-    bx0, bx1, by0, by1 = min(xs), max(xs), min(ys), max(ys)
+    bx0, bx1, by0, by1 = int(xs_.min()), int(xs_.max()), int(ys_.min()), int(ys_.max())
+    # The generator's canonical frame vs the portrait's camera isn't documented, so
+    # search: which view direction makes the mesh's silhouette match the portrait's?
+    G = 48
+    pm = alpha[by0:by1 + 1, bx0:bx1 + 1]
+    pr = np.zeros((G, G), dtype=bool)
+    ph, pw = pm.shape
+    for gy in range(G):
+        for gx in range(G):
+            y0_, y1_ = gy * ph // G, max((gy + 1) * ph // G, gy * ph // G + 1)
+            x0_, x1_ = gx * pw // G, max((gx + 1) * pw // G, gx * pw // G + 1)
+            pr[gy, gx] = pm[y0_:y1_, x0_:x1_].any()
+    best, best_basis = -1.0, None
+    for az_deg in range(180 - 90, 180 + 91, 15):      # camera azimuth around the -Y front
+        for el_deg in (15, 25, 35, 45, 55):
+            az, el = math.radians(az_deg), math.radians(el_deg)
+            cam = np.array([math.cos(el) * math.sin(az), -math.cos(el) * math.cos(az), math.sin(el)], dtype=np.float32)
+            view = -cam / np.linalg.norm(cam)
+            up = np.array([0, 0, 1], dtype=np.float32)
+            right = np.cross(view, up); right /= np.linalg.norm(right)
+            up2 = np.cross(right, view)
+            u = coords @ right; v = coords @ up2
+            gu = ((u - u.min()) / max(u.max() - u.min(), 1e-6) * (G - 1)).astype(int)
+            gv = ((v - v.min()) / max(v.max() - v.min(), 1e-6) * (G - 1)).astype(int)
+            mm = np.zeros((G, G), dtype=bool)
+            mm[gv, gu] = True
+            # dilate once so sparse vertex hits become a silhouette
+            mm = mm | np.roll(mm, 1, 0) | np.roll(mm, -1, 0) | np.roll(mm, 1, 1) | np.roll(mm, -1, 1)
+            iou = float((mm & pr).sum()) / max(float((mm | pr).sum()), 1.0)
+            if iou > best:
+                best, best_basis = iou, (right, up2)
+    right, up2 = best_basis
+    print(f"PROJECT {obj.name}: best silhouette IoU {best:.2f}")
+    us = coords @ right
+    vs = coords @ up2
+    u0, u1, v0, v1 = float(us.min()), float(us.max()), float(vs.min()), float(vs.max())
     layer = me.color_attributes.new(name="portrait", type="BYTE_COLOR", domain="POINT")
     for i, v in enumerate(me.vertices):
         fx = (us[i] - u0) / max(u1 - u0, 1e-6)
@@ -255,8 +301,26 @@ def project_portrait(obj, image_path):
                 break
             x += (1 if cx > x else -1) if cx != x else 0
             y += (1 if cy > y else -1) if cy != y else 0
-        k = (y * w + x) * 4
-        layer.data[i].color = (px[k], px[k + 1], px[k + 2], 1.0)
+        # Average an opaque 5x5 window: per-vertex single pixels read as static on a
+        # dense mesh; a small box gives painted-looking colour at sprite size.
+        r = g = b = 0.0
+        n = 0
+        for dy in range(-2, 3):
+            for dx in range(-2, 3):
+                xx, yy = x + dx, y + dy
+                if 0 <= xx < w and 0 <= yy < h:
+                    kk = (yy * w + xx) * 4
+                    if px[kk + 3] > 0.5:
+                        r += px[kk]; g += px[kk + 1]; b += px[kk + 2]; n += 1
+        if n == 0:
+            kk = (y * w + x) * 4
+            r, g, b, n = px[kk], px[kk + 1], px[kk + 2], 1
+        # Averaging desaturates and the rig's key light lifts values; push saturation
+        # back up and value down so the sprite matches the portrait's punch.
+        import colorsys
+        hh, ss, vv = colorsys.rgb_to_hsv(r / n, g / n, b / n)
+        rr, gg, bb = colorsys.hsv_to_rgb(hh, min(ss * 1.45, 1.0), vv * 0.82)
+        layer.data[i].color = (rr, gg, bb, 1.0)
     return True
 
 
@@ -272,8 +336,10 @@ def vertex_color_material(uid):
     return m
 
 
+# Hand-built kits, kept for reference / props. Plain unit ids resolve to the generated
+# Hunyuan3D mesh (see main); these need the suffixed id to render.
 KITS = {
-    "VC-U04": kit_technical_kenney,
+    "VC-U04-kenney": kit_technical_kenney,
     "VC-U04-primitive": kit_technical,
     # Hunyuan3D meshes come out facing -Y (the portrait's "toward the viewer"); yaw 180.
     "VC-U04-hy3d": lambda: kit_generated("VC-U04", yaw_deg=180.0),
@@ -303,7 +369,7 @@ def build_scene(px, tilt_deg=40.0, ortho=3.4):
     sc.camera = co
     # Sun from the screen's upper-left; dark ambient so facets separate.
     sun = bpy.data.lights.new("sun", "SUN")
-    sun.energy = 7.0
+    sun.energy = 5.5
     sun.angle = math.radians(2.0)
     so = bpy.data.objects.new("sun", sun)
     sc.collection.objects.link(so)

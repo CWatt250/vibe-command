@@ -99,8 +99,24 @@
   "scale": 1.4,
   "tint": 0.0
  },
- "FC-SRV": "FC-SRV_harvester.png",
- "FC-U01": "characters/soldier.png",
+ "FC-SRV": {
+  "facings": 16,
+  "file": "rendered/FC-SRV.png",
+  "frame": [
+   109,
+   124
+  ],
+  "scale": 1.4
+ },
+ "FC-U01": {
+  "facings": 16,
+  "file": "rendered/FC-U01.png",
+  "frame": [
+   91,
+   103
+  ],
+  "scale": 1.4
+ },
  "FC-U02": "characters/hitman.png",
  "FC-U03": "characters/survivor.png",
  "FC-U04": "characters/FC-U04_fcInf.png",
@@ -443,27 +459,139 @@
   "scale": 1.4,
   "tint": 0.0
  },
- "VC-SRV": "VC-SRV_harvester.png",
- "VC-U01": "characters/manblue.png",
- "VC-U02": "VC-U02_scout.png",
- "VC-U03": "VC-U03_drone.png",
- "VC-U04": {
+ "VC-SRV": {
   "facings": 16,
-  "file": "rendered/VC-U04.png",
+  "file": "rendered/VC-SRV.png",
   "frame": [
-   116,
+   113,
    128
   ],
   "scale": 1.4
  },
- "VC-U05": "VC-U05_botdog.png",
- "VC-U06": "VC-U06_sentry.png",
- "VC-U07": "VC-U07_hackvan.png",
- "VC-U08": "VC-U08_crawler.png",
- "VC-U09": "VC-U09_swarmcarrier.png",
- "VC-U10": "VC-U10_atlas.png",
- "VC-U11": "VC-U11_hunterdrone.png",
- "VC-U12": "VC-U12_battletank.png",
- "VC-U13": "VC-U13_mothership.png",
- "VC-U14": "VC-U14_titanrig.png"
+ "VC-U01": {
+  "facings": 16,
+  "file": "rendered/VC-U01.png",
+  "frame": [
+   80,
+   122
+  ],
+  "scale": 1.4
+ },
+ "VC-U02": {
+  "facings": 16,
+  "file": "rendered/VC-U02.png",
+  "frame": [
+   107,
+   100
+  ],
+  "scale": 1.4
+ },
+ "VC-U03": {
+  "facings": 16,
+  "file": "rendered/VC-U03.png",
+  "frame": [
+   107,
+   114
+  ],
+  "scale": 1.4
+ },
+ "VC-U04": {
+  "facings": 16,
+  "file": "rendered/VC-U04.png",
+  "frame": [
+   109,
+   128
+  ],
+  "scale": 1.4
+ },
+ "VC-U05": {
+  "facings": 16,
+  "file": "rendered/VC-U05.png",
+  "frame": [
+   109,
+   128
+  ],
+  "scale": 1.4
+ },
+ "VC-U06": {
+  "facings": 16,
+  "file": "rendered/VC-U06.png",
+  "frame": [
+   128,
+   128
+  ],
+  "scale": 1.4
+ },
+ "VC-U07": {
+  "facings": 16,
+  "file": "rendered/VC-U07.png",
+  "frame": [
+   122,
+   128
+  ],
+  "scale": 1.4
+ },
+ "VC-U08": {
+  "facings": 16,
+  "file": "rendered/VC-U08.png",
+  "frame": [
+   128,
+   128
+  ],
+  "scale": 1.4
+ },
+ "VC-U09": {
+  "facings": 16,
+  "file": "rendered/VC-U09.png",
+  "frame": [
+   122,
+   128
+  ],
+  "scale": 1.4
+ },
+ "VC-U10": {
+  "facings": 16,
+  "file": "rendered/VC-U10.png",
+  "frame": [
+   98,
+   119
+  ],
+  "scale": 1.4
+ },
+ "VC-U11": {
+  "facings": 16,
+  "file": "rendered/VC-U11.png",
+  "frame": [
+   128,
+   116
+  ],
+  "scale": 1.4
+ },
+ "VC-U12": {
+  "facings": 16,
+  "file": "rendered/VC-U12.png",
+  "frame": [
+   128,
+   128
+  ],
+  "scale": 1.4
+ },
+ "VC-U13": {
+  "facings": 16,
+  "file": "rendered/VC-U13.png",
+  "frame": [
+   128,
+   128
+  ],
+  "scale": 1.4
+ },
+ "VC-U14": {
+  "facings": 16,
+  "file": "rendered/VC-U14.png",
+  "frame": [
+   128,
+   128
+  ],
+  "scale": 1.4
+ }
 }
