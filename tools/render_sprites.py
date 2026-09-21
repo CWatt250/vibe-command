@@ -341,12 +341,16 @@ def main():
     uid, out_dir = argv[0], argv[1]
     facings = int(argv[argv.index("--facings") + 1]) if "--facings" in argv else 16
     px = int(argv[argv.index("--px") + 1]) if "--px" in argv else 256
-    if uid not in KITS:
-        raise SystemExit(f"no kit for {uid}; have {sorted(KITS)}")
     os.makedirs(out_dir, exist_ok=True)
     sc = build_scene(px)
     materials()
-    root = KITS[uid]()
+    if uid in KITS:
+        root = KITS[uid]()
+    elif os.path.exists(os.path.join(GENERATED, f"{uid}.glb")):
+        # Any unit with a Hunyuan3D mesh renders through the generic kit.
+        root = kit_generated(uid, yaw_deg=180.0)
+    else:
+        raise SystemExit(f"no kit and no generated mesh for {uid}")
     for k in range(facings):
         root.rotation_euler = (0.0, 0.0, math.radians(-k * 360.0 / facings))
         sc.render.filepath = os.path.join(out_dir, f"{uid}_{k:02d}.png")
