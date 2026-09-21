@@ -56,15 +56,101 @@
   "scale": 1.3,
   "tint": 0.0
  },
- "VC-B02": "VC-B02_fab.png",
- "VC-B03": "VC-B03_gen.png",
- "VC-B04": "VC-B04_cooling.png",
- "VC-B05": "VC-B05_servers.png",
- "VC-B06": "VC-B06_cluster.png",
- "VC-B07": "VC-B07_maker.png",
- "VC-B08": "VC-B08_robotshop.png",
- "VC-B11": "VC-B11_repair.png",
- "VC-D02": "VC-D02_turret.png",
+ "VC-B02": {
+  "file": "VC-B02_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "VC-B03": {
+  "file": "VC-B03_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "VC-B04": {
+  "file": "VC-B04_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "VC-B05": {
+  "file": "VC-B05_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "VC-B06": {
+  "file": "VC-B06_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "VC-B07": {
+  "file": "VC-B07_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "VC-B08": {
+  "file": "VC-B08_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "VC-B09": {
+  "file": "VC-B09_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "VC-B10": {
+  "file": "VC-B10_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "VC-B11": {
+  "file": "VC-B11_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "VC-B12": {
+  "file": "VC-B12_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "VC-D01": {
+  "file": "VC-D01_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "VC-D02": {
+  "file": "VC-D02_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "VC-D03": {
+  "file": "VC-D03_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "VC-D04": {
+  "file": "VC-D04_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "VC-D05": {
+  "file": "VC-D05_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "VC-D06": {
+  "file": "VC-D06_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "VC-D07": {
+  "file": "VC-D07_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "VC-D08": {
+  "file": "VC-D08_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
  "VC-SRV": "VC-SRV_harvester.png",
  "VC-U01": "characters/manblue.png",
  "VC-U02": "VC-U02_scout.png",

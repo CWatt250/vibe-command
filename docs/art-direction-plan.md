@@ -149,7 +149,19 @@ facings" objection doesn't apply). Result: **it works, first try.**
 What it tells us: **structures can go through Pipeline B wholesale** — 40 of them, one prompt
 template with the def's `displayName` + `function` + faction language, ~1 hour of GPU. Units still
 need facings → Pipeline A, *but* the AI renders are the concept sheets the 3D kitbash should match.
-Next: batch all VC structures with a shared prompt prefix so they look like one faction, then FC.
+
+### All 20 VC structures — done the same evening
+
+`tools/gen_structures_ai.py VC` — shared faction prefix (`PREFIX["VC"]`), a hand-written one-line
+description per structure (`DESC`), the def's `function` appended, shared suffix (view, light, key
+colour). Seed = md5(id + bump) so any one structure re-rolls without moving the others
+(`--only VC-D08 --seed-bump 1 --force`). Draw scale by footprint: 1×1 → 1.7, 2×n → 1.4, 3×3 → 1.3.
+Runs in ~80 s per structure on a warm server; run in foreground chunks of six (a background job got
+killed once). Review sheet: `docs/concepts/vc_structures_sheet.png`; raws in `docs/concepts/vc/`.
+In-game: `docs/screenshot_poc_vc_base.png`, `screenshot_poc_vc_build.png` (every cameo populated).
+
+Hit rate: 18/20 first roll; D04 and D08 re-rolled once (dark background / pink ground disc). The
+`FC` prefix is already in the script — FC is the same command with `FC`.
 
 ## Order of work
 
