@@ -114,7 +114,63 @@ def kit_technical():
     return root
 
 
-KITS = {"VC-U04": kit_technical}
+KENNEY = os.path.expanduser("~/Dev/assets/kenney")
+
+
+def kenney(pack, name, parent, rot_z_deg=0.0, scale=1.0, recolor=None):
+    """Append a Kenney CC0 GLB (Y-forward after glTF import) under `parent`.
+    recolor: {mesh_name_substring: material_key} — Kenney ships one 'colormap'
+    material per kit, so faction colours are applied per mesh here."""
+    path = os.path.join(KENNEY, pack, "Models", "GLB format", f"{name}.glb")
+    before = set(bpy.context.scene.objects)
+    bpy.ops.import_scene.gltf(filepath=path)
+    new = [o for o in bpy.context.scene.objects if o not in before]
+    roots = [o for o in new if o.parent is None or o.parent not in new]
+    for o in roots:
+        o.parent = parent
+        o.rotation_euler = (0.0, 0.0, math.radians(rot_z_deg))
+        o.scale = (scale, scale, scale)
+    if recolor:
+        for o in new:
+            if o.type != "MESH":
+                continue
+            for sub, key in recolor.items():
+                if sub in o.name:
+                    o.data.materials.clear()
+                    o.data.materials.append(M[key])
+    return new
+
+
+def kit_technical_kenney():
+    """VC-U04 Technical from the Kenney Car Kit truck + garage parts bolted on.
+    Truck bounds after import: x ±0.75, y −1.45..1.5 (front +Y), z 0..1.3."""
+    root = bpy.data.objects.new("VC-U04", None)
+    bpy.context.scene.collection.objects.link(root)
+    kenney("car-kit", "truck", root, recolor={"body": "paint", "wheel": "tire"})
+    # plywood door + bed armor, duct tape, tailgate plate
+    box("door_l", (0.06, 0.8, 0.5), (-0.78, 0.55, 0.85), "osb", parent=root)
+    box("door_r", (0.06, 0.8, 0.5), (0.78, 0.55, 0.85), "osb", parent=root)
+    box("bed_l", (0.06, 1.1, 0.5), (-0.78, -0.75, 0.9), "ply", parent=root)
+    box("bed_r", (0.06, 1.1, 0.5), (0.78, -0.75, 0.9), "ply", parent=root)
+    box("tailgate", (1.5, 0.06, 0.45), (0, -1.48, 0.9), "osb", parent=root)
+    box("hood_plate", (1.0, 0.5, 0.05), (0, 1.1, 0.98), "osb", parent=root)
+    for y in (0.3, 0.8):
+        box("tape_l", (0.08, 0.1, 0.52), (-0.79, y, 0.85), "tape", parent=root)
+        box("tape_r", (0.08, 0.1, 0.52), (0.79, y, 0.85), "tape", parent=root)
+    # bed autocannon on a post, ammo, batteries, laptop, antenna, LEDs
+    cyl("post", 0.06, 0.7, (0, -0.7, 1.15), "metal", parent=root)
+    box("pintle", (0.3, 0.35, 0.22), (0, -0.7, 1.55), "dark", parent=root)
+    cyl("barrel", 0.05, 1.4, (0, 0.05, 1.6), "dark", rot=(math.pi / 2, 0, 0), parent=root, verts=12)
+    box("ammo", (0.25, 0.3, 0.22), (0.35, -1.1, 0.95), "dark", parent=root)
+    box("battery1", (0.22, 0.4, 0.18), (-0.4, -1.0, 0.92), "dark", parent=root)
+    box("battery2", (0.22, 0.4, 0.18), (-0.4, -0.5, 0.92), "metal", parent=root)
+    cyl("antenna", 0.02, 1.2, (0.55, -0.3, 1.9), "metal", parent=root, verts=8)
+    box("led_front", (0.3, 0.05, 0.08), (0, 1.52, 0.65), "led", parent=root)
+    box("led_ant", (0.06, 0.06, 0.06), (0.55, -0.3, 2.5), "led", parent=root)
+    return root
+
+
+KITS = {"VC-U04": kit_technical_kenney, "VC-U04-primitive": kit_technical}
 
 
 # ---- scene ----------------------------------------------------------------------
