@@ -214,6 +214,27 @@ remaining work is *models*. Options, cheapest first: (1) CC0 kits (Kenney Tower 
 Quaternius) kitbashed with the garage part library; (2) image-to-3D from the AI portraits (local
 options exist — TripoSR / Hunyuan3D-2 run on this box's VRAM; unverified here); (3) modelling.
 
+### Models: both routes tried the same afternoon (2026-09-21)
+
+1. **Kenney kitbash** — `~/Dev/assets/kenney/` (Car Kit + Tower Defense Kit, CC0). `kenney()` appends
+   a GLB and recolours named meshes; `kit_technical_kenney()` = Car Kit truck + plywood panels, tape,
+   bed gun, batteries, antenna, LEDs. Reads as a truck. Limits: the Car Kit is civilian (truck, van,
+   SUV, delivery, tractor), the Tower Defense Kit is medieval — no tanks, no soldiers, no mechs.
+   Fine for ~6 VC vehicles; not a roster solution.
+2. **Image-to-3D from the portraits** — `tools/image_to_3d.py` through ComfyUI's native Hunyuan3D-2
+   nodes (weights: `models/checkpoints/hunyuan3d-dit-v2.safetensors`, 4.9 GB, from
+   tencent/Hunyuan3D-2). **The Technical portrait became a detailed mesh in 104 s** — bed gun,
+   antennas, wheel wells, correct from all 16 facings. Shape only (no texture), so
+   `project_portrait()` paints the mesh with the portrait by orthographic projection into a vertex
+   colour layer; hidden faces get the nearest visible edge. Misaligned up close, correct at sprite
+   size. `kit_generated(uid, yaw_deg=180)` — Hunyuan3D meshes face −Y. 16 facings render in 37 s.
+   In-game: `docs/screenshot_poc_technical_hy3d.png`.
+
+**Decision:** route 2 is the roster path. 58 portraits → 58 meshes ≈ 2 hours of GPU, then the
+rig renders the lot in ~40 min. Route 1 stays for props and anything the generator gets wrong.
+Open: texture quality (Hunyuan3D-2.1 paint or a multi-view projection), infantry (humanoid meshes
+are fine but need a walk cycle — rig or 2-frame bob), and per-unit yaw/scale sanity checks.
+
 ## Order of work
 
 | # | Step | Output | Effort |

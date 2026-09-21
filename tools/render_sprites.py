@@ -170,7 +170,114 @@ def kit_technical_kenney():
     return root
 
 
-KITS = {"VC-U04": kit_technical_kenney, "VC-U04-primitive": kit_technical}
+GENERATED = os.path.expanduser("~/Dev/assets/generated3d")
+
+
+def kit_generated(uid, length=3.0, material="paint", yaw_deg=0.0):
+    """A Hunyuan3D-2 mesh from tools/image_to_3d.py: import, normalise so the longest
+    horizontal extent is `length`, sit it on z=0, give it one flat material (the
+    native nodes produce shape only, no texture)."""
+    from mathutils import Vector
+    root = bpy.data.objects.new(uid, None)
+    bpy.context.scene.collection.objects.link(root)
+    before = set(bpy.context.scene.objects)
+    bpy.ops.import_scene.gltf(filepath=os.path.join(GENERATED, f"{uid}.glb"))
+    new = [o for o in bpy.context.scene.objects if o not in before]
+    meshes = [o for o in new if o.type == "MESH"]
+    pts = [o.matrix_world @ Vector(c) for o in meshes for c in o.bound_box]
+    mn = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
+    mx = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
+    ext = mx - mn
+    s = length / max(ext.x, ext.y, 1e-6)
+    holder = bpy.data.objects.new(uid + "_mesh", None)
+    bpy.context.scene.collection.objects.link(holder)
+    holder.parent = root
+    holder.rotation_euler = (0.0, 0.0, math.radians(yaw_deg))
+    holder.scale = (s, s, s)
+    centre = (mn + mx) * 0.5
+    holder.location = (-centre.x * s, -centre.y * s, -mn.z * s)
+    for o in new:
+        if o.parent is None or o.parent not in new:
+            o.parent = holder
+    portrait = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            "assets", "portraits", f"{uid}.png")
+    for o in meshes:
+        o.data.materials.clear()
+        if os.path.exists(portrait) and project_portrait(o, portrait):
+            o.data.materials.append(vertex_color_material(uid))
+        else:
+            o.data.materials.append(M[material])
+    return root
+
+
+def project_portrait(obj, image_path):
+    """Paint the mesh with the portrait it was generated from: orthographic projection
+    along the portrait's view (front-left-above in the mesh's own frame, front = -Y),
+    sampled into a vertex colour layer. Faces the portrait couldn't see get the colour
+    of the nearest visible edge — a smear that is invisible at sprite size and far better
+    than flat clay. Returns False if the image can't be read."""
+    from mathutils import Vector
+    try:
+        img = bpy.data.images.load(image_path)
+    except Exception:
+        return False
+    w, h = img.size
+    px = list(img.pixels)  # RGBA floats, bottom-up rows
+    me = obj.data
+    view = Vector((-0.55, -1.0, 0.75)).normalized()      # from camera toward object
+    up = Vector((0, 0, 1))
+    right = view.cross(up).normalized()
+    up2 = right.cross(view).normalized()
+    coords = [obj.matrix_world @ v.co for v in me.vertices]
+    us = [c.dot(right) for c in coords]
+    vs = [c.dot(up2) for c in coords]
+    u0, u1, v0, v1 = min(us), max(us), min(vs), max(vs)
+    # Fit the mesh's projected bbox to the portrait's opaque bbox.
+    xs, ys = [], []
+    for y in range(h):
+        for x in range(w):
+            if px[(y * w + x) * 4 + 3] > 0.5:
+                xs.append(x); ys.append(y)
+    if not xs:
+        return False
+    bx0, bx1, by0, by1 = min(xs), max(xs), min(ys), max(ys)
+    layer = me.color_attributes.new(name="portrait", type="BYTE_COLOR", domain="POINT")
+    for i, v in enumerate(me.vertices):
+        fx = (us[i] - u0) / max(u1 - u0, 1e-6)
+        fy = (vs[i] - v0) / max(v1 - v0, 1e-6)
+        x = min(max(int(bx0 + fx * (bx1 - bx0)), 0), w - 1)
+        y = min(max(int(by0 + fy * (by1 - by0)), 0), h - 1)
+        # Walk toward the centre until we hit an opaque pixel (edge smear for hidden faces).
+        cx, cy = (bx0 + bx1) // 2, (by0 + by1) // 2
+        for _ in range(64):
+            k = (y * w + x) * 4
+            if px[k + 3] > 0.5:
+                break
+            x += (1 if cx > x else -1) if cx != x else 0
+            y += (1 if cy > y else -1) if cy != y else 0
+        k = (y * w + x) * 4
+        layer.data[i].color = (px[k], px[k + 1], px[k + 2], 1.0)
+    return True
+
+
+def vertex_color_material(uid):
+    m = bpy.data.materials.new(f"{uid}_portrait")
+    m.use_nodes = True
+    nt = m.node_tree
+    bsdf = nt.nodes["Principled BSDF"]
+    attr = nt.nodes.new("ShaderNodeVertexColor")
+    attr.layer_name = "portrait"
+    nt.links.new(attr.outputs["Color"], bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = 0.75
+    return m
+
+
+KITS = {
+    "VC-U04": kit_technical_kenney,
+    "VC-U04-primitive": kit_technical,
+    # Hunyuan3D meshes come out facing -Y (the portrait's "toward the viewer"); yaw 180.
+    "VC-U04-hy3d": lambda: kit_generated("VC-U04", yaw_deg=180.0),
+}
 
 
 # ---- scene ----------------------------------------------------------------------

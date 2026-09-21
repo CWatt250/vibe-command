@@ -101,7 +101,7 @@ func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 		# Pre-rendered 3/4-view strip: pick the frame for the heading, never rotate.
 		# Frame 0 faces up (-Y); frames advance clockwise on screen, which in Godot's
 		# y-down convention is increasing angle. Same law as tools/render_sprites.py.
-		var a := _facing_angle(e) - PI * 0.5           # 0 when facing up
+		var a := _facing_for(e).angle() + PI * 0.5     # 0 when facing up (-Y)
 		var k := int(roundf(a / TAU * facings)) % facings
 		if k < 0:
 			k += facings
