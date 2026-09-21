@@ -193,6 +193,27 @@ UI changes. Review sheets: `docs/concepts/{vc,fc,ts,sg}_portraits_sheet.png`.
 Hit rate 55/58 first roll. These are also the **reference sheets for Pipeline A**: the Blender
 kitbash for each unit now has a target image in the faction's language.
 
+### Pipeline A proof of concept — the render rig works (2026-09-21)
+
+- `tools/render_sprites.py` (run under `blender -b -P`): ortho camera pitched 40° looking +Y,
+  key sun from screen upper-left + weak fill + cool ambient, Freestyle 1.6 px outline,
+  transparent film, EEVEE Next. Frame k = model rotated −k·(360/N)° about Z (clockwise on screen =
+  Godot's y-down angle). **16 facings of the Technical render in 2.5 s.**
+- `tools/pack_facings.py`: trims all frames to one symmetric union bbox (so the anchor doesn't
+  wander between facings), downsamples 2×→1×, packs a left-to-right strip to
+  `assets/sprites/rendered/<id>.png`, manifest `{"file", "facings", "frame", "scale"}`.
+- Engine: `SpriteAtlas.facings()/frame_size()/facing_region()`; `EntityRenderer._draw_unit`
+  picks frame `round(((angle − 90°) / 360°) · N)` and never rotates a facing sprite. Units with
+  `facings: 0` keep the old rotate-in-place path, so the roster migrates one unit at a time.
+- In-game: `docs/screenshot_poc_technical.png`.
+
+**What it proves:** the C&C method runs on this machine and plugs into the game with no sim change.
+**What it doesn't:** the model. A primitive kitbash (boxes, cylinders, plywood materials) reads as
+a truck but is nowhere near the AI portrait sitting on the same card. The rig is done; the
+remaining work is *models*. Options, cheapest first: (1) CC0 kits (Kenney Tower Defense / Car Kit,
+Quaternius) kitbashed with the garage part library; (2) image-to-3D from the AI portraits (local
+options exist — TripoSR / Hunyuan3D-2 run on this box's VRAM; unverified here); (3) modelling.
+
 ## Order of work
 
 | # | Step | Output | Effort |

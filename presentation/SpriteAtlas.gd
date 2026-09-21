@@ -74,6 +74,22 @@ static func portrait(id: String) -> Texture2D:
 						_portraits[key] = tex
 	return _portraits.get(id)
 
+## Pre-rendered facing strips (Pipeline A, tools/render_sprites.py + pack_facings.py):
+## manifest {"file", "facings": N, "frame": [w, h]}. 0 = a single rotate-in-place sprite.
+static func facings(id: String) -> int:
+	_load()
+	return int(_meta.get(id, {}).get("facings", 0))
+
+static func frame_size(id: String) -> Vector2:
+	_load()
+	var f: Array = _meta.get(id, {}).get("frame", [])
+	return Vector2(f[0], f[1]) if f.size() == 2 else px_size(id)
+
+## Atlas region of facing frame k (frames are laid out left to right).
+static func facing_region(id: String, k: int) -> Rect2:
+	var fs := frame_size(id)
+	return Rect2(Vector2(k * fs.x, 0.0), fs)
+
 ## Draw-width multiple of the footprint for structures (1.0 = fill the pad).
 static func scale(id: String) -> float:
 	_load()

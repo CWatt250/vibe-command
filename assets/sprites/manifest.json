@@ -447,7 +447,15 @@
  "VC-U01": "characters/manblue.png",
  "VC-U02": "VC-U02_scout.png",
  "VC-U03": "VC-U03_drone.png",
- "VC-U04": "VC-U04_technical.png",
+ "VC-U04": {
+  "facings": 16,
+  "file": "rendered/VC-U04.png",
+  "frame": [
+   128,
+   127
+  ],
+  "scale": 1.4
+ },
  "VC-U05": "VC-U05_botdog.png",
  "VC-U06": "VC-U06_sentry.png",
  "VC-U07": "VC-U07_hackvan.png",

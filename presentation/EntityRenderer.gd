@@ -88,7 +88,7 @@ func _draw_structure(e: Entity) -> void:
 
 func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 	var col: Color = FC_COLORS.get(e.faction_id, Color.WHITE)
-	var size_px: float = UNIT_PX.get(e.def_data.get("armorClass", ""), UNIT_PX_DEFAULT)
+	var size_px: float = UNIT_PX.get(e.def_data.get("armorClass", ""), UNIT_PX_DEFAULT) * SpriteAtlas.scale(e.def_id)
 	# Contact shadow: tight and dark on the ground, wide and faint for airborne (reads as hover).
 	var shadow_off := Vector2(6, 10) if e.is_airborne else Vector2(2, 3)
 	var shadow_col := SHADOW_AIR if e.is_airborne else SHADOW_GROUND
@@ -96,7 +96,19 @@ func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 	draw_circle(Vector2.ZERO, size_px * 0.42, shadow_col)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	var tex := SpriteAtlas.texture(e.def_id)
-	if tex != null:
+	var facings := SpriteAtlas.facings(e.def_id)
+	if tex != null and facings > 0:
+		# Pre-rendered 3/4-view strip: pick the frame for the heading, never rotate.
+		# Frame 0 faces up (-Y); frames advance clockwise on screen, which in Godot's
+		# y-down convention is increasing angle. Same law as tools/render_sprites.py.
+		var a := _facing_angle(e) - PI * 0.5           # 0 when facing up
+		var k := int(roundf(a / TAU * facings)) % facings
+		if k < 0:
+			k += facings
+		var region := SpriteAtlas.facing_region(e.def_id, k)
+		var box := _scaled_sprite_box(e, region.size, size_px)
+		draw_texture_rect_region(tex, box, region, Color.WHITE)
+	elif tex != null:
 		var angle := _facing_angle(e)
 		var region := SpriteAtlas.region(e.def_id)
 		var box := _scaled_sprite_box(e, region.size, size_px)
