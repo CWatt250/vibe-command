@@ -1,12 +1,104 @@
 {
- "FC-B01": "FC-B01_hq.png",
- "FC-B03": "FC-B03_gen.png",
- "FC-B04": "FC-B04_barracks.png",
- "FC-B05": "FC-B05_motorpool.png",
- "FC-B09": "FC-B09_command.png",
- "FC-B11": "FC-B11_repair.png",
- "FC-D01": "FC-D01_wall.png",
- "FC-D02": "FC-D02_guard.png",
+ "FC-B01": {
+  "file": "FC-B01_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "FC-B02": {
+  "file": "FC-B02_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "FC-B03": {
+  "file": "FC-B03_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "FC-B04": {
+  "file": "FC-B04_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "FC-B05": {
+  "file": "FC-B05_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "FC-B06": {
+  "file": "FC-B06_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "FC-B07": {
+  "file": "FC-B07_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "FC-B08": {
+  "file": "FC-B08_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "FC-B09": {
+  "file": "FC-B09_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "FC-B10": {
+  "file": "FC-B10_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "FC-B11": {
+  "file": "FC-B11_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "FC-B12": {
+  "file": "FC-B12_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "FC-D01": {
+  "file": "FC-D01_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "FC-D02": {
+  "file": "FC-D02_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "FC-D03": {
+  "file": "FC-D03_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "FC-D04": {
+  "file": "FC-D04_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "FC-D05": {
+  "file": "FC-D05_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "FC-D06": {
+  "file": "FC-D06_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "FC-D07": {
+  "file": "FC-D07_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "FC-D08": {
+  "file": "FC-D08_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
  "FC-SRV": "FC-SRV_harvester.png",
  "FC-U01": "characters/soldier.png",
  "FC-U02": "characters/hitman.png",
@@ -22,6 +114,106 @@
  "FC-U12": "FC-U12_apache.png",
  "FC-U13": "FC-U13_fighter.png",
  "FC-U14": "characters/FC-U14_fcInf.png",
+ "SG-B01": {
+  "file": "SG-B01_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "SG-B02": {
+  "file": "SG-B02_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "SG-B03": {
+  "file": "SG-B03_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "SG-B04": {
+  "file": "SG-B04_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "SG-B05": {
+  "file": "SG-B05_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "SG-B06": {
+  "file": "SG-B06_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "SG-B07": {
+  "file": "SG-B07_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "SG-B08": {
+  "file": "SG-B08_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "SG-B09": {
+  "file": "SG-B09_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "SG-B10": {
+  "file": "SG-B10_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "SG-B11": {
+  "file": "SG-B11_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "SG-B12": {
+  "file": "SG-B12_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "SG-D01": {
+  "file": "SG-D01_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "SG-D02": {
+  "file": "SG-D02_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "SG-D03": {
+  "file": "SG-D03_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "SG-D04": {
+  "file": "SG-D04_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "SG-D05": {
+  "file": "SG-D05_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "SG-D06": {
+  "file": "SG-D06_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "SG-D07": {
+  "file": "SG-D07_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "SG-D08": {
+  "file": "SG-D08_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
  "SG-U01": "SG-U01_skitter.png",
  "SG-U02": "SG-U02_watcher.png",
  "SG-U03": "SG-U03_harv.png",
@@ -37,6 +229,106 @@
  "SG-U13": "SG-U13_leviathan.png",
  "SG-U14": "SG-U14_echo.png",
  "SRV": "SRV_harvester.png",
+ "TS-B01": {
+  "file": "TS-B01_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "TS-B02": {
+  "file": "TS-B02_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "TS-B03": {
+  "file": "TS-B03_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "TS-B04": {
+  "file": "TS-B04_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "TS-B05": {
+  "file": "TS-B05_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "TS-B06": {
+  "file": "TS-B06_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "TS-B07": {
+  "file": "TS-B07_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "TS-B08": {
+  "file": "TS-B08_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "TS-B09": {
+  "file": "TS-B09_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "TS-B10": {
+  "file": "TS-B10_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "TS-B11": {
+  "file": "TS-B11_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "TS-B12": {
+  "file": "TS-B12_ai.png",
+  "scale": 1.3,
+  "tint": 0.0
+ },
+ "TS-D01": {
+  "file": "TS-D01_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "TS-D02": {
+  "file": "TS-D02_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "TS-D03": {
+  "file": "TS-D03_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "TS-D04": {
+  "file": "TS-D04_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "TS-D05": {
+  "file": "TS-D05_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "TS-D06": {
+  "file": "TS-D06_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
+ "TS-D07": {
+  "file": "TS-D07_ai.png",
+  "scale": 1.7,
+  "tint": 0.0
+ },
+ "TS-D08": {
+  "file": "TS-D08_ai.png",
+  "scale": 1.4,
+  "tint": 0.0
+ },
  "TS-U01": "characters/TS-U01_tsInf.png",
  "TS-U02": "characters/TS-U02_tsInf.png",
  "TS-U03": "TS-U03_recon.png",

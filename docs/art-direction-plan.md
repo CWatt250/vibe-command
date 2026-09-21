@@ -160,8 +160,25 @@ Runs in ~80 s per structure on a warm server; run in foreground chunks of six (a
 killed once). Review sheet: `docs/concepts/vc_structures_sheet.png`; raws in `docs/concepts/vc/`.
 In-game: `docs/screenshot_poc_vc_base.png`, `screenshot_poc_vc_build.png` (every cameo populated).
 
-Hit rate: 18/20 first roll; D04 and D08 re-rolled once (dark background / pink ground disc). The
-`FC` prefix is already in the script — FC is the same command with `FC`.
+Hit rate: 18/20 first roll; D04 and D08 re-rolled once (dark background / pink ground disc).
+
+### All four factions — 80 structures, same night
+
+- **FC and TS/SG prefixes** in `gen_structures_ai.py`: FC = matte grey federal-industrial, chevrons,
+  amber lights. TS = white/graphite composite, tinted glass, holographic teal (corporate campus).
+  SG = captured machinery fused with black crystal shards, orange-red light seams (the strangest,
+  and the most distinctive on screen).
+- **TS and SG had no structures in the data** — the Bible import was units only. `tools/
+  scaffold_ts_sg_structures.py` mirrors FC's 20 slots 1:1 (same cost/time/HP/footprint/flags),
+  faction names, `trainsUnits` remapped to each faction's real units, `"draft": true` on every def.
+  Balance is *FC's*, deliberately; replace from the Bible when the docx turns up.
+- Review sheets: `docs/concepts/{vc,fc,ts,sg}_structures_sheet.png` (`tools/make_structure_sheet.py`).
+- Hit rate across 80: ~74 first roll. The failure mode is always the same — the model paints a dark
+  backdrop instead of the magenta key, leaving a grey halo. `--seed-bump N --force` fixes it; two
+  needed a second bump. One design miss: TS-D01 Composite Barrier renders as a building, not a
+  wall segment (1×1 walls want a different prompt shape, or a drawn tile).
+- ComfyUI serves a cached result in ~3 s for an identical prompt+seed, so re-running the batch is
+  free for anything already rendered.
 
 ## Order of work
 

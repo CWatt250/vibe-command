@@ -892,6 +892,993 @@
       "weaponSlots": [
         "wpn_energy_beam"
       ]
+    },
+    {
+      "id": "TS-B01",
+      "displayName": "Titan Campus Core",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 20.0,
+      "maxHealth": 850,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "HQ",
+      "function": "Build radius, Network Licenses, strategic ability access",
+      "componentFlags": [
+        "HQ",
+        "BuilderNetwork",
+        "Dropoff"
+      ],
+      "commandCapacity": 20,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B01 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B02",
+      "displayName": "Supply Terminal",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 650,
+      "buildTimeSec": 22.0,
+      "maxHealth": 650,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Economy",
+      "function": "Harvester dropoff and hauler production.",
+      "componentFlags": [
+        "Dropoff",
+        "ProducesHarvester"
+      ],
+      "trainsUnits": [],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B02 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B03",
+      "displayName": "Fusion Cell",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 350,
+      "buildTimeSec": 12.0,
+      "maxHealth": 380,
+      "armorClass": "StructureLight",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Power",
+      "powerProduced": 10,
+      "componentFlags": [
+        "PowerSource"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B03 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B04",
+      "displayName": "Security Academy",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 18.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        3
+      ],
+      "class": "Infantry",
+      "trainsUnits": [
+        "TS-U01",
+        "TS-U02",
+        "TS-U06",
+        "TS-U12"
+      ],
+      "componentFlags": [
+        "ProductionInfantry"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B04 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B05",
+      "displayName": "Vehicle Assembly",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 850,
+      "buildTimeSec": 24.0,
+      "maxHealth": 560,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Vehicle",
+      "trainsUnits": [
+        "TS-U04",
+        "TS-U05",
+        "TS-U08",
+        "TS-U09"
+      ],
+      "componentFlags": [
+        "ProductionVehicle"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B05 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B06",
+      "displayName": "Heavy Fabricator",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 1000,
+      "buildTimeSec": 26.0,
+      "maxHealth": 600,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Vehicle",
+      "function": "Produces MBTs and heavy support.",
+      "componentFlags": [
+        "ProductionVehicle"
+      ],
+      "trainsUnits": [
+        "TS-U07",
+        "TS-U13"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B06 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B07",
+      "displayName": "Precision Strike Battery",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 24.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        2
+      ],
+      "class": "Siege",
+      "function": "Produces artillery and MLRS; enables counter-battery sensors.",
+      "componentFlags": [
+        "ProductionVehicle",
+        "Siege"
+      ],
+      "trainsUnits": [],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B07 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B08",
+      "displayName": "Drone Hangar",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 950,
+      "buildTimeSec": 25.0,
+      "maxHealth": 540,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Air",
+      "function": "Aircraft production / reinforcement abstraction.",
+      "componentFlags": [
+        "ProductionAir"
+      ],
+      "trainsUnits": [
+        "TS-U03",
+        "TS-U10",
+        "TS-U11",
+        "TS-U14"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B08 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B09",
+      "displayName": "Network Uplink",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 20.0,
+      "maxHealth": 480,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Tech",
+      "commandCapacity": 20,
+      "powerDrawn": 3,
+      "componentFlags": [
+        "CommandSource"
+      ],
+      "unlocksTechTier": 2,
+      "function": "Generates Network Licenses and unlocks T2 powers.",
+      "draft": true,
+      "draftNote": "scaffolded from FC-B09 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B10",
+      "displayName": "Executive Command Suite",
+      "factionId": "TS",
+      "techTier": 3,
+      "costCredits": 1400,
+      "buildTimeSec": 30.0,
+      "maxHealth": 700,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Tech",
+      "function": "Unlocks elite air, special operations, EMP and strategic strikes.",
+      "componentFlags": [
+        "TechSource",
+        "CommandSource"
+      ],
+      "unlocksTechTier": 3,
+      "commandCapacity": 15,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B10 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B11",
+      "displayName": "Service Bay",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 700,
+      "buildTimeSec": 18.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Support",
+      "repairRadius": 220.0,
+      "repairPerSec": 60.0,
+      "componentFlags": [
+        "Support",
+        "Repair"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B11 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-B12",
+      "displayName": "Satellite Office",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 700,
+      "buildTimeSec": 20.0,
+      "maxHealth": 560,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Expansion",
+      "function": "Extends build area, limited healing and infantry reinforcement.",
+      "componentFlags": [
+        "Expansion",
+        "Dropoff"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B12 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-D01",
+      "displayName": "Composite Barrier",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 100,
+      "buildTimeSec": 6.0,
+      "maxHealth": 150,
+      "armorClass": "StructureLight",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Wall",
+      "componentFlags": [
+        "Wall"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-D01 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-D02",
+      "displayName": "Sentry Pylon",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 450,
+      "buildTimeSec": 14.0,
+      "maxHealth": 380,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "weaponSlots": [
+        "wpn_turret_gun"
+      ],
+      "garrisoned": 4,
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "Garrisonable"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-D02 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-D03",
+      "displayName": "Suppression Turret",
+      "factionId": "TS",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 15.0,
+      "maxHealth": 320,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Strong anti-infantry fixed arc.",
+      "componentFlags": [
+        "Defense",
+        "Turret"
+      ],
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D03 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-D04",
+      "displayName": "Rail Turret",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 18.0,
+      "maxHealth": 300,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Heavy anti-vehicle missile/gun.",
+      "componentFlags": [
+        "Defense",
+        "Turret"
+      ],
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D04 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-D05",
+      "displayName": "Security Bunker",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 1000,
+      "buildTimeSec": 22.0,
+      "maxHealth": 700,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "Garrison 6; high health; firing ports.",
+      "componentFlags": [
+        "Defense",
+        "Garrisonable"
+      ],
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "garrisoned": 6,
+      "draft": true,
+      "draftNote": "scaffolded from FC-D05 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-D06",
+      "displayName": "Interceptor Pad",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 950,
+      "buildTimeSec": 18.0,
+      "maxHealth": 340,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "Long-range anti-air, weak vs ground.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "AntiAir"
+      ],
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D06 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-D07",
+      "displayName": "Drone Denial Node",
+      "factionId": "TS",
+      "techTier": 2,
+      "costCredits": 800,
+      "buildTimeSec": 16.0,
+      "maxHealth": 320,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Anti-drone gun + jammer.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "Jammer"
+      ],
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D07 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "TS-D08",
+      "displayName": "Skyshield Array",
+      "factionId": "TS",
+      "techTier": 3,
+      "costCredits": 1800,
+      "buildTimeSec": 28.0,
+      "maxHealth": 500,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "T3 air/missile defense with interceptor charges.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "AntiAir"
+      ],
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D08 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B01",
+      "displayName": "Signal Core",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 20.0,
+      "maxHealth": 850,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "HQ",
+      "function": "Build radius, Signal Reach, strategic ability access",
+      "componentFlags": [
+        "HQ",
+        "BuilderNetwork",
+        "Dropoff"
+      ],
+      "commandCapacity": 20,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B01 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B02",
+      "displayName": "Matter Reclaimer",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 650,
+      "buildTimeSec": 22.0,
+      "maxHealth": 650,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Economy",
+      "function": "Matter intake and Harvester assembly.",
+      "componentFlags": [
+        "Dropoff",
+        "ProducesHarvester"
+      ],
+      "trainsUnits": [],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B02 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B03",
+      "displayName": "Energy Siphon",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 350,
+      "buildTimeSec": 12.0,
+      "maxHealth": 380,
+      "armorClass": "StructureLight",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Power",
+      "powerProduced": 10,
+      "componentFlags": [
+        "PowerSource"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B03 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B04",
+      "displayName": "Replication Pit",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 18.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        3
+      ],
+      "class": "Infantry",
+      "trainsUnits": [
+        "SG-U04",
+        "SG-U14"
+      ],
+      "componentFlags": [
+        "ProductionInfantry"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B04 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B05",
+      "displayName": "Assembly Womb",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 850,
+      "buildTimeSec": 24.0,
+      "maxHealth": 560,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Vehicle",
+      "trainsUnits": [
+        "SG-U01",
+        "SG-U02",
+        "SG-U05",
+        "SG-U06",
+        "SG-U07",
+        "SG-U10"
+      ],
+      "componentFlags": [
+        "ProductionVehicle"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B05 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B06",
+      "displayName": "Shard Forge",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 1000,
+      "buildTimeSec": 26.0,
+      "maxHealth": 600,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Vehicle",
+      "function": "Produces MBTs and heavy support.",
+      "componentFlags": [
+        "ProductionVehicle"
+      ],
+      "trainsUnits": [
+        "SG-U08",
+        "SG-U11",
+        "SG-U12",
+        "SG-U13"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B06 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B07",
+      "displayName": "Resonance Battery",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 24.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        2
+      ],
+      "class": "Siege",
+      "function": "Produces artillery and MLRS; enables counter-battery sensors.",
+      "componentFlags": [
+        "ProductionVehicle",
+        "Siege"
+      ],
+      "trainsUnits": [],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B07 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B08",
+      "displayName": "Spore Aerie",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 950,
+      "buildTimeSec": 25.0,
+      "maxHealth": 540,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Air",
+      "function": "Aircraft production / reinforcement abstraction.",
+      "componentFlags": [
+        "ProductionAir"
+      ],
+      "trainsUnits": [
+        "SG-U09"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B08 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B09",
+      "displayName": "Uplink Spire",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 20.0,
+      "maxHealth": 480,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Tech",
+      "commandCapacity": 20,
+      "powerDrawn": 3,
+      "componentFlags": [
+        "CommandSource"
+      ],
+      "unlocksTechTier": 2,
+      "function": "Generates Signal Reach and unlocks T2 powers.",
+      "draft": true,
+      "draftNote": "scaffolded from FC-B09 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B10",
+      "displayName": "Overmind Node",
+      "factionId": "SG",
+      "techTier": 3,
+      "costCredits": 1400,
+      "buildTimeSec": 30.0,
+      "maxHealth": 700,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Tech",
+      "function": "Unlocks elite air, special operations, EMP and strategic strikes.",
+      "componentFlags": [
+        "TechSource",
+        "CommandSource"
+      ],
+      "unlocksTechTier": 3,
+      "commandCapacity": 15,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B10 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B11",
+      "displayName": "Reconstitution Pool",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 700,
+      "buildTimeSec": 18.0,
+      "maxHealth": 520,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Support",
+      "repairRadius": 220.0,
+      "repairPerSec": 60.0,
+      "componentFlags": [
+        "Support",
+        "Repair"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-B11 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-B12",
+      "displayName": "Seed Node",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 700,
+      "buildTimeSec": 20.0,
+      "maxHealth": 560,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        3,
+        3
+      ],
+      "class": "Expansion",
+      "function": "Extends build area, limited healing and infantry reinforcement.",
+      "componentFlags": [
+        "Expansion",
+        "Dropoff"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-B12 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-D01",
+      "displayName": "Shard Wall",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 100,
+      "buildTimeSec": 6.0,
+      "maxHealth": 150,
+      "armorClass": "StructureLight",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Wall",
+      "componentFlags": [
+        "Wall"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-D01 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-D02",
+      "displayName": "Watch Spire",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 450,
+      "buildTimeSec": 14.0,
+      "maxHealth": 380,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "weaponSlots": [
+        "wpn_turret_gun"
+      ],
+      "garrisoned": 4,
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "Garrisonable"
+      ],
+      "function": null,
+      "draft": true,
+      "draftNote": "scaffolded from FC-D02 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-D03",
+      "displayName": "Flechette Node",
+      "factionId": "SG",
+      "techTier": 1,
+      "costCredits": 550,
+      "buildTimeSec": 15.0,
+      "maxHealth": 320,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Strong anti-infantry fixed arc.",
+      "componentFlags": [
+        "Defense",
+        "Turret"
+      ],
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D03 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-D04",
+      "displayName": "Lance Emplacement",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 900,
+      "buildTimeSec": 18.0,
+      "maxHealth": 300,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Heavy anti-vehicle missile/gun.",
+      "componentFlags": [
+        "Defense",
+        "Turret"
+      ],
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D04 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-D05",
+      "displayName": "Husk Bunker",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 1000,
+      "buildTimeSec": 22.0,
+      "maxHealth": 700,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "Garrison 6; high health; firing ports.",
+      "componentFlags": [
+        "Defense",
+        "Garrisonable"
+      ],
+      "weaponSlots": [
+        "wpn_small_arms"
+      ],
+      "garrisoned": 6,
+      "draft": true,
+      "draftNote": "scaffolded from FC-D05 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-D06",
+      "displayName": "Sky Thorn",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 950,
+      "buildTimeSec": 18.0,
+      "maxHealth": 340,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "Long-range anti-air, weak vs ground.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "AntiAir"
+      ],
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D06 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-D07",
+      "displayName": "Static Bloom",
+      "factionId": "SG",
+      "techTier": 2,
+      "costCredits": 800,
+      "buildTimeSec": 16.0,
+      "maxHealth": 320,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        1,
+        1
+      ],
+      "class": "Defense",
+      "function": "Anti-drone gun + jammer.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "Jammer"
+      ],
+      "weaponSlots": [
+        "wpn_autocannon"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D07 stats 2026-09-20; replace from the Bible"
+    },
+    {
+      "id": "SG-D08",
+      "displayName": "Reclaimer Cannon",
+      "factionId": "SG",
+      "techTier": 3,
+      "costCredits": 1800,
+      "buildTimeSec": 28.0,
+      "maxHealth": 500,
+      "armorClass": "StructureHeavy",
+      "footprint": [
+        2,
+        2
+      ],
+      "class": "Defense",
+      "function": "T3 air/missile defense with interceptor charges.",
+      "componentFlags": [
+        "Defense",
+        "Turret",
+        "AntiAir"
+      ],
+      "weaponSlots": [
+        "wpn_anti_armor"
+      ],
+      "draft": true,
+      "draftNote": "scaffolded from FC-D08 stats 2026-09-20; replace from the Bible"
     }
   ]
 }
