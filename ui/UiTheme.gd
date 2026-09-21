@@ -59,8 +59,12 @@ static func style_button(b: Button, faction: String) -> void:
 	b.add_theme_color_override("font_disabled_color", TEXT_DIM)
 	b.add_theme_font_size_override("font_size", 12)
 
-## Sprite icon for a content id, cropped to its opaque region. Null if no sprite.
+## HUD icon for a content id: the Pipeline B portrait if one exists, else the
+## battlefield sprite cropped to its opaque region. Null if neither.
 static func icon_for(def_id: String) -> Texture2D:
+	var portrait := SpriteAtlas.portrait(def_id)
+	if portrait != null:
+		return portrait
 	var tex := SpriteAtlas.texture(def_id)
 	if tex == null:
 		return null

@@ -54,6 +54,26 @@ static func region(id: String) -> Rect2:
 	_load()
 	return _regions.get(id, Rect2(Vector2.ZERO, px_size(id)))
 
+## HUD portraits (assets/portraits/, Pipeline B unit renders). Separate manifest so the
+## battlefield sprite and the cameo can differ. Null if the unit has no portrait yet.
+const PORTRAIT_MANIFEST := "res://assets/portraits/manifest.json"
+const PORTRAIT_DIR := "res://assets/portraits"
+static var _portraits: Dictionary = {}
+static var _portraits_loaded := false
+
+static func portrait(id: String) -> Texture2D:
+	if not _portraits_loaded:
+		_portraits_loaded = true
+		var mf := FileAccess.open(PORTRAIT_MANIFEST, FileAccess.READ)
+		if mf != null:
+			var data: Variant = JSON.parse_string(mf.get_as_text())
+			if data is Dictionary:
+				for key in data.keys():
+					var tex := load(PORTRAIT_DIR + "/" + String(data[key]))
+					if tex is Texture2D:
+						_portraits[key] = tex
+	return _portraits.get(id)
+
 ## Draw-width multiple of the footprint for structures (1.0 = fill the pad).
 static func scale(id: String) -> float:
 	_load()

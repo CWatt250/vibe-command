@@ -180,6 +180,19 @@ Hit rate: 18/20 first roll; D04 and D08 re-rolled once (dark background / pink g
 - ComfyUI serves a cached result in ~3 s for an identical prompt+seed, so re-running the batch is
   free for anything already rendered.
 
+### Unit portraits for the HUD — all 58, same night
+
+`tools/gen_portraits_ai.py <FAC>` — full 3/4-view renders, every unit facing the viewer's lower-left
+so the cameo row reads as one set. Per-faction prefix plus a separate **aircraft prefix** (the
+ground prefix's "armor / visor" cues turn any "drone" or "craft" into a mech with wings — three
+Titan aircraft needed it). One hand-written line per unit. Output `assets/portraits/<id>.png` +
+`manifest.json`; `SpriteAtlas.portrait()` loads them and `UiTheme.icon_for()` prefers a portrait
+over the battlefield sprite, so the selection card, build grid and queue picked them up with no
+UI changes. Review sheets: `docs/concepts/{vc,fc,ts,sg}_portraits_sheet.png`.
+
+Hit rate 55/58 first roll. These are also the **reference sheets for Pipeline A**: the Blender
+kitbash for each unit now has a target image in the faction's language.
+
 ## Order of work
 
 | # | Step | Output | Effort |
