@@ -51,6 +51,11 @@ Commit **and push** — pushing is a standing rule in this repo. Never `git add 
 6. `p1-06-win-lose.md` — C
 7. `p1-07-order-state-attack-move.md` — O (Sonnet)
 
-After all seven: an **F** review of `git log --oneline -7` and one screenshot from
+## Phase 2 — the decision gate
+
+8. `p2-01-runtime-3d-prototype.md` — O (Sonnet). Step 0 (one mesh via ComfyUI) can go to L.
+   Ends with three motion frames in `docs/`; **F reviews them before anything in Phase 3**.
+
+After all seven Phase 1 tickets: an **F** review of `git log --oneline -7` and one screenshot from
 `godot-4 --path . -- --capture=docs/screenshot_phase1.png --frame=90 --attack` (needs `DISPLAY=:99`
 and `--rendering-method gl_compatibility --rendering-driver opengl3`).
