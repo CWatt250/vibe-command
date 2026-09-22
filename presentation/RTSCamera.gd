@@ -45,8 +45,18 @@ func _zoom_at(screen_pos: Vector2, factor: float) -> void:
 	zoom = Vector2(new_zoom, new_zoom)
 
 func _clamp_to_world() -> void:
-	position.x = clampf(position.x, zoom.x * viewport_width() * 0.5, _world_width - zoom.x * viewport_width() * 0.5)
-	position.y = clampf(position.y, zoom.y * viewport_height() * 0.5, _world_height - zoom.y * viewport_height() * 0.5)
+	# Godot 4: a LARGER zoom is closer, so the visible half-extent is viewport / (2 * zoom).
+	var half_w := viewport_width() * 0.5 / zoom.x
+	var half_h := viewport_height() * 0.5 / zoom.y
+	# If the world is smaller than the view (zoomed far out), centre it instead of jittering.
+	if _world_width <= half_w * 2.0:
+		position.x = _world_width * 0.5
+	else:
+		position.x = clampf(position.x, half_w, _world_width - half_w)
+	if _world_height <= half_h * 2.0:
+		position.y = _world_height * 0.5
+	else:
+		position.y = clampf(position.y, half_h, _world_height - half_h)
 
 func viewport_width() -> float:
 	return get_viewport_rect().size.x
