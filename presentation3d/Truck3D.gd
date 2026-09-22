@@ -15,6 +15,33 @@ func setup(radius: float) -> void:
 	for c in get_children():
 		if String(c.name).begins_with("wheel"):
 			_wheels.append(c)
+			_add_spin_marker(c as Node3D)
+
+## The tire's tread band is rotationally symmetric, so from a near-top-down camera the wheel
+## looks identical at every spin phase even though wheel_rot is genuinely changing (the same
+## problem Drone3D's rotor discs had). A small off-centre marker breaks that symmetry — its
+## swept position visibly differs frame to frame, like a valve stem on a real wheel.
+## NOTE: `radius` here is the WORLD-scaled wheel_radius (0.3 * body scale, see Models3D.truck)
+## — used for the wheel_spin physics in animate(). The wheel *node* itself still lives in the
+## kit's native (pre-scale) local space, since only the Truck3D root carries the uniform scale
+## — sizing this marker off `radius` put it ~17x too big. Native wheel radius is ~0.3.
+const _NATIVE_WHEEL_RADIUS := 0.3
+
+func _add_spin_marker(wheel: Node3D) -> void:
+	# Offset along local Z (the wheel's front/back extent, in the direction rotate_x sweeps),
+	# not Y (top of the wheel) — a top-of-wheel marker sits directly under the wheel-well
+	# lip and the fender occludes it from every capture angle used here.
+	var mi := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = _NATIVE_WHEEL_RADIUS * 0.3
+	sm.height = _NATIVE_WHEEL_RADIUS * 0.6
+	mi.mesh = sm
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.85, 0.82, 0.78)
+	mi.material_override = mat
+	mi.position = Vector3(0.0, 0.0, _NATIVE_WHEEL_RADIUS * 1.25)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	wheel.add_child(mi)
 
 func animate(dt: float, _t: float, speed: float, turning: float) -> void:
 	var wheel_spin := speed / maxf(wheel_radius, 0.01)

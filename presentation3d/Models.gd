@@ -18,15 +18,20 @@ const FALLBACK_SIZE := {
 	"Heavy": 40.0, "AirLight": 24.0, "AirHeavy": 24.0,
 }
 
-## VC-B01's engine-ready mesh (tools/prep_mesh_for_engine.py output). Any other structure
-## gets a faction-coloured box sized by its footprint, so the base still reads.
+## VC-B01's engine-ready mesh (tools/prep_mesh_for_engine.py output): painted with
+## per-vertex colour (glTF COLOR_0), no texture. Any other structure with no GLB falls
+## back to a billboard of its existing AI-rendered 3/4-view sprite (see `_structure_sprite`).
 static func structure(def_id: String, faction: String, footprint: Array) -> Node3D:
 	var path := GLB_DIR + def_id + ".glb"
 	if ResourceLoader.exists(path):
 		var scene: PackedScene = load(path)
 		var inst: Node3D = scene.instantiate()
+		_use_vertex_colors(inst)
 		_enable_shadows(inst)
 		return inst
+	var sprite := _structure_sprite(def_id, footprint)
+	if sprite != null:
+		return sprite
 	var fw: float = float(footprint[0]) * 40.0 if footprint.size() > 0 else 40.0
 	var fd: float = float(footprint[1]) * 40.0 if footprint.size() > 1 else fw
 	return _box(Vector3(fw, 60.0, fd), FC_COLORS.get(faction, Color.WHITE), Vector3(0, 30.0, 0))
@@ -68,13 +73,64 @@ static func soldier() -> Node3D:
 static func drone() -> Node3D:
 	return Drone3D.new()
 
-## Everything else in the sandbox: a faction-coloured box sized by armor class, so nothing
-## in the roster is invisible while only four exemplars have real models.
+## Everything else in the roster: a billboard of the unit's existing AI portrait, so the
+## sandbox reads as the game's actual art instead of anonymous boxes while only four
+## exemplars have real animated models. This is a comparison aid for the 3D-vs-2D decision,
+## not the destination — the real fix is porting more units through Pipeline A/prep_mesh.
+## Falls back to a faction-coloured box only if the unit has no portrait at all.
 static func fallback(e: Entity) -> Node3D:
 	var armor: String = e.def_data.get("armorClass", "")
 	var size: float = FALLBACK_SIZE.get(armor, 24.0)
-	var y: float = 24.0 if e.is_airborne else size * 0.5
-	return _box(Vector3(size, size, size), FC_COLORS.get(e.faction_id, Color.WHITE), Vector3(0, y, 0))
+	var y: float = 24.0 if e.is_airborne else 0.0
+	var tex := SpriteAtlas.portrait(e.def_id)
+	if tex == null:
+		var by: float = 24.0 if e.is_airborne else size * 0.5
+		return _box(Vector3(size, size, size), FC_COLORS.get(e.faction_id, Color.WHITE), Vector3(0, by, 0))
+	var region := SpriteAtlas.region(e.def_id)
+	var target_px: float = EntityRenderer.UNIT_PX.get(armor, EntityRenderer.UNIT_PX_DEFAULT)
+	var aspect: float = region.size.y / maxf(region.size.x, 1.0)
+	var sp := Sprite3D.new()
+	sp.texture = tex
+	sp.region_enabled = true
+	sp.region_rect = region
+	sp.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	sp.shaded = true
+	sp.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	sp.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	sp.pixel_size = target_px / region.size.x
+	# Sprite3D's local origin is the sprite's centre; lift so the feet sit on the ground.
+	sp.offset = Vector2(0.0, -target_px * aspect * 0.5)
+	sp.position = Vector3(0.0, y, 0.0)
+	sp.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	return sp
+
+## A structure with no engine mesh: a standing (non-billboard) sprite of its existing
+## 3/4-view AI render, sized to its footprint and the sprite's own manifest scale
+## (presentation/EntityRenderer.gd does the same STRUCTURE_FILL * scale math for the 2D
+## game). Faces -Z (toward the camera's forward projection) since the sprite art is
+## painted from one fixed 3/4 angle, not meant to rotate.
+static func _structure_sprite(def_id: String, footprint: Array) -> Node3D:
+	var tex := SpriteAtlas.texture(def_id)
+	if tex == null:
+		return null
+	var region := SpriteAtlas.region(def_id)
+	var fw: float = float(footprint[0]) * 40.0 if footprint.size() > 0 else 40.0
+	var target_w: float = fw * 0.94 * SpriteAtlas.scale(def_id)
+	var aspect: float = region.size.y / maxf(region.size.x, 1.0)
+	var sp := Sprite3D.new()
+	sp.texture = tex
+	sp.region_enabled = true
+	sp.region_rect = region
+	sp.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	sp.shaded = true
+	sp.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+	sp.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	sp.pixel_size = target_w / region.size.x
+	var height := target_w * aspect
+	sp.offset = Vector2(0.0, -height * 0.5)
+	sp.rotation.y = PI  # sprite art faces the viewer at yaw 0; scene "forward" is -Z
+	sp.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	return sp
 
 static func _box(size: Vector3, color: Color, local_pos: Vector3) -> Node3D:
 	var mi := MeshInstance3D.new()
@@ -98,3 +154,36 @@ static func _recolor(root: Node, name_substr: String, color: Color) -> void:
 static func _enable_shadows(root: Node) -> void:
 	for c in root.find_children("*", "MeshInstance3D", true, false):
 		(c as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+
+## tools/prep_mesh_for_engine.py ships meshes with per-vertex colour (glTF COLOR_0) and no
+## texture. Godot's glTF importer reads COLOR_0 into the mesh's vertex colour channel, but
+## StandardMaterial3D still needs `vertex_color_use_as_albedo` explicitly turned on per
+## surface, or it renders using the material's flat (default white/grey) albedo — the grey
+## blob the p2-01 capture showed, from a *different* cause (a bad UV bake) but the same
+## symptom. Any glow/emission from a second vertex-colour layer does not survive glTF
+## import as a separate channel Godot can read, so emission is simply left at whatever the
+## imported material set (usually none) — the ticket's own documented fallback.
+static func _use_vertex_colors(root: Node) -> void:
+	for c in root.find_children("*", "MeshInstance3D", true, false):
+		var mi := c as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in range(mi.mesh.get_surface_count()):
+			var src: Material = mi.mesh.surface_get_material(i)
+			var mat: StandardMaterial3D = (src as StandardMaterial3D).duplicate() if src is StandardMaterial3D else StandardMaterial3D.new()
+			mat.vertex_color_use_as_albedo = true
+			mat.vertex_color_is_srgb = true
+			mat.roughness = 0.85
+			# Minimum-brightness floor. This mesh's reconstructed geometry has a deep recess
+			# (the open garage door) whose normals face away from every light source AND
+			# away from the sky-facing direction Environment.ambient_light weights toward —
+			# raising ambient_light_energy 4x moved it only a few RGB values (29 -> 38 of
+			# 255), and disabling SSAO didn't move it further, so this is not occlusion or
+			# ambient strength, it is the hemisphere-weighted ambient model simply not
+			# reaching a sideways/downward-facing cavity. A small flat self-emission is the
+			# standard stylized-render fix for exactly this: guarantees every surface reads
+			# as "in shadow", never "a hole", independent of normal direction or renderer.
+			mat.emission_enabled = true
+			mat.emission = Color(0.16, 0.14, 0.12)
+			mat.emission_energy_multiplier = 1.0
+			mi.set_surface_override_material(i, mat)

@@ -34,11 +34,42 @@ func _ready() -> void:
 	events = GameEvents.new()
 	add_child(events)
 
+	# Parse args FIRST (p2-02): --showcase/--tilt/--no-hud change the map, camera and starter
+	# force built below, so they must be known before any of that runs. --capture(-frames) and
+	# --attack stay handled the same as p2-01 (--attack needs the sim/players to exist first).
+	var args := OS.get_cmdline_user_args()
+	var showcase := false
+	var no_hud := false
+	var attack := false
+	var tilt_deg := 40.0
+	for a in args:
+		if a.begins_with("--capture="):
+			_capture_out = a.trim_prefix("--capture=")
+		elif a.begins_with("--frame="):
+			_capture_at = int(a.trim_prefix("--frame="))
+		elif a.begins_with("--capture-frames="):
+			for s in a.trim_prefix("--capture-frames=").split(","):
+				if s != "":
+					_capture_frames.append(int(s))
+		elif a == "--showcase":
+			showcase = true
+		elif a == "--no-hud":
+			no_hud = true
+		elif a == "--attack":
+			attack = true
+		elif a.begins_with("--tilt="):
+			tilt_deg = float(a.trim_prefix("--tilt="))
+	if _capture_frames.is_empty() and _capture_at < 0:
+		_capture_at = 180
+
 	var grid := NavGrid.new(50, 50)
 	sim = Simulation.new(registry, events, 50, 50)
-	_build_map(grid)
+	if showcase:
+		_build_showcase_map(grid)
+	else:
+		_build_map(grid)
 
-	_build_camera()
+	_build_camera(showcase, tilt_deg)
 	_build_lighting()
 	_build_terrain(grid)
 
@@ -49,51 +80,45 @@ func _ready() -> void:
 	events.entity_created.connect(_on_entity_created)
 	events.entity_destroyed.connect(_on_entity_destroyed)
 
-	hud = HUD.new(sim, events, PLAYER_FACTION)
-	add_child(hud)
+	if not no_hud:
+		hud = HUD.new(sim, events, PLAYER_FACTION)
+		add_child(hud)
 
-	_spawn_starter_force()
+	if showcase:
+		_spawn_showcase()
+	else:
+		_spawn_starter_force()
 	events.game_tick.connect(_on_game_tick)
 
-	# Send the roster on a short advance so the animated exemplars (wheels, legs, rotors)
-	# show real motion across the --capture-frames window instead of standing idle — the
-	# whole point of the multi-frame capture (p2-01 Step 3).
-	var mover_ids: Array = []
-	for e in sim.entities.values():
-		if e.faction_id == "VC" and e.kind == "unit":
-			mover_ids.append(e.id)
-	if not mover_ids.is_empty():
-		sim.run_commands(0, [{"type": "MOVE", "entityIds": mover_ids, "targetPosition": Vector2(34, 34) * NavGrid.CELL}])
+	if not showcase:
+		# Send the roster on a short advance so the animated exemplars (wheels, legs, rotors)
+		# show real motion across the --capture-frames window instead of standing idle.
+		var mover_ids: Array = []
+		for e in sim.entities.values():
+			if e.faction_id == "VC" and e.kind == "unit":
+				mover_ids.append(e.id)
+		if not mover_ids.is_empty():
+			sim.run_commands(0, [{"type": "MOVE", "entityIds": mover_ids, "targetPosition": Vector2(34, 34) * NavGrid.CELL}])
 
-	# Optional screenshot capture: godot -- --capture=/abs/out.png [--frame=N] |
-	# [--capture-frames=60,75,90] (saves out_NNN.png per frame, motion visible across the set).
-	var args := OS.get_cmdline_user_args()
-	for a in args:
-		if a.begins_with("--capture="):
-			_capture_out = a.trim_prefix("--capture=")
-		elif a.begins_with("--frame="):
-			_capture_at = int(a.trim_prefix("--frame="))
-		elif a.begins_with("--capture-frames="):
-			for s in a.trim_prefix("--capture-frames=").split(","):
-				if s != "":
-					_capture_frames.append(int(s))
-		elif a == "--attack":
-			# Same enemy-squad drop as Game.gd's --attack, so units move and turn on camera.
-			for i in range(6):
-				sim.spawn_unit("FC-U01", "FC", Vector2(33, 22 + i) * NavGrid.CELL)
-	if _capture_frames.is_empty() and _capture_at < 0:
-		_capture_at = 180
+	if attack:
+		# Same enemy-squad drop as Game.gd's --attack, so units move and turn on camera.
+		# Showcase mode never adds "FC" itself, so add it here rather than assume the
+		# normal starter force already did (it did, for the non-showcase path).
+		if showcase:
+			sim.add_player("FC")
+		for i in range(6):
+			sim.spawn_unit("FC-U01", "FC", Vector2(33, 22 + i) * NavGrid.CELL)
 
-func _build_camera() -> void:
+func _build_camera(showcase: bool, tilt_deg: float) -> void:
 	var cam := Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
-	cam.size = 720.0
+	cam.size = 260.0 if showcase else 720.0
 	cam.near = 1.0
 	cam.far = 4000.0
 	cam.current = true
 	add_child(cam)
-	var center := Vector3(1230.0, 0.0, 1230.0)
-	var pitch := deg_to_rad(40.0)   # from straight down
+	var center := Vector3(760.0, 0.0, 560.0) if showcase else Vector3(1230.0, 0.0, 1230.0)
+	var pitch := deg_to_rad(tilt_deg)   # from straight down
 	var dist := 1200.0
 	# Straight down (pitch 0) sits directly above; as pitch grows the camera moves toward
 	# -Z (behind) so its look vector tips forward into +Z while still looking down.
@@ -102,6 +127,12 @@ func _build_camera() -> void:
 	cam.look_at(center, Vector3.UP)
 
 func _build_lighting() -> void:
+	# p2-02: a single hard key light left the Garage Core's recessed door/underside solid
+	# black — same symptom as the old flat-blob mesh, different cause. Isolated with a flat
+	# grey material in Blender: identical under key-only lighting, resolved by adding the
+	# fill + rim the 2D sprite rig already uses (tools/render_sprites.py build_scene) —
+	# that mesh had never been lit by anything but a flat unlit texture bake before, so this
+	# gap was invisible until vertex colour made the model genuinely lit for the first time.
 	var sun := DirectionalLight3D.new()
 	sun.shadow_enabled = true
 	sun.light_energy = 1.2
@@ -109,13 +140,31 @@ func _build_lighting() -> void:
 	sun.rotation = Vector3(deg_to_rad(-50.0), deg_to_rad(-135.0), 0.0)
 	add_child(sun)
 
+	var fill := DirectionalLight3D.new()
+	fill.shadow_enabled = false
+	fill.light_energy = 0.35
+	fill.rotation = Vector3(deg_to_rad(-35.0), deg_to_rad(45.0), 0.0)
+	add_child(fill)
+
+	var rim := DirectionalLight3D.new()
+	rim.shadow_enabled = false
+	rim.light_energy = 0.5
+	rim.light_color = Color(1.0, 0.98, 0.94)
+	rim.rotation = Vector3(deg_to_rad(-20.0), deg_to_rad(35.0), 0.0)
+	add_child(rim)
+
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.02, 0.02, 0.03)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.5, 0.5, 0.5)
-	env.ambient_light_energy = 0.35
-	env.ssao_enabled = true
+	# 0.35 (matched to the Blender prep rig's world strength, a DIFFERENT renderer with a
+	# different ambient model — the numeric value doesn't transfer) left a self-shadowed
+	# recess on the Garage Core at RGB(29,30,28), unreadably close to black next to a
+	# directly-lit face at RGB(212,190,153). 1.4 was tuned directly in-engine against that
+	# same capture until the recess reads as "in shadow" rather than "a hole".
+	env.ambient_light_energy = 1.4
+	env.ssao_enabled = false
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	var we := WorldEnvironment.new()
 	we.environment = env
@@ -171,6 +220,13 @@ func _paint_road(grid: NavGrid, cx: int, cy: int, w: int, h: int) -> void:
 			if grid.in_bounds(x, y) and grid.land_types[y][x] == 0:
 				grid.land_types[y][x] = 1
 
+## p2-02: a clean stage for the four-exemplar close-up. The wide map's obstacle list
+## (_build_map) blocks cells that overlap the showcase row (e.g. Vector2i(20,15) blocks
+## world (800..880, 600..640), exactly where VC-U02 spawns) — open dirt, no obstacles,
+## no roads, avoids that entirely rather than re-picking coordinates around it.
+func _build_showcase_map(grid: NavGrid) -> void:
+	sim.grid_map = grid
+
 func _spawn_starter_force() -> void:
 	# Verbatim from presentation/Game.gd.
 	sim.add_player("VC")
@@ -208,6 +264,32 @@ func _spawn_starter_force() -> void:
 
 	sim.attach_skirmish_ai("FC", "VC")
 
+## p2-02: the Garage Core + the three animated exemplars (truck, soldier, drone) plus one
+## fallback billboard (Bot Dog), in a row facing the camera with room to walk/drive/fly
+## across the whole capture window — built to actually answer "do wheels spin, do legs
+## walk, do rotors turn", which the wide shot's 40 px units couldn't.
+func _spawn_showcase() -> void:
+	sim.add_player("VC")
+	sim.selected_faction = "VC"
+
+	sim.spawn_structure("VC-B01", "VC", Vector2(720.0, 400.0))
+	var truck := sim.spawn_unit("VC-U04", "VC", Vector2(560.0, 620.0))
+	var soldier := sim.spawn_unit("VC-U01", "VC", Vector2(680.0, 620.0))
+	var drone := sim.spawn_unit("VC-U02", "VC", Vector2(800.0, 620.0))
+	sim.spawn_unit("VC-U05", "VC", Vector2(920.0, 620.0))   # Bot Dog: one fallback billboard on screen
+
+	sim.run_commands(0, [
+		{"type": "MOVE", "entityIds": [truck], "targetPosition": Vector2(560.0 + 260.0, 620.0)},
+		{"type": "MOVE", "entityIds": [soldier], "targetPosition": Vector2(680.0 + 260.0, 620.0)},
+		# Drone's own top speed (150 u/s, vs the truck's 120 and soldier's 60) closes a 260
+		# excursion inside one second — well before frame 20, the capture window's first
+		# frame — and carries it off the left edge of the tight showcase framing by frame 28.
+		# A shorter hop keeps it inside frame for the whole --capture-frames=20,28,36,44
+		# window (rotor spin itself is unconditional in Drone3D.animate(), so this only
+		# affects how far it travels, not whether the rotors visibly turn).
+		{"type": "MOVE", "entityIds": [drone], "targetPosition": Vector2(800.0 + 100.0, 620.0)},
+	])
+
 func _on_entity_created(entity_id: int, def_id: String, faction: String, _pos: Vector2) -> void:
 	var e: Entity = sim.entities.get(entity_id)
 	if e == null:
@@ -230,10 +312,9 @@ func _on_entity_created(entity_id: int, def_id: String, faction: String, _pos: V
 	_entities[entity_id] = ent3d
 
 func _on_entity_destroyed(entity_id: int, _def_id: String, _pos: Vector2) -> void:
-	# GameEvents.entity_destroyed is declared (entity_id, pos) but Simulation.remove_entity
-	# actually emits (id, def_id, position) — a pre-existing mismatch in core/ this ticket
-	# does not touch (sim is out of scope); matching the real emit call here is the fix on
-	# our side of that boundary.
+	# GameEvents.entity_destroyed is declared (entity_id, def_id, pos) as of p2-02 (it was
+	# (entity_id, pos) in p2-01, which didn't match Simulation.remove_entity's actual 3-arg
+	# emit — fixed in core/simulation/GameEvents.gd this ticket).
 	var ent3d: Entity3D = _entities.get(entity_id)
 	if ent3d != null:
 		ent3d.queue_free()

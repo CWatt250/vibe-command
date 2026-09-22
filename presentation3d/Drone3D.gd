@@ -17,7 +17,11 @@ func _init() -> void:
 		arm.rotation.y = ang
 		arm.position = Vector3(cos(ang) * 5.0, 0.0, sin(ang) * 5.0)
 		add_child(arm)
-		var rotor := _cyl("rotor%d" % i, 5.0, 0.4, rotor_mat)
+		# A circular disc spinning about its own vertical axis looks identical at every
+		# rotation phase from a near-top-down camera — the showcase's whole point. An
+		# elongated blade (long along X, sitting flat) sweeps a visibly different silhouette
+		# each frame instead.
+		var rotor := _box("rotor%d" % i, Vector3(9.0, 0.4, 1.4), rotor_mat)
 		rotor.position = Vector3(cos(ang) * 11.0, 1.0, sin(ang) * 11.0)
 		add_child(rotor)
 		_rotors.append({"node": rotor, "dir": 1.0 if i % 2 == 0 else -1.0})
@@ -52,18 +56,6 @@ func _box(n: String, size: Vector3, mat: Material) -> MeshInstance3D:
 	var bm := BoxMesh.new()
 	bm.size = size
 	mi.mesh = bm
-	mi.material_override = mat
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	return mi
-
-func _cyl(n: String, r: float, h: float, mat: Material) -> MeshInstance3D:
-	var mi := MeshInstance3D.new()
-	mi.name = n
-	var cm := CylinderMesh.new()
-	cm.top_radius = r
-	cm.bottom_radius = r
-	cm.height = h
-	mi.mesh = cm
 	mi.material_override = mat
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	return mi

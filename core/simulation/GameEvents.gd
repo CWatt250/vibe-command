@@ -5,7 +5,7 @@ class_name GameEvents
 
 signal game_tick(tick: int, dt: float)
 signal entity_created(entity_id: int, def_id: String, faction: String, pos: Vector2)
-signal entity_destroyed(entity_id: int, pos: Vector2)
+signal entity_destroyed(entity_id: int, def_id: String, pos: Vector2)
 signal entity_selected(entity_ids: Array[int])
 signal entity_command(entity_ids: Array[int], command: Dictionary)
 signal resource_changed(faction: String, resource_id: String, amount: float)

@@ -3,28 +3,32 @@
     ~/Dev/tools/blender-4.5.13-linux-x64/blender -b -P tools/prep_mesh_for_engine.py -- <id> \
         [--image <path relative to repo root>] [--max-tris N]
 
-Hunyuan3D meshes are ~500k verts, no UVs, colour only as a per-vertex layer after
-render_sprites.project_portrait(). This script, for one id:
+Hunyuan3D meshes are ~500k verts, no UVs, no usable material. This script, for one id:
   1. Imports ~/Dev/assets/generated3d/<id>.glb, drops loose debris (render_sprites.
-     drop_loose_debris), joins whatever survives into one mesh, and normalises scale so
-     the largest extent equals the sim footprint (structures: footprint * NavGrid.CELL from
-     content/data/structures.json; units: render_sprites.FIT_BY_ARMOR * 40 / 3, i.e. the same
-     world units the 2D sprite rig fits units to, in engine px). Sits it on Blender z=0
-     (Blender is Z-up here, same convention as render_sprites.py and kit_generated(); the
-     glTF exporter's default +Y-up conversion makes that height axis Y in the exported file,
-     which is what Godot expects).
-  2. Paints it from the SAME image used to generate the mesh via render_sprites.
-     project_portrait() (per-vertex "portrait" + "glow" colour attributes).
-  3. Decimates to <= --max-tris (default 8000) triangles.
-  4. Smart-UV-projects it, then bakes the per-vertex colour into a 1024x1024 diffuse image
-     (Cycles DIFFUSE/COLOR bake; falls back to an EMIT bake if that fails).
-  5. Assigns a Principled material with the baked image as Base Color and exports
-     assets/models/<id>.glb with the texture embedded.
+     drop_loose_debris), joins whatever survives into one mesh, Voxel Remeshes it (the
+     surface-net output is non-manifold and Decimate's edge-collapse stalls on it
+     untouched), and normalises scale so the largest extent equals the sim footprint
+     (structures: footprint * NavGrid.CELL from content/data/structures.json; units:
+     render_sprites.FIT_BY_ARMOR * 40 / 3, the same world units the 2D sprite rig fits
+     units to, in engine px). Sits it on Blender z=0 (Blender is Z-up here, same convention
+     as render_sprites.py; the glTF exporter's +Y-up conversion makes that height axis Y in
+     the exported file, which is what Godot expects).
+  2. Decimates to <= --max-tris (default 30000) triangles. Runs BEFORE painting: colour is
+     computed once, directly on the vertices we actually ship, instead of being computed on
+     ~350k vertices and then blurred/averaged by the collapse.
+  3. Paints the decimated mesh from the SAME image used to generate the mesh, via
+     render_sprites.project_portrait() (per-vertex "portrait" + "glow" colour attributes;
+     no UVs needed).
+  4. Assigns render_sprites.vertex_color_material() — Base Color from "portrait", Emission
+     from "glow" — the same material recipe the 2D sprite rig bakes from, so an engine model
+     and its 2D portrait read as the same paint job.
+  5. Exports assets/models/<id>.glb with vertex colours embedded (glTF COLOR_0; Blender's
+     default export_vertex_color="MATERIAL" ships whatever colour attribute(s) the assigned
+     material's shader nodes reference, which is exactly "portrait" — no bake, no image file).
 
-Prints "PREPPED <id> tris=<n>" on success.
+Prints "PREPPED <id> tris=<n> verts=<n> color=COLOR_0" on success.
 """
 import json
-import math
 import os
 import sys
 
@@ -66,7 +70,7 @@ def main() -> None:
     uid = argv[0]
     image = (os.path.join(ROOT, argv[argv.index("--image") + 1]) if "--image" in argv
               else os.path.join(ROOT, "assets", "portraits", f"{uid}.png"))
-    max_tris = int(argv[argv.index("--max-tris") + 1]) if "--max-tris" in argv else 8000
+    max_tris = int(argv[argv.index("--max-tris") + 1]) if "--max-tris" in argv else 30000
 
     src = os.path.join(GENERATED, f"{uid}.glb")
     if not os.path.exists(src):
@@ -77,7 +81,8 @@ def main() -> None:
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sc = bpy.context.scene
 
-    # 1. Import, drop debris, collapse to one mesh, normalise scale + position.
+    # 1. Import, drop debris, collapse to one mesh, remesh to clean topology, normalise
+    #    scale + position.
     before = set(sc.objects)
     bpy.ops.import_scene.gltf(filepath=src)
     new = rs.drop_loose_debris([o for o in sc.objects if o not in before])
@@ -114,20 +119,33 @@ def main() -> None:
     mx = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
     ext = mx - mn
     length = target_extent(uid)
-    s = length / max(ext.x, ext.y, ext.z, 1e-6)
+    is_structure = bool(_structure_def(uid))
+    if is_structure:
+        # Footprint (x/y) is pinned exactly to the sim footprint -- gameplay-accuracy, and
+        # what a structure's ground pad is sized from. Height is capped independently
+        # rather than uniform-scaled 1:1 with the footprint: VC-B01's raw reconstruction
+        # (a two-story building + roof antenna, single-view) comes out about as tall as its
+        # footprint is wide, a far taller silhouette than this game's art direction uses
+        # anywhere else, and it visibly parallax-shifted off its own ground pad at the
+        # camera's 40 degree tilt (confirmed with tilt=0, where the offset vanished
+        # completely -- real perspective displacement from excess height, not a lighting or
+        # geometry bug). The cap only ever COMPRESSES height, never stretches it beyond
+        # what uniform scaling would already give.
+        s_xy = length / max(ext.x, ext.y, 1e-6)
+        height_cap = length * 0.65
+        s_z = min(s_xy, height_cap / max(ext.z, 1e-6))
+        s = Vector((s_xy, s_xy, s_z))
+    else:
+        su = length / max(ext.x, ext.y, ext.z, 1e-6)
+        s = Vector((su, su, su))
     centre = (mn + mx) * 0.5
     holder = bpy.data.objects.new(uid + "_holder", None)
     sc.collection.objects.link(holder)
-    holder.scale = (s, s, s)
-    holder.location = (-centre.x * s, -centre.y * s, -mn.z * s)
+    holder.scale = s
+    holder.location = (-centre.x * s.x, -centre.y * s.y, -mn.z * s.z)
     mesh_obj.parent = holder
 
-    # 2. Paint from the source image (per-vertex "portrait" + "glow" colour attributes).
-    mesh_obj.data.materials.clear()
-    if not rs.project_portrait(mesh_obj, image):
-        raise SystemExit(f"project_portrait failed for {uid} ({image})")
-
-    # 3. Decimate to <= max_tris triangles.
+    # 2. Decimate to <= max_tris triangles, BEFORE painting (see module docstring).
     bpy.context.view_layer.objects.active = mesh_obj
     bpy.ops.object.select_all(action="DESELECT")
     mesh_obj.select_set(True)
@@ -150,50 +168,43 @@ def main() -> None:
         if new_tris >= current_tris:
             break  # no further progress possible
     tris = len(mesh_obj.data.loop_triangles)
+    verts = len(mesh_obj.data.vertices)
 
-    # 4. Smart UV Project, then bake the per-vertex colour into a 1024x1024 diffuse image.
+    # 2b. Recalculate normals. The old pipeline baked colour with Cycles DIFFUSE+COLOR,
+    # which extracts flat albedo independent of lighting/orientation — invisible normals
+    # bugs stayed invisible. Vertex colour is lit in real time by the engine, so a face
+    # with an inverted normal now renders unlit (black) regardless of its colour. Found by
+    # isolating this exact mesh with a flat grey material: the bottom half rendered solid
+    # black with a crisp seam, present with or without vertex colour, so the base geometry
+    # itself has an inside-out patch (voxel remesh occasionally mis-signs an SDF pocket on
+    # complex single-view reconstructions). This is a one-shot, well-understood fix for
+    # exactly that class of bug — outward-consistent recalculation on a closed manifold.
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
-    bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.02)
+    bpy.ops.mesh.normals_make_consistent(inside=False)
     bpy.ops.object.mode_set(mode="OBJECT")
 
-    img = bpy.data.images.new(f"{uid}_diffuse", 1024, 1024, alpha=False)
-    bake_mat = rs.vertex_color_material(uid + "_bake")
-    tex_node = bake_mat.node_tree.nodes.new("ShaderNodeTexImage")
-    tex_node.image = img
-    bake_mat.node_tree.nodes.active = tex_node
+    # 3. Paint the FINAL (already-decimated) mesh from the source image: per-vertex
+    #    "portrait" + "glow" colour attributes, no UVs needed.
     mesh_obj.data.materials.clear()
-    mesh_obj.data.materials.append(bake_mat)
+    if not rs.project_portrait(mesh_obj, image):
+        raise SystemExit(f"project_portrait failed for {uid} ({image})")
 
-    sc.render.engine = "CYCLES"
-    sc.cycles.device = "CPU"
-    sc.cycles.samples = 8
-    try:
-        bpy.ops.object.bake(type="DIFFUSE", pass_filter={"COLOR"}, save_mode="INTERNAL")
-    except RuntimeError as e:
-        print(f"Cycles DIFFUSE bake failed ({e}); falling back to EMIT")
-        bpy.ops.object.bake(type="EMIT", save_mode="INTERNAL")
+    # 4. Material: Base Color from "portrait", Emission from "glow" — the same recipe the
+    #    2D sprite rig uses, so the engine model and the unit's portrait/sprite match.
+    mesh_obj.data.materials.append(rs.vertex_color_material(uid))
 
-    # 5. Principled material with the baked image as Base Color; export.
-    final_mat = bpy.data.materials.new(f"{uid}_final")
-    final_mat.use_nodes = True
-    bsdf = final_mat.node_tree.nodes["Principled BSDF"]
-    tex = final_mat.node_tree.nodes.new("ShaderNodeTexImage")
-    tex.image = img
-    final_mat.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
-    bsdf.inputs["Roughness"].default_value = 0.75
-    mesh_obj.data.materials.clear()
-    mesh_obj.data.materials.append(final_mat)
-
+    # 5. Export with vertex colours embedded. Blender's default export_vertex_color=
+    #    "MATERIAL" ships whichever colour attribute(s) the assigned material's shader
+    #    nodes reference — exactly "portrait" (and "glow") here. No bake, no image file.
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = os.path.join(OUT_DIR, f"{uid}.glb")
     bpy.ops.object.select_all(action="DESELECT")
     holder.select_set(True)
     mesh_obj.select_set(True)
-    bpy.ops.export_scene.gltf(filepath=out_path, use_selection=True, export_format="GLB",
-                               export_image_format="AUTO")
+    bpy.ops.export_scene.gltf(filepath=out_path, use_selection=True, export_format="GLB")
     size_mb = os.path.getsize(out_path) / 1e6
-    print(f"PREPPED {uid} tris={tris} size={size_mb:.2f}MB -> {out_path}")
+    print(f"PREPPED {uid} tris={tris} verts={verts} color=COLOR_0 size={size_mb:.2f}MB -> {out_path}")
 
 
 if __name__ == "__main__":
