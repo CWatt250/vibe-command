@@ -312,10 +312,19 @@ func _tick_entity(e: Entity, dt: float) -> void:
 		if e.construction.tick(dt):
 			events.building_constructed.emit(e.id, e.def_id, e.faction_id)
 	if e.movement != null:
+		var was_moving: bool = e.movement.is_moving()
 		var newpos: Vector2 = e.movement.update(dt, e.position)
 		if newpos != e.position:
 			e.position = newpos
 			spatial.update(e.id, newpos)
+		# MOVE / ATTACK_MOVE finished their path AT order_dest -> back to IDLE. Checking the
+		# actual position (not just "stopped moving") matters for ATTACK_MOVE: it can also stop
+		# because it chased a target to a waypoint short of order_dest, which must not count as
+		# arrival.
+		if was_moving and not e.movement.is_moving() \
+				and (e.order == Entity.Order.MOVE or e.order == Entity.Order.ATTACK_MOVE) \
+				and e.position.distance_to(e.order_dest) <= 4.0:
+			e.order = Entity.Order.IDLE
 	if e.weapon != null:
 		e.weapon.tick_cool(dt)
 	if e.production != null:
@@ -342,8 +351,15 @@ func run_commands(id: int, commands: Array) -> void:
 			"STOP":
 				for t in targets:
 					var et: Entity = entities.get(t)
-					if et != null and et.movement != null:
+					if et == null:
+						continue
+					et.order = Entity.Order.IDLE
+					if et.movement != null:
 						et.movement.clear()
+					if et.weapon != null:
+						et.weapon.current_target_id = -1
+			"HOLD":
+				_issue_hold(id, targets)
 			"BUILD":
 				_issue_build(id, cmd)
 			"TRAIN":
@@ -378,6 +394,8 @@ func _issue_move(self_id: int, targets: Array, destination: Vector2) -> void:
 		var dest: Vector2 = destination + offsets[i]
 		var path := grid_map.find_path(e.position, dest, e.movement.path_layer == "air")
 		e.movement.set_path(path, dest)
+		e.order = Entity.Order.MOVE
+		e.order_dest = dest
 
 func _formation_offsets(n: int) -> Array[Vector2]:
 	var offsets: Array[Vector2] = []
@@ -402,11 +420,38 @@ func _issue_attack(self_id: int, targets: Array, cmd: Dictionary) -> void:
 		var e: Entity = entities.get(t)
 		if e == null or e.weapon == null:
 			continue
-		# Attacker keeps moving to engage; weapon release handles range.
+		# Clear any current path first so CombatSystem's chase starts this tick, not after the
+		# unit finishes whatever move/attack-move it was already doing.
+		if e.movement != null:
+			e.movement.clear()
+		e.order = Entity.Order.ATTACK
+		e.order_target = target_entity
 		e.weapon.current_target_id = target_entity
 
 func _issue_attack_move(self_id: int, targets: Array, destination: Vector2) -> void:
-	_issue_move(self_id, targets, destination)
+	# Same formation pathing as MOVE, but tagged ATTACK_MOVE so CombatSystem's engagement loop
+	# (tick_all) fights anything acquired en route, then resumes toward order_dest.
+	var n: int = targets.size()
+	var offsets := _formation_offsets(n)
+	for i in range(n):
+		var t: int = targets[i]
+		var e: Entity = entities.get(t)
+		if e == null or e.movement == null:
+			continue
+		var dest: Vector2 = destination + offsets[i]
+		var path := grid_map.find_path(e.position, dest, e.movement.path_layer == "air")
+		e.movement.set_path(path, dest)
+		e.order = Entity.Order.ATTACK_MOVE
+		e.order_dest = dest
+
+func _issue_hold(self_id: int, targets: Array) -> void:
+	for t in targets:
+		var e: Entity = entities.get(t)
+		if e == null:
+			continue
+		e.order = Entity.Order.HOLD
+		if e.movement != null:
+			e.movement.clear()
 
 # --- Base building (Blueprint §5.2) / production (Blueprint §5.3) ---
 func _issue_build(self_id: int, cmd: Dictionary) -> void:

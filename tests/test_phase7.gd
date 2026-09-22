@@ -127,6 +127,37 @@ func _init() -> void:
 	_run(sim, 5)
 	_check(over.size() == 1, "match_over fires exactly once")
 
+	# --- p1-07: order state ---
+	sim.add_player("FC")
+	var am := sim.spawn_unit("VC-U04", "VC", Vector2(600, 1500))
+	var blocker := sim.spawn_unit("FC-U01", "FC", Vector2(900, 1500))      # on the way, in vision
+	sim.run_commands(0, [{"type": "ATTACK_MOVE", "entityIds": [am], "targetPosition": Vector2(1400, 1500)}])
+	_check(sim.entities[am].order == Entity.Order.ATTACK_MOVE, "order is ATTACK_MOVE")
+	_run(sim, 60)
+	var am_e: Entity = sim.entities[am]
+	_check(am_e.weapon.current_target_id == blocker or not sim.entities.has(blocker), "attack-mover engaged the blocker")
+	# Kill the blocker if still alive; the unit must resume toward its destination.
+	if sim.entities.has(blocker): sim.remove_entity(blocker)
+	_run(sim, 5)
+	_check(am_e.order == Entity.Order.ATTACK_MOVE and am_e.movement.is_moving(), "resumed advance after the kill")
+
+	var mv := sim.spawn_unit("VC-U04", "VC", Vector2(600, 1700))
+	var bait := sim.spawn_unit("FC-U01", "FC", Vector2(700, 1700))
+	sim.run_commands(0, [{"type": "MOVE", "entityIds": [mv], "targetPosition": Vector2(1400, 1700)}])
+	_run(sim, 10)
+	_check(sim.entities[mv].weapon.current_target_id == -1, "plain MOVE ignores enemies en route")
+
+	# VC-U04 (wpn_autocannon): range 160, acquire_radius = max(160, 220) = 220 -> 190 sits inside
+	# acquire radius, outside weapon range (the ticket's literal 400 offset is outside both).
+	var hold := sim.spawn_unit("VC-U04", "VC", Vector2(600, 1900))
+	sim.run_commands(0, [{"type": "HOLD", "entityIds": [hold]}])
+	var hold_w = sim.entities[hold].weapon
+	_check(hold_w.range < 190.0 and 190.0 <= hold_w.acquire_radius,
+		"test premise: 190 is outside weapon range (%.0f), inside acquire radius (%.0f)" % [hold_w.range, hold_w.acquire_radius])
+	var far := sim.spawn_unit("FC-U01", "FC", Vector2(600 + 190, 1900))   # outside weapon range, inside acquire
+	_run(sim, 20)
+	_check(not sim.entities[hold].movement.is_moving(), "HOLD never chases")
+
 	if failures == 0:
 		print("PHASE7_RESULT: ALL PASS")
 	else:

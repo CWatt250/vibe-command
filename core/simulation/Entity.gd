@@ -28,6 +28,13 @@ var position: Vector2 = Vector2.ZERO
 var is_airborne: bool = false
 var alive: bool = true
 
+## Order state (Blueprint p1-07) — what the unit is currently doing, set by Simulation's order
+## handlers and read by CombatSystem to decide acquisition/chase/fire behaviour.
+enum Order { IDLE, MOVE, ATTACK, ATTACK_MOVE, HOLD }
+var order: Order = Order.IDLE
+var order_target: int = -1              # entity id for ATTACK
+var order_dest: Vector2 = Vector2.ZERO  # for MOVE / ATTACK_MOVE
+
 # --- components (Blueprint §2 / §4) ---
 var health: HealthComponent = null
 var movement: MovementComponent = null

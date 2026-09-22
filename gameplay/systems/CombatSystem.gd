@@ -24,11 +24,26 @@ func tick_all() -> void:
 		if e.weapon == null:
 			continue
 		var w: WeaponComponent = e.weapon
-		# 1. If no target, acquire one (automatic turret targeting).
+
+		# Order gating (Blueprint p1-07) — what the current order permits this tick.
+		if e.order == Entity.Order.MOVE and e.movement != null and e.movement.is_moving():
+			# Plain MOVE ignores enemies en route entirely; no acquisition while travelling.
+			continue
+		if e.order == Entity.Order.ATTACK_MOVE:
+			_tick_attack_move(e, w)
+
+		# 1. If no target, acquire one (automatic turret targeting) — except ATTACK, which is
+		#    locked to its ordered target and reverts to IDLE instead of picking a replacement.
 		var target_id: int = w.current_target_id
 		if target_id < 0 or not _valid_target(e, target_id):
-			target_id = _acquire_target(e)
-			w.current_target_id = target_id
+			if e.order == Entity.Order.ATTACK:
+				w.current_target_id = -1
+				e.order = Entity.Order.IDLE
+				e.order_target = -1
+				target_id = -1
+			else:
+				target_id = _acquire_target(e)
+				w.current_target_id = target_id
 		if target_id < 0:
 			continue
 		# 2. If target out of range and this is a unit with movement, chase a little (attack-move leash handled by orders).
@@ -37,13 +52,30 @@ func tick_all() -> void:
 			w.current_target_id = -1
 			continue
 		# 2b. If the target is out of firing range, chase it (attack pursuit). Only re-path
-		#     when not already moving, to avoid repathing every tick.
+		#     when not already moving, to avoid repathing every tick. HOLD never chases.
 		if not w.target_in_range(target.position, e.position):
-			if e.movement != null and not e.movement.is_moving() and not e.movement.reached_goal(e.position):
+			if e.order != Entity.Order.HOLD and e.movement != null \
+					and not e.movement.is_moving() and not e.movement.reached_goal(e.position):
 				_chase(e, target)
 		# 3. Fire when in range and cooldown ready.
 		if w.can_fire() and w.target_in_range(target.position, e.position):
 			_resolve_fire(e, w, target)
+
+func _tick_attack_move(e: Entity, w: WeaponComponent) -> void:
+	## ATTACK_MOVE engagement loop: fight anything acquired en route, then resume advancing
+	## toward order_dest once the fight is over (Blueprint p1-07).
+	if w.current_target_id < 0 or not _valid_target(e, w.current_target_id):
+		if w.current_target_id >= 0:
+			# Had a target; it died or went invalid mid-fight — resume the advance.
+			w.current_target_id = -1
+			if sim.grid_map != null and e.movement != null:
+				var path := sim.grid_map.find_path(e.position, e.order_dest, e.movement.path_layer == "air")
+				e.movement.set_path(path, e.order_dest)
+		var found := _acquire_target(e)
+		if found >= 0:
+			w.current_target_id = found
+			if e.movement != null:
+				e.movement.clear()  # stop advancing toward order_dest; fight where we stand
 
 func _apply_repair(structure: Entity) -> void:
 	## A repair structure heals all friendly, damaged entities within repairRadius (§5.7).
