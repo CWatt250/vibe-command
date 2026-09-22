@@ -79,6 +79,15 @@ func _init() -> void:
 	_check(Simulation.ticks_per(3.0) == 5, "ticks_per(3 Hz) at 15 Hz is 5")
 	_check(is_equal_approx(Simulation.TICK_DT, 1.0 / 15.0), "TICK_DT derives from TICK_HZ")
 
+	# --- p1-02: selection faction/fog rule (mirrors SelectionInput._pickable) ---
+	sim.selected_faction = "VC"
+	var far_fc := sim.spawn_unit("FC-U01", "FC", Vector2(200, 200))   # far from every VC sensor
+	_run(sim, 2)
+	_check(not sim.fog_sys.is_visible("VC", sim.entities[far_fc].position), "hidden FC unit is not visible to VC")
+	var near_fc := sim.spawn_unit("FC-U01", "FC", Vector2(1010, 1000))  # next to the VC HQ
+	_run(sim, 2)
+	_check(sim.fog_sys.is_visible("VC", sim.entities[near_fc].position), "FC unit beside VC HQ is visible")
+
 	if failures == 0:
 		print("PHASE7_RESULT: ALL PASS")
 	else:

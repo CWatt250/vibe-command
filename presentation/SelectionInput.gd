@@ -67,9 +67,15 @@ func _finish_drag(mouse_pos: Vector2) -> void:
 func _units_in_rect(box: Rect2) -> Array:
 	var out: Array = []
 	for e in sim.entities.values():
-		if e.kind == "unit" and box.has_point(e.position):
+		if e.kind == "unit" and e.faction_id == sim.selected_faction and box.has_point(e.position):
 			out.append(e.id)
 	return out
+
+## Own entities are always pickable; enemy/neutral only if the player can see them now.
+func _pickable(e: Entity) -> bool:
+	if e.faction_id == sim.selected_faction:
+		return true
+	return sim.fog_sys == null or sim.fog_sys.is_visible(sim.selected_faction, e.position)
 
 ## Click-select: units win within 24px; otherwise a structure whose footprint contains
 ## the point. Drag-select stays units-only (C&C convention) via _units_in_rect.
@@ -78,6 +84,8 @@ func _unit_at_world(p: Vector2) -> int:
 	var best_d := 24.0 * 24.0
 	for e in sim.entities.values():
 		if e.kind != "unit":
+			continue
+		if not _pickable(e):
 			continue
 		var d: float = (e.position - p).length_squared()
 		if d < best_d:
@@ -90,6 +98,8 @@ func _unit_at_world(p: Vector2) -> int:
 func _structure_at_world(p: Vector2) -> int:
 	for e in sim.entities.values():
 		if e.kind != "structure":
+			continue
+		if not _pickable(e):
 			continue
 		var fp: Array = e.def_data.get("footprint", [1, 1])
 		var half := Vector2(fp[0], fp[1] if fp.size() > 1 else fp[0]) * NavGrid.CELL * 0.5
@@ -115,7 +125,8 @@ func _issue_context_order(world_pos: Vector2) -> void:
 	# Attack if a hostile unit is under the cursor; else move.
 	var target_id := _unit_at_world(world_pos)
 	var orders: Array = []
-	if target_id >= 0 and sim.entities.get(target_id) != null and sim.entities.get(target_id).faction_id != sim.selected_faction:
+	if target_id >= 0 and sim.entities.get(target_id) != null and sim.entities.get(target_id).faction_id != sim.selected_faction \
+			and _pickable(sim.entities.get(target_id)):
 		orders.append({"type": "ATTACK", "entityIds": ids, "targetEntityId": target_id})
 	else:
 		orders.append({"type": "MOVE", "entityIds": ids, "targetPosition": world_pos})
