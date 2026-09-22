@@ -36,7 +36,10 @@ def main() -> None:
     ap.add_argument("--force", action="store_true")
     a = ap.parse_args()
 
-    ids = [d["id"] for d in json.load(open(UNITS))["units"] if d["factionId"] == a.faction]
+    # Infantry render from Kenney humanoids in the Blender rig (kit_infantry), not from
+    # a generated mesh — Hunyuan3D can't do a readable human from one view.
+    defs = [d for d in json.load(open(UNITS))["units"] if d["factionId"] == a.faction]
+    ids = [d["id"] for d in defs if d.get("armorClass") not in ("Infantry", "HeavyInfantry")]
     only = {s.strip() for s in a.only.split(",") if s.strip()}
     os.makedirs(FRAMES, exist_ok=True)
     done = 0
