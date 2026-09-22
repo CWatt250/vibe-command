@@ -18,6 +18,7 @@ signal building_constructed(entity_id: int, def_id: String, faction: String)
 signal unit_spawned(entity_id: int, def_id: String, faction: String, pos: Vector2)
 signal combat_occurred(attacker_id: int, target_id: int, def_id: String, damage: float)
 signal unit_died(entity_id: int, def_id: String, faction: String, pos: Vector2)
+signal match_over(loser: String, winner: String)
 signal log(msg: String)
 
 func emit_log(msg: String) -> void:

@@ -40,6 +40,7 @@ var _players: Dictionary = {}          # faction -> {resources:{}, ...}
 var tick: int = 0
 var time: float = 0.0
 var match_over_for: Dictionary = {}    # faction -> bool (base destroyed)
+var _had_hq: Dictionary = {}           # faction -> true once it has ever owned an HQ
 
 func _init(registry_: ContentRegistry, events_: GameEvents, grid_h: int, grid_w: int) -> void:
 	registry = registry_
@@ -105,6 +106,8 @@ func spawn_structure(def_id: String, faction: String, pos: Vector2, start_built:
 	if def.is_empty():
 		push_error("Simulation: unknown structure def " + def_id)
 		return -1
+	if def.get("class", "") == "HQ":
+		_had_hq[faction] = true
 	var e = Entity.new(def, faction, _next_id)
 	e.kind = "structure"
 	e._attach_components(registry, def, start_built)
@@ -196,6 +199,33 @@ func step(dt: float) -> void:
 	if skirmish_ai != null:
 		skirmish_ai.update(dt)
 	_cleanup_control_groups()
+	_check_match_over()
+
+## A faction loses when it has no built HQ-class structure left. First loser ends the
+## match; with two players the other is the winner. Fires once.
+func _check_match_over() -> void:
+	if not match_over_for.is_empty():
+		return
+	var alive_hq: Dictionary = {}
+	for f in _players.keys():
+		alive_hq[f] = false
+	for e in entities.values():
+		if e.alive and e.kind == "structure" and e.def_data.get("class", "") == "HQ" \
+				and (e.construction == null or e.construction.is_built()):
+			alive_hq[e.faction_id] = true
+	for f in alive_hq.keys():
+		# Sandboxes spawn units before structures; never lose a faction that never had an HQ.
+		if not _had_hq.get(f, false):
+			continue
+		if not alive_hq[f]:
+			match_over_for[f] = true
+			var winner := ""
+			for other in alive_hq.keys():
+				if other != f and alive_hq[other]:
+					winner = other
+			events.match_over.emit(f, winner)
+			events.log.emit("MATCH OVER: %s lost (HQ destroyed); winner %s" % [f, winner])
+			return
 
 func _recompute_fog() -> void:
 	## Update each faction's visibility grid from its entities' sensor radii.

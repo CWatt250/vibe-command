@@ -115,6 +115,18 @@ func _init() -> void:
 	_check(g.land_types[10][10] == 1, "road survives block/unblock")
 	_check(g.render_type(10, 10) == 1, "unblocked cell renders as road again")
 
+	# --- p1-06: match over when the HQ falls ---
+	var fc_hq := sim.spawn_structure("FC-B01", "FC", Vector2(1600, 1600), true)
+	var over := []
+	events.match_over.connect(func(l, w): over.append([l, w]))
+	_run(sim, 1)
+	_check(over.is_empty(), "no result while both HQs stand")
+	sim.remove_entity(fc_hq)
+	_run(sim, 1)
+	_check(over.size() == 1 and over[0][0] == "FC" and over[0][1] == "VC", "FC loses, VC wins")
+	_run(sim, 5)
+	_check(over.size() == 1, "match_over fires exactly once")
+
 	if failures == 0:
 		print("PHASE7_RESULT: ALL PASS")
 	else:

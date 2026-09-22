@@ -18,6 +18,8 @@ var _portrait: TextureRect
 var _title: Label
 var _stats: Label
 var _stop_button: Button
+var _match_panel: Control
+var _result_label: Label
 
 func _init(simulation: Simulation, ev: GameEvents, player_faction: String) -> void:
 	sim = simulation
@@ -89,8 +91,57 @@ func _ready() -> void:
 	column.add_child(build_grid)
 
 	_card.hide()
+	_match_panel = _build_match_panel()
 	events.entity_selected.connect(_on_entity_selected)
 	events.game_tick.connect(_on_game_tick)
+	events.match_over.connect(_on_match_over)
+
+## Centred result card. PROCESS_MODE_ALWAYS so its Restart button still takes input
+## after the tree is paused (same pattern as PauseMenu, which owns Esc).
+func _build_match_panel() -> Control:
+	var root := Control.new()
+	root.process_mode = Node.PROCESS_MODE_ALWAYS
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(root)
+	var dim := ColorRect.new()
+	dim.color = Color(0, 0, 0, 0.55)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.add_child(center)
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UiTheme.panel(faction))
+	center.add_child(panel)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 12)
+	column.custom_minimum_size = Vector2(260, 0)
+	panel.add_child(column)
+	_result_label = Label.new()
+	_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_result_label.add_theme_font_size_override("font_size", 32)
+	column.add_child(_result_label)
+	var restart := Button.new()
+	restart.text = "Restart"
+	restart.focus_mode = Control.FOCUS_NONE
+	restart.tooltip_text = "Reload the skirmish"
+	UiTheme.style_button(restart, faction)
+	restart.pressed.connect(_on_restart)
+	column.add_child(restart)
+	root.hide()
+	return root
+
+func _on_match_over(loser: String, winner: String) -> void:
+	var won := winner == faction
+	_result_label.text = "VICTORY" if won else "DEFEAT"
+	_result_label.add_theme_color_override("font_color", UiTheme.accent(faction) if won else UiTheme.WARN)
+	_match_panel.show()
+	# The sim stops ticking with the tree; the panel above keeps processing input.
+	get_tree().paused = true
+
+func _on_restart() -> void:
+	get_tree().paused = false
+	get_tree().reload_current_scene()
 
 func _on_entity_selected(ids: Array[int]) -> void:
 	_refresh_selection(ids)
