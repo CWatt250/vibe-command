@@ -60,16 +60,22 @@ Outcome: Colton compared `docs/screenshot_3d_wide.png` / `docs/screenshot_3d_sho
 with the 2D game and chose **2D**. `presentation3d/` and `scenes/Main3D.tscn` are shelved — do
 not build on them. The 3D roster port is cancelled; Phase 3 below is what 3D won, done in 2D.
 
-## Phase 3 — 2D polish (presentation only; `core/` and `gameplay/` untouched)
+## Phase 3 — 2D polish (DONE 2026-09-22; presentation only, `core/` and `gameplay/` untouched)
 
-Run in this order — p3-01 and p3-03 edit the same file.
+10. `p3-01-cast-shadows-2d.md` — C. Shipped `b6be7cf`.
+11. `p3-02-soft-fog-edge.md` — C. Shipped `fd48b1e`.
+12. `p3-03-2d-unit-motion.md` — P. Shipped `14767cc` (Infantry `bob_hz` 2.0 → 0.9375 so the
+    prescribed capture frames don't alias the 2-frame step; see the commit body).
 
-10. `p3-01-cast-shadows-2d.md` — C. Shadow pass under every unit/structure, drawn before sprites.
-11. `p3-02-soft-fog-edge.md` — C. Soft 3-cell fog edge; minimap stays crisp. (Different file from
-    p3-01, so it may run in parallel with it.)
-12. `p3-03-2d-unit-motion.md` — P. Rotor blur + hover, vehicle rock + dust, infantry walk bob;
-    ports `--capture-frames` to the 2D game. Its line numbers are from `b261709` (pre p3-01) —
-    the ticket says to locate edits by the quoted code.
+F reviewed `docs/screenshot_2d_shadows.png`, `docs/screenshot_2d_fog.png`,
+`docs/screenshot_2d_motion_strip.png` and `docs/screenshot_2d_motion_wide.png`: all accepted.
+Two small follow-ups, not blocking: dust puffs spawn 10 px behind `position`, which lands inside
+a large (Heavy) sprite and is drawn over it by FxRenderer — should trail by half the sprite width;
+rotor crosses read a little bright in the wide shot. Both are C-tier tweaks for a later pass.
 
-After all three: an **F** review of the three new `docs/screenshot_2d_*.png` and the strip. Then
-Phase 4 (camera + controls) per `docs/execution-plan.md`.
+**Dispatching long tickets:** Telegram caps a message at 4096 chars. For any ticket over that,
+send a short `/code` or `/pro` message that names the ticket path and the hard rules, and let the
+executor read the file — the dispatcher runs on WattBott with the repo checked out. DeepSeek
+cannot view PNGs; it verifies captures by pixel measurement, so the visual sign-off stays with F.
+
+Next: Phase 4 (camera + controls) per `docs/execution-plan.md` — specs to be written by F.
