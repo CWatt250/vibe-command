@@ -24,30 +24,76 @@ func _draw() -> void:
 	if sim == null:
 		return
 	var cam_rect := _visible_world_rect()
+	var ordered: Array = []
+	for e in sim.entities.values():
+		if _drawable(e, cam_rect):
+			ordered.append(e)
 	# 3/4-view sprites overlap; draw back-to-front by ground position so a unit in
 	# front of a building covers it, not the other way round. Structures sort by the
 	# bottom of their footprint (where they touch the ground).
-	var ordered: Array = sim.entities.values()
 	ordered.sort_custom(func(a: Entity, b: Entity) -> bool: return _sort_y(a) < _sort_y(b))
+	# Shadow pass: every shadow lands on the ground before any sprite goes up, so the
+	# shadow of a unit in front never paints over the sprite of the unit behind it.
 	for e in ordered:
-		if not e.alive:
-			continue   # garrisoned occupants are hidden; skip them
-		if e.position.x < cam_rect.position.x or e.position.x > cam_rect.end.x:
-			continue
-		if e.position.y < cam_rect.position.y or e.position.y > cam_rect.end.y:
-			continue
-		# Fog: structures persist as silhouettes through explored fog; units vanish
-		# unless currently visible to the player (§5.6).
-		if fog_sys != null and e.faction_id != player_faction:
-			var vis := fog_sys.is_visible(player_faction, e.position)
-			if e.kind == "unit" and not vis:
-				continue
-			if e.kind == "structure" and fog_sys.state_at(player_faction, e.position) == 0:
-				continue
+		_draw_shadow(e)
+	for e in ordered:
 		if e.kind == "structure":
 			_draw_structure(e)
-		elif e.kind == "unit":
+		else:
 			_draw_unit(e, cam_rect)
+
+## Same rules the old loop applied inline: alive, on screen, and (for enemies) fog-visible —
+## structures persist as silhouettes through explored fog, units vanish (§5.6).
+func _drawable(e: Entity, cam_rect: Rect2) -> bool:
+	if not e.alive or (e.kind != "unit" and e.kind != "structure"):
+		return false
+	if e.position.x < cam_rect.position.x or e.position.x > cam_rect.end.x:
+		return false
+	if e.position.y < cam_rect.position.y or e.position.y > cam_rect.end.y:
+		return false
+	if fog_sys != null and e.faction_id != player_faction:
+		var vis := fog_sys.is_visible(player_faction, e.position)
+		if e.kind == "unit" and not vis:
+			return false
+		if e.kind == "structure" and fog_sys.state_at(player_faction, e.position) == 0:
+			return false
+	return true
+
+func _draw_shadow(e: Entity) -> void:
+	var col := SHADOW_COLOR
+	if e.kind == "structure":
+		col.a = SHADOW["structure"]["alpha"]
+		if e.construction != null and not e.construction.is_built():
+			col.a *= 0.45 + 0.55 * e.construction.fraction()   # same fade as the build-site sprite
+		_draw_feathered(structure_shadow_quad(e), col)
+	else:
+		var s: Dictionary = SHADOW["air"] if e.is_airborne else SHADOW["ground"]
+		col.a = s["alpha"]
+		_draw_feathered(_ellipse_points(shadow_rect(e)), col)
+
+## Soft edge without a shader: the polygon drawn SHADOW_FEATHER.size() times, each layer scaled
+## about its centroid and carrying a third of the alpha, so the rim fades in three steps.
+func _draw_feathered(points: PackedVector2Array, col: Color) -> void:
+	var c := Vector2.ZERO
+	for p in points:
+		c += p
+	c /= float(points.size())
+	var layer := col
+	layer.a = col.a / float(SHADOW_FEATHER.size())
+	for k in SHADOW_FEATHER:
+		var scaled := PackedVector2Array()
+		for p in points:
+			scaled.append(c + (p - c) * k)
+		draw_colored_polygon(scaled, layer)
+
+func _ellipse_points(r: Rect2, n: int = 28) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	var c := r.get_center()
+	var half := r.size * 0.5
+	for i in range(n):
+		var a := TAU * i / float(n)
+		pts.append(c + Vector2(cos(a) * half.x, sin(a) * half.y))
+	return pts
 
 # --- Readability (visual-roadmap V1) ---
 # Unit sprite size (max dimension, world px) by armor class. Infantry stays small so
@@ -62,16 +108,24 @@ const UNIT_PX := {
 }
 const UNIT_PX_DEFAULT := 46.0
 const STRUCTURE_FILL := 0.94          # of the footprint rect; leaves a sliver of pad visible
-const SHADOW_GROUND := Color(0, 0, 0, 0.42)
-const SHADOW_AIR := Color(0, 0, 0, 0.22)
+# --- p3-01 cast shadows: one table, one pass, drawn before every sprite ---
+# Sun is screen upper-left (same as presentation3d/Game3D.gd _build_lighting and the sprite
+# rig), so every shadow falls down-right. Unit offsets are world px; rx/ry are fractions of the
+# unit's draw size (UNIT_PX × atlas scale). Structure offset/shear are fractions of the
+# footprint height so a taller pad throws a longer shadow. alpha = peak darkness.
+const SHADOW := {
+	"ground":    {"offset": Vector2(5.0, 7.0),   "rx": 0.46, "ry": 0.22, "alpha": 0.40},
+	"air":       {"offset": Vector2(16.0, 24.0), "rx": 0.32, "ry": 0.15, "alpha": 0.20},
+	"structure": {"offset": Vector2(0.10, 0.14), "shear": 0.22, "alpha": 0.38},
+}
+const SHADOW_COLOR := Color(0.03, 0.03, 0.06)      # near-black, slightly cool; alpha from the table
+const SHADOW_FEATHER := [1.0, 0.86, 0.72]           # three stacked layers = a cheap soft edge
 const SEL_COLOR := Color(0.0, 1.0, 0.4)
 
 func _draw_structure(e: Entity) -> void:
 	var col: Color = FC_COLORS.get(e.faction_id, Color.WHITE)
 	var fp := _footprint_rect(e)
 	var center := fp.get_center()
-	# Contact shadow: the footprint, nudged toward lower-right (sun upper-left).
-	draw_rect(Rect2(fp.position + Vector2(3, 4), fp.size), SHADOW_GROUND)
 	var tex := SpriteAtlas.texture(e.def_id)
 	if tex != null:
 		var region := SpriteAtlas.region(e.def_id)
@@ -96,13 +150,7 @@ func _draw_structure(e: Entity) -> void:
 
 func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 	var col: Color = FC_COLORS.get(e.faction_id, Color.WHITE)
-	var size_px: float = UNIT_PX.get(e.def_data.get("armorClass", ""), UNIT_PX_DEFAULT) * SpriteAtlas.scale(e.def_id)
-	# Contact shadow: tight and dark on the ground, wide and faint for airborne (reads as hover).
-	var shadow_off := Vector2(6, 10) if e.is_airborne else Vector2(2, 3)
-	var shadow_col := SHADOW_AIR if e.is_airborne else SHADOW_GROUND
-	draw_set_transform(e.position + shadow_off, 0.0, Vector2(1.0, 0.55))
-	draw_circle(Vector2.ZERO, size_px * 0.42, shadow_col)
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	var size_px: float = _unit_size_px(e)
 	var tex := SpriteAtlas.texture(e.def_id)
 	var facings := SpriteAtlas.facings(e.def_id)
 	if tex != null and facings > 0:
@@ -166,6 +214,37 @@ func _footprint_rect(e: Entity) -> Rect2:
 	var h: int = int(fp[1]) if fp.size() > 1 else w
 	var c: Vector2i = sim.grid_map.world_to_cell(e.position.x, e.position.y)
 	return Rect2(Vector2(c.x - w / 2, c.y - h / 2) * NavGrid.CELL, Vector2(w, h) * NavGrid.CELL)
+
+## One source of truth for a unit's draw size (was inlined in _draw_unit).
+func _unit_size_px(e: Entity) -> float:
+	return UNIT_PX.get(e.def_data.get("armorClass", ""), UNIT_PX_DEFAULT) * SpriteAtlas.scale(e.def_id)
+
+## Bounding rect of the entity's cast shadow in world px. Units: the ellipse's box, centred at
+## position + offset. Structures: the box around structure_shadow_quad().
+func shadow_rect(e: Entity) -> Rect2:
+	if e.kind == "structure":
+		var q := structure_shadow_quad(e)
+		var r := Rect2(q[0], Vector2.ZERO)
+		for p in q:
+			r = r.expand(p)
+		return r
+	var s: Dictionary = SHADOW["air"] if e.is_airborne else SHADOW["ground"]
+	var half: Vector2 = Vector2(s["rx"], s["ry"]) * _unit_size_px(e)
+	return Rect2(e.position + s["offset"] - half, half * 2.0)
+
+## The pad sheared toward lower-right: bottom edge moves by offset, top edge by offset + shear,
+## so a tall box reads as leaning away from the sun. Order: TL, TR, BR, BL.
+func structure_shadow_quad(e: Entity) -> PackedVector2Array:
+	var s: Dictionary = SHADOW["structure"]
+	var fp := _footprint_rect(e)
+	var off: Vector2 = s["offset"] * fp.size.y
+	var shear := Vector2(s["shear"] * fp.size.y, 0.0)
+	return PackedVector2Array([
+		fp.position + off + shear,
+		Vector2(fp.end.x, fp.position.y) + off + shear,
+		fp.end + off,
+		Vector2(fp.position.x, fp.end.y) + off,
+	])
 
 ## C&C-style corner brackets around a selected structure.
 func _draw_brackets(r: Rect2) -> void:
