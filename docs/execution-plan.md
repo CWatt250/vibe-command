@@ -57,7 +57,24 @@ spin and a chassis that tilts on turns), Maker Crew (Blocky character, procedura
   or Blender `--python` decimate), bake vertex colours to a 512² texture per mesh (Blender script),
   write `assets/models/manifest.json`. F writes the script once; L runs it as a batch.
 
-### Phase 3 — Roster port to 3D (~3–5 days, only if Phase 2 passes)
+> **Phase 2 outcome (2026-09-22): STAY 2D.** Colton compared `docs/screenshot_3d_wide.png` and
+> `docs/screenshot_3d_showcase_strip.png` against the 2D game and chose 2D. The single-view AI
+> meshes lose the painted detail (compare the Garage Core sprite with its 3D mesh), and the three
+> things 3D genuinely won — cast shadows, a soft fog edge, visible motion on moving units — are
+> cheap to reproduce in 2D. `presentation3d/` and `scenes/Main3D.tscn` stay in the repo as a
+> shelved prototype; nothing builds on them. The original Phase 3 (roster port to 3D) is
+> **cancelled** and replaced by the 2D polish phase below.
+
+### Phase 3 — 2D polish: what 3D won, done in 2D (~1 day)
+Tickets in `docs/specs/p3-0x-*.md`. All presentation-only; `core/` and `gameplay/` untouched.
+| Task | Tier |
+|---|---|
+| `p3-01-cast-shadows-2d` Cast-shadow pass under units/structures, drawn before sprites, sun from upper-left like the 3D rig | **C** |
+| `p3-02-soft-fog-edge` Soft 3-cell fog-of-war edge (eroded + blurred overlay; explored stays dim; minimap stays crisp) | **C** |
+| `p3-03-2d-unit-motion` Procedural motion on moving units: rotor blur + hover (air), rock + dust (vehicles), walk bob (infantry); `--capture-frames` for 2D | **P** |
+
+<details><summary>Cancelled: Phase 3 — Roster port to 3D (kept for the record)</summary>
+
 | Task | Tier |
 |---|---|
 | Per-class rig recipes (wheeled / tracked / legged / rotor / jet / infantry): attach points, spin axes, tilt | **F** designs, **P** implements |
@@ -65,6 +82,7 @@ spin and a chassis that tilts on turns), Maker Crew (Blocky character, procedura
 | Turret nodes that track `weapon.current_target_id`; recoil on `combat_occurred` | **P** |
 | Death: tip over + darken + emit smoke; wreck stays if `wreckDefinitionId` | **P** |
 | Review sheets: render each unit from 3 angles into a grid | **L** builds, **F** reviews once per faction |
+</details>
 
 ### Phase 4 — Camera + controls (~2 days)
 | Task | Tier |

@@ -51,11 +51,25 @@ Commit **and push** — pushing is a standing rule in this repo. Never `git add 
 6. `p1-06-win-lose.md` — C
 7. `p1-07-order-state-attack-move.md` — O (Sonnet)
 
-## Phase 2 — the decision gate
+## Phase 2 — the decision gate (DONE — decided 2026-09-22: stay 2D)
 
-8. `p2-01-runtime-3d-prototype.md` — O (Sonnet). Step 0 (one mesh via ComfyUI) can go to L.
-   Ends with three motion frames in `docs/`; **F reviews them before anything in Phase 3**.
+8. `p2-01-runtime-3d-prototype.md` — O (Sonnet). Shipped (`0c4e96b`).
+9. `p2-02-prototype-fixes-and-showcase.md` — O (Sonnet). Shipped (`b261709`).
 
-After all seven Phase 1 tickets: an **F** review of `git log --oneline -7` and one screenshot from
-`godot-4 --path . -- --capture=docs/screenshot_phase1.png --frame=90 --attack` (needs `DISPLAY=:99`
-and `--rendering-method gl_compatibility --rendering-driver opengl3`).
+Outcome: Colton compared `docs/screenshot_3d_wide.png` / `docs/screenshot_3d_showcase_strip.png`
+with the 2D game and chose **2D**. `presentation3d/` and `scenes/Main3D.tscn` are shelved — do
+not build on them. The 3D roster port is cancelled; Phase 3 below is what 3D won, done in 2D.
+
+## Phase 3 — 2D polish (presentation only; `core/` and `gameplay/` untouched)
+
+Run in this order — p3-01 and p3-03 edit the same file.
+
+10. `p3-01-cast-shadows-2d.md` — C. Shadow pass under every unit/structure, drawn before sprites.
+11. `p3-02-soft-fog-edge.md` — C. Soft 3-cell fog edge; minimap stays crisp. (Different file from
+    p3-01, so it may run in parallel with it.)
+12. `p3-03-2d-unit-motion.md` — P. Rotor blur + hover, vehicle rock + dust, infantry walk bob;
+    ports `--capture-frames` to the 2D game. Its line numbers are from `b261709` (pre p3-01) —
+    the ticket says to locate edits by the quoted code.
+
+After all three: an **F** review of the three new `docs/screenshot_2d_*.png` and the strip. Then
+Phase 4 (camera + controls) per `docs/execution-plan.md`.
