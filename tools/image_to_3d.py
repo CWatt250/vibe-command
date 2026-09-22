@@ -71,14 +71,20 @@ def main() -> None:
     ap.add_argument("--octree", type=int, default=256)
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--margin", type=float, default=0.18)
+    ap.add_argument("--image", default=None,
+                     help="use this image instead of assets/portraits/<unit_id>.png")
+    ap.add_argument("--out-id", default=None,
+                     help="output basename instead of <unit_id> (for --image inputs keyed "
+                          "by a different id, e.g. a structure sprite)")
     a = ap.parse_args()
 
-    src = os.path.join(ROOT, "assets", "portraits", f"{a.unit_id}.png")
+    out_id = a.out_id or a.unit_id
+    src = os.path.join(ROOT, a.image) if a.image else os.path.join(ROOT, "assets", "portraits", f"{a.unit_id}.png")
     if not os.path.exists(src):
         sys.exit(f"no portrait at {src}")
-    image_name = f"i23d_{a.unit_id}.png"
+    image_name = f"i23d_{out_id}.png"
     pad_portrait(src, os.path.join(COMFY, "input", image_name), a.margin)
-    prefix = f"mesh/{a.unit_id}"
+    prefix = f"mesh/{out_id}"
     wf = workflow(image_name, a.seed, a.steps, a.octree, prefix)
 
     req = urllib.request.Request(f"{URL}/prompt", data=json.dumps({"prompt": wf}).encode(),
@@ -107,11 +113,11 @@ def main() -> None:
             break
     else:
         sys.exit("timed out")
-    cands = sorted(glob.glob(os.path.join(COMFY, "output", "mesh", f"{a.unit_id}*.glb")), key=os.path.getmtime)
+    cands = sorted(glob.glob(os.path.join(COMFY, "output", "mesh", f"{out_id}*.glb")), key=os.path.getmtime)
     if not cands:
         sys.exit("completed but no GLB found under output/mesh/")
     os.makedirs(OUT_DIR, exist_ok=True)
-    dst = os.path.join(OUT_DIR, f"{a.unit_id}.glb")
+    dst = os.path.join(OUT_DIR, f"{out_id}.glb")
     shutil.copy2(cands[-1], dst)
     print(f"{dst}  ({os.path.getsize(dst) / 1e6:.1f} MB, {time.time() - t0:.0f}s)")
 
