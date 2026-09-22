@@ -31,6 +31,10 @@ Rules that make the ladder work:
 
 ## Roadmap with assignments
 
+**Ready-to-paste tickets live in `docs/specs/`** — start with `docs/specs/README.md`, which says
+where to run each tier and what every ticket must end with. Phase 1 is fully written
+(`p1-01` … `p1-07`); later phases get their specs written by F when the phase starts.
+
 ### Phase 1 — Correctness (sim only, ~1 day)
 | Task | Tier | Notes |
 |---|---|---|
