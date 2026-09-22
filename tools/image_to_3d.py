@@ -22,6 +22,21 @@ URL = "http://127.0.0.1:8188"
 OUT_DIR = os.path.expanduser("~/Dev/assets/generated3d")
 
 
+def pad_portrait(src: str, dst: str, margin: float) -> None:
+    """Centre the portrait on a square transparent canvas with `margin` free on every
+    side. Portraits come out of ai_sprite_prep cropped flush to their bbox; feeding an
+    edge-to-edge subject makes the reconstruction clip against the voxel bounds — legs
+    and extremities come back sheared off against a flat plane."""
+    from PIL import Image
+    im = Image.open(src).convert("RGBA")
+    box = im.getbbox() or (0, 0, im.width, im.height)
+    im = im.crop(box)
+    side = int(max(im.width, im.height) * (1.0 + 2.0 * margin))
+    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    canvas.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
+    canvas.save(dst)
+
+
 def workflow(image_name: str, seed: int, steps: int, octree: int, prefix: str) -> dict:
     return {
         "1": {"class_type": "ImageOnlyCheckpointLoader", "inputs": {"ckpt_name": "hunyuan3d-dit-v2.safetensors"}},
@@ -46,13 +61,14 @@ def main() -> None:
     ap.add_argument("--steps", type=int, default=30)
     ap.add_argument("--octree", type=int, default=256)
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--margin", type=float, default=0.18)
     a = ap.parse_args()
 
     src = os.path.join(ROOT, "assets", "portraits", f"{a.unit_id}.png")
     if not os.path.exists(src):
         sys.exit(f"no portrait at {src}")
     image_name = f"i23d_{a.unit_id}.png"
-    shutil.copy2(src, os.path.join(COMFY, "input", image_name))
+    pad_portrait(src, os.path.join(COMFY, "input", image_name), a.margin)
     prefix = f"mesh/{a.unit_id}"
     wf = workflow(image_name, a.seed, a.steps, a.octree, prefix)
 

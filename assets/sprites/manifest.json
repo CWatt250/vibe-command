@@ -112,14 +112,38 @@
   "facings": 16,
   "file": "rendered/FC-U01.png",
   "frame": [
-   91,
-   103
+   98,
+   132
   ],
   "scale": 1.4
  },
- "FC-U02": "characters/hitman.png",
- "FC-U03": "characters/survivor.png",
- "FC-U04": "characters/FC-U04_fcInf.png",
+ "FC-U02": {
+  "facings": 16,
+  "file": "rendered/FC-U02.png",
+  "frame": [
+   72,
+   132
+  ],
+  "scale": 1.4
+ },
+ "FC-U03": {
+  "facings": 16,
+  "file": "rendered/FC-U03.png",
+  "frame": [
+   78,
+   132
+  ],
+  "scale": 1.4
+ },
+ "FC-U04": {
+  "facings": 16,
+  "file": "rendered/FC-U04.png",
+  "frame": [
+   132,
+   132
+  ],
+  "scale": 1.4
+ },
  "FC-U05": "FC-U05_humvee.png",
  "FC-U06": "FC-U06_ifv.png",
  "FC-U07": "FC-U07_mbt.png",
@@ -129,7 +153,15 @@
  "FC-U11": "FC-U11_blackhawk.png",
  "FC-U12": "FC-U12_apache.png",
  "FC-U13": "FC-U13_fighter.png",
- "FC-U14": "characters/FC-U14_fcInf.png",
+ "FC-U14": {
+  "facings": 16,
+  "file": "rendered/FC-U14.png",
+  "frame": [
+   98,
+   132
+  ],
+  "scale": 1.4
+ },
  "SG-B01": {
   "file": "SG-B01_ai.png",
   "scale": 1.3,
@@ -233,7 +265,15 @@
  "SG-U01": "SG-U01_skitter.png",
  "SG-U02": "SG-U02_watcher.png",
  "SG-U03": "SG-U03_harv.png",
- "SG-U04": "SG-U04_replicant.png",
+ "SG-U04": {
+  "facings": 16,
+  "file": "rendered/SG-U04.png",
+  "frame": [
+   98,
+   132
+  ],
+  "scale": 1.4
+ },
  "SG-U05": "SG-U05_stalker.png",
  "SG-U06": "SG-U06_assimilator.png",
  "SG-U07": "SG-U07_walker.png",
@@ -243,7 +283,15 @@
  "SG-U11": "SG-U11_reclaimer.png",
  "SG-U12": "SG-U12_swarmhost.png",
  "SG-U13": "SG-U13_leviathan.png",
- "SG-U14": "SG-U14_echo.png",
+ "SG-U14": {
+  "facings": 16,
+  "file": "rendered/SG-U14.png",
+  "frame": [
+   109,
+   132
+  ],
+  "scale": 1.4
+ },
  "SRV": "SRV_harvester.png",
  "TS-B01": {
   "file": "TS-B01_ai.png",
@@ -345,18 +393,50 @@
   "scale": 1.4,
   "tint": 0.0
  },
- "TS-U01": "characters/TS-U01_tsInf.png",
- "TS-U02": "characters/TS-U02_tsInf.png",
+ "TS-U01": {
+  "facings": 16,
+  "file": "rendered/TS-U01.png",
+  "frame": [
+   98,
+   132
+  ],
+  "scale": 1.4
+ },
+ "TS-U02": {
+  "facings": 16,
+  "file": "rendered/TS-U02.png",
+  "frame": [
+   72,
+   132
+  ],
+  "scale": 1.4
+ },
  "TS-U03": "TS-U03_recon.png",
  "TS-U04": "TS-U04_suv.png",
  "TS-U05": "TS-U05_apc.png",
- "TS-U06": "TS-U06_exo.png",
+ "TS-U06": {
+  "facings": 16,
+  "file": "rendered/TS-U06.png",
+  "frame": [
+   109,
+   132
+  ],
+  "scale": 1.4
+ },
  "TS-U07": "TS-U07_paladin.png",
  "TS-U08": "TS-U08_rail.png",
  "TS-U09": "TS-U09_aegis.png",
  "TS-U10": "TS-U10_gunship.png",
  "TS-U11": "TS-U11_interceptors.png",
- "TS-U12": "TS-U12_heavExo.png",
+ "TS-U12": {
+  "facings": 16,
+  "file": "rendered/TS-U12.png",
+  "frame": [
+   109,
+   132
+  ],
+  "scale": 1.4
+ },
  "TS-U13": "TS-U13_mech.png",
  "TS-U14": "TS-U14_skyhook.png",
  "VC-B01": {
@@ -472,8 +552,8 @@
   "facings": 16,
   "file": "rendered/VC-U01.png",
   "frame": [
-   80,
-   122
+   72,
+   132
   ],
   "scale": 1.4
  },
@@ -553,8 +633,8 @@
   "facings": 16,
   "file": "rendered/VC-U10.png",
   "frame": [
-   98,
-   119
+   109,
+   132
   ],
   "scale": 1.4
  },

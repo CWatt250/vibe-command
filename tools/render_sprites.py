@@ -48,6 +48,12 @@ def materials():
     M["glass"] = mat("glass", srgb(58, 78, 96), 0.2, 0.3)
     M["tape"] = mat("tape", srgb(158, 164, 172), 0.8)
     M["led"] = mat("led", srgb(0, 190, 255), 0.4, 0.0, emit=srgb(0, 190, 255))
+    M["skin"] = mat("skin", srgb(198, 150, 112), 0.85)
+    M["amber"] = mat("amber", srgb(232, 178, 26), 0.5, 0.0, emit=srgb(232, 178, 26))
+    M["teal"] = mat("teal", srgb(47, 208, 196), 0.4, 0.0, emit=srgb(47, 208, 196))
+    M["orange"] = mat("orange", srgb(255, 96, 32), 0.4, 0.0, emit=srgb(255, 96, 32))
+    M["white"] = mat("white", srgb(226, 228, 232), 0.55)
+    M["tan"] = mat("tan", srgb(168, 146, 104), 0.8)
 
 
 # ---- primitives --------------------------------------------------------------
@@ -181,6 +187,37 @@ FIT_BY_ARMOR = {"Infantry": 2.0, "HeavyInfantry": 2.3, "Light": 2.8, "Medium": 3
                 "Heavy": 3.2, "AirLight": 2.4, "AirHeavy": 3.2}
 
 
+# Camera tilt per armor class, measured FROM STRAIGHT DOWN: 0 = pure top-down,
+# 90 = pure side view. A standing figure at 40 is mostly the top of a helmet — an
+# unreadable lump at 40 px. Every classic RTS cheats this: infantry are drawn nearly
+# side-on while vehicles stay top-down. Same cheat here.
+TILT_BY_ARMOR = {"Infantry": 58.0, "HeavyInfantry": 55.0}
+DEFAULT_TILT = 40.0
+
+# Per-faction infantry palette (body / webbing / accent light).
+INFANTRY_STYLE = {
+    "VC": {"body": "osb", "gear": "dark", "accent": "led"},      # garage: OSB + cyan
+    "FC": {"body": "tan", "gear": "dark", "accent": "amber"},    # federal: tan + amber
+    "TS": {"body": "white", "gear": "metal", "accent": "teal"},  # corporate: white + teal
+    "SG": {"body": "dark", "gear": "metal", "accent": "orange"}, # signal: black + orange
+}
+
+
+def _unit_def(uid):
+    try:
+        import json
+        for d in json.load(open(UNITS_JSON))["units"]:
+            if d["id"] == uid.split("-hy3d")[0]:
+                return d
+    except Exception:
+        pass
+    return {}
+
+
+def tilt_for(uid):
+    return TILT_BY_ARMOR.get(_unit_def(uid).get("armorClass", ""), DEFAULT_TILT)
+
+
 def fit_for(uid):
     try:
         import json
@@ -245,6 +282,21 @@ def project_portrait(obj, image_path):
     import numpy as np
     w, h = img.size
     px = list(img.pixels)  # RGBA floats, bottom-up rows
+    # Blur the albedo hard before sampling. Per-vertex sampling of a sharp portrait
+    # paints high-frequency detail onto the mesh, which at 40 px reads as camouflage
+    # speckle and destroys the form. A 30 px unit is read through LIGHTING; the
+    # portrait's job is only to say "this region is tan / this one is cyan".
+    rgba = np.array(px, dtype=np.float32).reshape(h, w, 4)
+    radius = max(2, int(min(w, h) * 0.05))
+    ker = np.ones(radius * 2 + 1, dtype=np.float32)
+    ker /= ker.sum()
+    a_mask = rgba[..., 3:4]
+    prem = rgba[..., :3] * a_mask            # blur premultiplied so transparent pixels
+    for axis in (0, 1):                      # don't bleed black into the silhouette
+        prem = np.apply_along_axis(lambda m: np.convolve(m, ker, mode="same"), axis, prem)
+        a_mask = np.apply_along_axis(lambda m: np.convolve(m, ker, mode="same"), axis, a_mask)
+    rgba[..., :3] = prem / np.maximum(a_mask, 1e-4)
+    px = rgba.reshape(-1).tolist()
     me = obj.data
     coords = np.array([obj.matrix_world @ v.co for v in me.vertices], dtype=np.float32)
     alpha = np.array(px[3::4], dtype=np.float32).reshape(h, w) > 0.5
@@ -315,11 +367,14 @@ def project_portrait(obj, image_path):
         if n == 0:
             kk = (y * w + x) * 4
             r, g, b, n = px[kk], px[kk + 1], px[kk + 2], 1
-        # Averaging desaturates and the rig's key light lifts values; push saturation
-        # back up and value down so the sprite matches the portrait's punch.
+        # Averaging desaturates and flattens; push saturation up and expand value
+        # around mid-grey so albedo has real light/dark separation before lighting.
         import colorsys
         hh, ss, vv = colorsys.rgb_to_hsv(r / n, g / n, b / n)
-        rr, gg, bb = colorsys.hsv_to_rgb(hh, min(ss * 1.45, 1.0), vv * 0.82)
+        # Blurring already smoothed value; keep albedo mid-range and let the lighting
+        # rig make the light/dark separation, or the two stack into mud.
+        vv = min(max(0.45 + (vv - 0.5) * 0.8, 0.12), 0.85)
+        rr, gg, bb = colorsys.hsv_to_rgb(hh, min(ss * 1.3, 1.0), vv)
         layer.data[i].color = (rr, gg, bb, 1.0)
     return True
 
@@ -334,6 +389,78 @@ def vertex_color_material(uid):
     nt.links.new(attr.outputs["Color"], bsdf.inputs["Base Color"])
     bsdf.inputs["Roughness"].default_value = 0.75
     return m
+
+
+# Per-unit infantry loadout, so a Rifle Squad and a Javelin Team aren't the same
+# silhouette. `base` picks one of Kenney's 18 characters; `role` swaps the weapon.
+INFANTRY_ROLE = {
+    "VC-U01": ("character-c", "tools"), "VC-U10": ("character-p", "heavy"),
+    "FC-U01": ("character-a", "rifle"), "FC-U02": ("character-c", "tools"),
+    "FC-U03": ("character-d", "launcher"), "FC-U04": ("character-e", "mg"),
+    "FC-U14": ("character-f", "rifle"),
+    "TS-U01": ("character-g", "rifle"), "TS-U02": ("character-h", "tools"),
+    "TS-U06": ("character-i", "heavy"), "TS-U12": ("character-p", "heavy"),
+    "SG-U04": ("character-l", "rifle"), "SG-U14": ("character-m", "heavy"),
+}
+
+
+def infantry_weapon(role, gear, accent, root):
+    """The held object is the main thing distinguishing one infantry sprite from
+    another at 40 px — make each one a different silhouette, not a different texture."""
+    if role == "launcher":                      # tube over the shoulder, points back
+        cyl("tube", 0.17, 1.7, (0.28, 0.1, 1.95), gear,
+            rot=(math.radians(68), 0, math.radians(14)), parent=root, verts=10)
+        box("sight", (0.16, 0.3, 0.16), (0.12, 0.5, 1.92), accent, parent=root)
+    elif role == "mg":                          # long barrel + drum, low and wide
+        cyl("barrel", 0.09, 1.9, (0.05, 0.75, 1.36), gear,
+            rot=(math.radians(84), 0, math.radians(8)), parent=root, verts=8)
+        cyl("drum", 0.26, 0.2, (0.22, 0.12, 1.36), gear,
+            rot=(0, math.radians(90), 0), parent=root, verts=12)
+    elif role == "tools":                       # no rifle: toolpack + drill
+        box("toolpack", (0.5, 0.34, 0.5), (-0.5, -0.3, 1.5), gear, parent=root)
+        box("drill", (0.2, 0.42, 0.22), (0.42, 0.42, 1.3), gear, parent=root)
+        box("drill_led", (0.08, 0.08, 0.08), (0.42, 0.64, 1.3), accent, parent=root)
+    elif role == "heavy":                       # exo frame: cannon arm + wide shoulders
+        cyl("cannon", 0.16, 1.4, (0.5, 0.55, 1.5), gear,
+            rot=(math.radians(78), 0, math.radians(10)), parent=root, verts=10)
+        box("core", (0.3, 0.2, 0.3), (0, 0.42, 1.62), accent, parent=root)
+    else:                                       # rifle across the chest
+        cyl("weapon", 0.09, 1.5, (0.1, 0.5, 1.5), gear,
+            rot=(math.radians(74), 0, math.radians(20)), parent=root, verts=8)
+
+
+def kit_infantry(uid, body="metal", gear="dark", accent="led"):
+    """Infantry from a Kenney Blocky Character (CC0) with faction kit bolted on.
+
+    Hunyuan3D reconstructs vehicles well but fails on humanoids from a single view —
+    legs come back missing or fused and the result is an unreadable lump at 40 px. A
+    real humanoid mesh has correct anatomy, which is the whole reason infantry read.
+    Faction identity comes from materials + gear, same idea as the structures.
+    """
+    root = bpy.data.objects.new(uid, None)
+    bpy.context.scene.collection.objects.link(root)
+    # Kenney character-a: 1.6 wide x 2.7 tall, +Z up, facing -Y (our front is +Y).
+    # Parts: leg-* 0.0-1.0, torso 1.0-1.9, arm-* 0.8-1.9, head 1.9-2.7.
+    base, role = INFANTRY_ROLE.get(uid, ("character-a", "rifle"))
+    kenney("blocky-characters", base, root, rot_z_deg=180.0,
+           recolor={"torso": body, "arm": gear, "leg": gear, "head": "skin"})
+    heavy = _unit_def(uid).get("armorClass") == "HeavyInfantry"
+    # Helmet over the head, plate carrier over the torso, pack on the back. Chunky on
+    # purpose: from 40 deg above, head and shoulders are most of what the player sees.
+    # Value banding is what makes this read from above: dark helmet, light faction
+    # torso, dark legs. One tone head-to-toe collapses into a single block.
+    box("helmet", (0.86, 0.84, 0.3), (0, 0.02, 2.62), gear, parent=root)
+    box("visor", (0.6, 0.1, 0.13), (0, 0.4, 2.5), accent, parent=root)
+    box("vest", (1.16, 0.8, 0.62), (0, 0.0, 1.52), body, parent=root)
+    box("belt", (1.18, 0.82, 0.14), (0, 0.0, 1.12), gear, parent=root)
+    box("pack", (0.86, 0.4, 0.66), (0, -0.54, 1.54), gear, parent=root)
+    box("led", (0.14, 0.1, 0.1), (0.34, -0.52, 1.86), accent, parent=root)
+    infantry_weapon(role, gear, accent, root)
+    if heavy:
+        box("pauldron_l", (0.34, 0.6, 0.46), (-0.72, 0.0, 1.78), gear, parent=root)
+        box("pauldron_r", (0.34, 0.6, 0.46), (0.72, 0.0, 1.78), gear, parent=root)
+        box("backtank", (0.5, 0.3, 0.6), (0, -0.62, 2.0), body, parent=root)
+    return root
 
 
 # Hand-built kits, kept for reference / props. Plain unit ids resolve to the generated
@@ -369,21 +496,32 @@ def build_scene(px, tilt_deg=40.0, ortho=3.4):
     sc.camera = co
     # Sun from the screen's upper-left; dark ambient so facets separate.
     sun = bpy.data.lights.new("sun", "SUN")
-    sun.energy = 5.5
+    # Three-point rig tuned for READABILITY AT 30 px, not for a pretty hero render:
+    # a hot key so lit planes go bright, a dim fill so shadow keeps hue without
+    # going to mud, and a rim from behind-above that draws a bright edge along the
+    # silhouette — the single biggest help in separating a unit from the terrain.
+    sun.energy = 9.0
     sun.angle = math.radians(2.0)
     so = bpy.data.objects.new("sun", sun)
     sc.collection.objects.link(so)
     so.rotation_euler = (math.radians(50), 0.0, math.radians(-135))
-    # Fill light from the opposite side, weak, so shadowed faces still show material.
     fill = bpy.data.lights.new("fill", "SUN")
-    fill.energy = 1.5
+    fill.energy = 1.2
     fo = bpy.data.objects.new("fill", fill)
     sc.collection.objects.link(fo)
     fo.rotation_euler = (math.radians(35), 0.0, math.radians(45))
+    rim = bpy.data.lights.new("rim", "SUN")
+    rim.energy = 5.0
+    rim.color = (0.85, 0.92, 1.0)
+    ro = bpy.data.objects.new("rim", rim)
+    sc.collection.objects.link(ro)
+    ro.rotation_euler = (math.radians(20), 0.0, math.radians(35))
     world = bpy.data.worlds.new("w")
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.55, 0.6, 0.7, 1.0)
-    world.node_tree.nodes["Background"].inputs[1].default_value = 0.6
+    world.node_tree.nodes["Background"].inputs[1].default_value = 0.35
+    # Filmic crushes the value range we just built; Standard + a contrast look keeps it.
+    sc.view_settings.look = "High Contrast"
     sc.world = world
     # Outline.
     sc.render.use_freestyle = True
@@ -407,11 +545,15 @@ def main():
     uid, out_dir = argv[0], argv[1]
     facings = int(argv[argv.index("--facings") + 1]) if "--facings" in argv else 16
     px = int(argv[argv.index("--px") + 1]) if "--px" in argv else 256
+    tilt = float(argv[argv.index("--tilt") + 1]) if "--tilt" in argv else tilt_for(uid)
     os.makedirs(out_dir, exist_ok=True)
-    sc = build_scene(px)
+    sc = build_scene(px, tilt_deg=tilt)
     materials()
+    armor = _unit_def(uid).get("armorClass", "")
     if uid in KITS:
         root = KITS[uid]()
+    elif armor in ("Infantry", "HeavyInfantry"):
+        root = kit_infantry(uid, **INFANTRY_STYLE.get(uid.split("-")[0], {}))
     elif os.path.exists(os.path.join(GENERATED, f"{uid}.glb")):
         # Any unit with a Hunyuan3D mesh renders through the generic kit.
         root = kit_generated(uid, yaw_deg=180.0)

@@ -52,10 +52,13 @@ func _draw() -> void:
 # --- Readability (visual-roadmap V1) ---
 # Unit sprite size (max dimension, world px) by armor class. Infantry stays small so
 # armies read as armies; vehicles and air get the room they need to be identified.
+# Warcraft III's lesson: at RTS zoom, realistic proportions read as confusing noise —
+# bulk the silhouette up until a unit is identifiable in a split-second glance.
+# Infantry were 30 px and rendered as mud blobs; these are the bulked numbers.
 const UNIT_PX := {
-	"Infantry": 30.0, "HeavyInfantry": 36.0,
-	"Light": 46.0, "Medium": 56.0, "Heavy": 68.0,
-	"AirLight": 40.0, "AirHeavy": 64.0,
+	"Infantry": 40.0, "HeavyInfantry": 48.0,
+	"Light": 52.0, "Medium": 60.0, "Heavy": 72.0,
+	"AirLight": 44.0, "AirHeavy": 68.0,
 }
 const UNIT_PX_DEFAULT := 46.0
 const STRUCTURE_FILL := 0.94          # of the footprint rect; leaves a sliver of pad visible

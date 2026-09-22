@@ -13,9 +13,26 @@ import glob
 import json
 import os
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTLINE_RGB = (16, 14, 18)
+
+
+def outline(img: Image.Image, px: int) -> Image.Image:
+    """Composite the sprite over a dilated dark silhouette. A sticker outline is what
+    makes a 30 px unit separate from terrain — Freestyle's line is sub-pixel after
+    the 2x downsample and effectively disappears."""
+    if px <= 0:
+        return img
+    pad = px + 1
+    big = Image.new("RGBA", (img.width + pad * 2, img.height + pad * 2), (0, 0, 0, 0))
+    big.paste(img, (pad, pad))
+    alpha = big.split()[3]
+    grown = alpha.filter(ImageFilter.MaxFilter(px * 2 + 1))
+    silhouette = Image.new("RGBA", big.size, OUTLINE_RGB + (255,))
+    silhouette.putalpha(grown)
+    return Image.alpha_composite(silhouette, big)
 SPRITES = os.path.join(ROOT, "assets", "sprites")
 MANIFEST = os.path.join(SPRITES, "manifest.json")
 
@@ -25,6 +42,8 @@ def main() -> None:
     ap.add_argument("unit_id")
     ap.add_argument("frames_dir")
     ap.add_argument("--downscale", type=int, default=2)
+    ap.add_argument("--outline-px", type=int, default=1)
+    ap.add_argument("--no-outline", action="store_true")
     a = ap.parse_args()
 
     paths = sorted(glob.glob(os.path.join(a.frames_dir, f"{a.unit_id}_*.png")))
@@ -41,6 +60,8 @@ def main() -> None:
     frames = [f.crop(crop) for f in frames]
     if a.downscale > 1:
         frames = [f.resize((f.width // a.downscale, f.height // a.downscale), Image.LANCZOS) for f in frames]
+    if not a.no_outline:
+        frames = [outline(f, a.outline_px) for f in frames]
     fw, fh = frames[0].size
     atlas = Image.new("RGBA", (fw * len(frames), fh), (0, 0, 0, 0))
     for i, f in enumerate(frames):
