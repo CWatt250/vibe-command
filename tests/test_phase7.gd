@@ -75,6 +75,10 @@ func _init() -> void:
 	_check(s["power"].has("powered") and s["compute"].has("deficit") and s["command"].has("capacity"),
 		"status sub-dicts carry the HUD flags")
 
+	# --- p1-01: one tick rate ---
+	_check(Simulation.ticks_per(3.0) == 5, "ticks_per(3 Hz) at 15 Hz is 5")
+	_check(is_equal_approx(Simulation.TICK_DT, 1.0 / 15.0), "TICK_DT derives from TICK_HZ")
+
 	if failures == 0:
 		print("PHASE7_RESULT: ALL PASS")
 	else:

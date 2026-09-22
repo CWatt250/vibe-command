@@ -7,6 +7,10 @@ class_name Simulation
 const TICK_HZ: int = 15
 const TICK_DT: float = 1.0 / TICK_HZ
 
+## Ticks per second-fraction, for presenters that refresh "about N times a second".
+static func ticks_per(hz: float) -> int:
+	return maxi(1, int(roundf(float(TICK_HZ) / hz)))
+
 var registry: ContentRegistry
 var events: GameEvents
 

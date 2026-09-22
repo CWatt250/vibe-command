@@ -4,8 +4,6 @@ extends Node2D
 ## builds an industrial skirmish map, spawns a starting Vibe Coder force, and drives
 ## the fixed-tick sim loop. This is the playable entry point.
 
-const TICK_RATE: float = 30.0   # sim steps per second
-
 var registry: ContentRegistry
 var events: GameEvents
 var sim: Simulation
@@ -214,7 +212,7 @@ func _spawn_starter_force() -> void:
 
 func _process(delta: float) -> void:
 	_accum += delta
-	var step := 1.0 / TICK_RATE
+	var step := Simulation.TICK_DT
 	while _accum >= step:
 		sim.step(step)
 		_accum -= step

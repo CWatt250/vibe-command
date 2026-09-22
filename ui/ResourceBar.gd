@@ -4,7 +4,7 @@ class_name ResourceBar
 ## Which chips show comes from factions.json `resourceIds`; numbers come from
 ## Simulation.faction_status(), which is a pure read of the same per-tick derivations.
 
-const REFRESH_EVERY_TICKS := 5   # ~3 Hz at 15 tick/s; cheap, but no need for 15 Hz
+var REFRESH_EVERY_TICKS := Simulation.ticks_per(3.0)   # ~3 Hz; cheap, but no need for 15 Hz
 
 var sim: Simulation
 var events: GameEvents

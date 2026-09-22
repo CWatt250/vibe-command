@@ -8,7 +8,7 @@ class_name BuildGrid
 
 signal place_requested(structure_def_id: String)
 
-const REFRESH_EVERY_TICKS := 5
+var REFRESH_EVERY_TICKS := Simulation.ticks_per(3.0)
 
 var sim: Simulation
 var events: GameEvents

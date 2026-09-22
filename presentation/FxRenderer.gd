@@ -53,10 +53,10 @@ func _on_game_tick(tick: int, _dt: float) -> void:
 		if not e.alive:
 			continue
 		if e.kind == "unit" and not e.is_airborne and e.movement != null and e.movement.is_moving():
-			if (tick + e.id) % 4 == 0:
+			if (tick + e.id) % Simulation.ticks_per(4.0) == 0:
 				var back: Vector2 = e.position - e.movement.facing * 10.0
 				_spawn("puff", back + _jitter(4.0), _jitter(6.0) - e.movement.facing * 8.0, 0.5, 4.0, DUST)
-		elif e.kind == "structure" and (tick + e.id) % 12 == 0:
+		elif e.kind == "structure" and (tick + e.id) % Simulation.ticks_per(1.25) == 0:
 			if e.def_data.get("componentFlags", []).has("PowerSource") and _built(e):
 				var fp := _footprint_rect(e)
 				var stack := fp.position + Vector2(fp.size.x * 0.25, fp.size.y * 0.2)

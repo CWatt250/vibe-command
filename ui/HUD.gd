@@ -97,7 +97,7 @@ func _on_entity_selected(ids: Array[int]) -> void:
 
 func _on_game_tick(tick: int, _dt: float) -> void:
 	# Health changes without a selection event; refresh at ~3 Hz.
-	if tick % 5 == 0 and _card.visible:
+	if tick % Simulation.ticks_per(3.0) == 0 and _card.visible:
 		_refresh_selection(sim.selected_ids)
 
 func _on_stop() -> void:

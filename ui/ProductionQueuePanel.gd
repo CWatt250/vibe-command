@@ -5,7 +5,7 @@ class_name ProductionQueuePanel
 ## Observer pattern after godot-open-rts ProductionQueue.gd (MIT), rebuilt on our
 ## event bus: rebind on selection, rebuild on enqueue or size change, tick the %.
 
-const REFRESH_EVERY_TICKS := 5
+var REFRESH_EVERY_TICKS := Simulation.ticks_per(3.0)
 
 var sim: Simulation
 var events: GameEvents
