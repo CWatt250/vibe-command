@@ -29,6 +29,15 @@ def pad_portrait(src: str, dst: str, margin: float) -> None:
     and extremities come back sheared off against a flat plane."""
     from PIL import Image
     im = Image.open(src).convert("RGBA")
+    # Binarise alpha first. ai_sprite_prep's key leaves a soft halo wherever the
+    # generated backdrop wasn't magenta enough — worst on dark subjects (the SG
+    # roster, TS-U05), where over half the canvas comes back semi-transparent.
+    # Hunyuan3D treats any non-zero alpha as subject and reconstructs that halo as
+    # a flat slab standing behind the unit, which then renders as a grey box.
+    import numpy as np
+    arr = np.array(im)
+    arr[..., 3] = np.where(arr[..., 3] >= 150, 255, 0).astype(arr.dtype)
+    im = Image.fromarray(arr, "RGBA")
     box = im.getbbox() or (0, 0, im.width, im.height)
     im = im.crop(box)
     side = int(max(im.width, im.height) * (1.0 + 2.0 * margin))
