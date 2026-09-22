@@ -14,6 +14,7 @@ class_name FxRenderer
 
 var sim: Simulation
 var events: GameEvents
+var motion: UnitMotion = null   # p3-03 speed sampler (set by Game.gd)
 
 var _particles: Array = []      # {kind, pos, vel, life, max, size, color, [end]}
 var _flash: Dictionary = {}     # entity id -> seconds of hit flash left
@@ -52,10 +53,16 @@ func _on_game_tick(tick: int, _dt: float) -> void:
 	for e in sim.entities.values():
 		if not e.alive:
 			continue
-		if e.kind == "unit" and not e.is_airborne and e.movement != null and e.movement.is_moving():
-			if (tick + e.id) % Simulation.ticks_per(4.0) == 0:
-				var back: Vector2 = e.position - e.movement.facing * 10.0
-				_spawn("puff", back + _jitter(4.0), _jitter(6.0) - e.movement.facing * 8.0, 0.5, 4.0, DUST)
+		if e.kind == "unit" and not e.is_airborne and e.movement != null:
+			# p3-03: gate on measured speed, not is_moving(), and on a per-class cadence —
+			# a unit ordered to move but stuck against a neighbour no longer kicks up dust.
+			var armor: String = e.def_data.get("armorClass", "")
+			var spd: float = motion.speed_of(e.id) if motion != null else 0.0
+			if UnitMotion.dust_due(armor, tick, e.id, spd):
+				var n: int = UnitMotion.params(armor).get("dust_n", 1)
+				for i in range(n):
+					var back: Vector2 = e.position - e.movement.facing * 10.0
+					_spawn("puff", back + _jitter(4.0 + 2.0 * i), _jitter(6.0) - e.movement.facing * 8.0, 0.5, 4.0 + 1.0 * i, DUST)
 		elif e.kind == "structure" and (tick + e.id) % Simulation.ticks_per(1.25) == 0:
 			if e.def_data.get("componentFlags", []).has("PowerSource") and _built(e):
 				var fp := _footprint_rect(e)

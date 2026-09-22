@@ -19,6 +19,7 @@ var minimap: MiniMapRenderer
 var hud: HUD
 var placement_ghost: PlacementGhost
 var pause_menu: PauseMenu
+var motion: UnitMotion
 
 const PLAYER_FACTION := "VC"
 
@@ -26,6 +27,7 @@ var _accum: float = 0.0
 var _world: Vector2 = Vector2(2000, 2000)
 var _frame: int = 0
 var _capture_at: int = -1
+var _capture_frames: Array[int] = []
 var _capture_out: String = ""
 var _debug_pause: bool = false
 
@@ -59,6 +61,10 @@ func _ready() -> void:
 	fx_renderer = FxRenderer.new(sim, events)
 	add_child(fx_renderer)
 	entity_renderer.fx = fx_renderer
+	# Shared procedural motion (p3-03): one speed sampler, read by both presenters.
+	motion = UnitMotion.new()
+	entity_renderer.motion = motion
+	fx_renderer.motion = motion
 	# Sun: a warm tint on the world canvas only (CanvasLayers — HUD, minimap — are unaffected).
 	var sun := CanvasModulate.new()
 	sun.color = Color(1.0, 0.97, 0.91)
@@ -111,11 +117,16 @@ func _ready() -> void:
 	var debug_train := ""
 	var debug_place := ""
 	var debug_pause := false
+	var debug_motion := false
 	for a in args:
 		if a.begins_with("--capture="):
 			_capture_out = a.trim_prefix("--capture=")
 		elif a.begins_with("--frame="):
 			_capture_at = int(a.trim_prefix("--frame="))
+		elif a.begins_with("--capture-frames="):
+			for s in a.trim_prefix("--capture-frames=").split(","):
+				if s != "":
+					_capture_frames.append(int(s))
 		elif a.begins_with("--select="):
 			debug_select = a.trim_prefix("--select=")
 		elif a.begins_with("--train="):
@@ -124,11 +135,13 @@ func _ready() -> void:
 			debug_place = a.trim_prefix("--place=")
 		elif a == "--pause":
 			debug_pause = true
+		elif a == "--motion":
+			debug_motion = true
 		elif a == "--attack":
 			# Drop an FC squad inside the VC roster's acquire radius so combat FX show.
 			for i in range(6):
 				sim.spawn_unit("FC-U01", "FC", Vector2(33, 22 + i) * NavGrid.CELL)
-	if _capture_at < 0:
+	if _capture_frames.is_empty() and _capture_at < 0:
 		_capture_at = 180
 	if debug_select != "":
 		for e in sim.entities.values():
@@ -142,6 +155,18 @@ func _ready() -> void:
 		Input.warp_mouse(get_viewport_rect().size * 0.5)
 		placement_ghost.begin(debug_place)
 	_debug_pause = debug_pause  # applied at capture time; pausing now would stall _process
+	if debug_motion:
+		# Four exemplars, one per motion rule, each in its own lane on open dirt and sent
+		# 600 px east so nothing arrives inside the capture window. Fastest first, so the
+		# leftmost travels furthest.
+		var lanes := [["VC-U02", Vector2(620, 380)], ["VC-U04", Vector2(720, 460)],
+					["VC-U01", Vector2(820, 540)], ["VC-U12", Vector2(920, 620)]]
+		for l in lanes:
+			var id: int = sim.spawn_unit(l[0], "VC", l[1])
+			if id >= 0:
+				sim.run_commands(0, [{"type": "MOVE", "entityIds": [id], "targetPosition": l[1] + Vector2(600, 0)}])
+		rts_cam.zoom = Vector2(2.0, 2.0)
+		rts_cam.position = Vector2(900, 475)
 
 func _build_map(grid: NavGrid) -> void:
 	sim.grid_map = grid
@@ -215,18 +240,23 @@ func _process(delta: float) -> void:
 	var step := Simulation.TICK_DT
 	while _accum >= step:
 		sim.step(step)
+		motion.sample(sim, step)   # this tick's speed, before the redraw that draws it
 		_accum -= step
 		entity_renderer.queue_redraw()
 		fog_renderer.queue_redraw()
 		minimap.queue_redraw()
 		_frame += 1
-	if _capture_at > 0 and _frame >= _capture_at:
+	if not _capture_frames.is_empty():
+		if _frame >= _capture_frames[0]:
+			var n: int = _capture_frames.pop_front()
+			_capture_now("_%03d" % n, _capture_frames.is_empty())
+	elif _capture_at > 0 and _frame >= _capture_at:
 		_capture_at = -1  # prevent re-entry
 		if _debug_pause:
 			pause_menu.toggle()  # menu draws on the frame _capture_now awaits
-		_capture_now()
+		_capture_now("", true)
 
-func _capture_now() -> void:
+func _capture_now(suffix: String, should_quit: bool) -> void:
 	if _capture_out == "":
 		return
 	await RenderingServer.frame_post_draw
@@ -247,9 +277,13 @@ func _capture_now() -> void:
 	for e in sim.entities.values():
 		if e.faction_id == "FC" and e.kind == "unit":
 			print("FCU hp=", e.health.current, "/", e.health.max_health)
-	var err := img.save_png(_capture_out)
-	print("CAPTURED:", _capture_out, " size=", img.get_size(), " err=", err)
-	get_tree().quit()
+	var path := _capture_out
+	if suffix != "":
+		path = "%s%s.%s" % [_capture_out.get_basename(), suffix, _capture_out.get_extension()]
+	var err := img.save_png(path)
+	print("CAPTURED:", path, " size=", img.get_size(), " err=", err)
+	if should_quit:
+		get_tree().quit()
 
 func _on_game_tick(_n: int, _dt: float) -> void:
 	pass

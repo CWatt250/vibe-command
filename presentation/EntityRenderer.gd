@@ -8,6 +8,7 @@ var rts_cam: RTSCamera
 var fog_sys: FogOfWarSystem = null
 var player_faction: String = "VC"
 var fx: FxRenderer = null            # hit-flash source (set by Game.gd)
+var motion: UnitMotion = null        # p3-03 speed sampler (set by Game.gd)
 
 const HIT_FLASH := Color(1.0, 1.0, 1.0, 0.65)
 
@@ -121,6 +122,9 @@ const SHADOW := {
 const SHADOW_COLOR := Color(0.03, 0.03, 0.06)      # near-black, slightly cool; alpha from the table
 const SHADOW_FEATHER := [1.0, 0.86, 0.72]           # three stacked layers = a cheap soft edge
 const SEL_COLOR := Color(0.0, 1.0, 0.4)
+# --- p3-03 rotor blur (air only) ---
+const ROTOR_DISC := Color(0.85, 0.92, 1.0, 0.10)
+const ROTOR_BLADE := Color(0.90, 0.95, 1.0, 0.55)
 
 func _draw_structure(e: Entity) -> void:
 	var col: Color = FC_COLORS.get(e.faction_id, Color.WHITE)
@@ -148,6 +152,14 @@ func _draw_structure(e: Entity) -> void:
 	if sim.selected_ids.has(e.id):
 		_draw_brackets(fp.grow(3.0))
 
+## This unit's measured speed (world px/s) and the shared motion clock. Both read 0 when the
+## presenter runs without a UnitMotion (tests, headless).
+func _speed(e: Entity) -> float:
+	return motion.speed_of(e.id) if motion != null else 0.0
+
+func _t() -> float:
+	return motion.time if motion != null else 0.0
+
 func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 	var col: Color = FC_COLORS.get(e.faction_id, Color.WHITE)
 	var size_px: float = _unit_size_px(e)
@@ -163,17 +175,28 @@ func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 			k += facings
 		var region := SpriteAtlas.facing_region(e.def_id, k)
 		var box := _scaled_sprite_box(e, region.size, size_px)
-		# Infantry walk bob: a 2-phase vertical hop while moving so a static mesh
-		# doesn't slide. Phase from the sim tick so it's deterministic per unit.
+		# p3-03 motion: bob (walk/vehicle) + hover (air) move the sprite; vehicles also rock
+		# about their centre. Speed is the presenter's own measurement, so a blocked unit at rest.
 		var armor: String = e.def_data.get("armorClass", "")
-		if (armor == "Infantry" or armor == "HeavyInfantry") and e.movement != null and e.movement.is_moving():
-			box.position.y -= 1.5 if ((sim.tick + e.id) / 4) % 2 == 0 else 0.0
-		draw_texture_rect_region(tex, box, region, Color.WHITE)
+		var spd := _speed(e)
+		box.position.y += UnitMotion.bob_offset(armor, _t(), spd, e.id) + UnitMotion.hover_offset(armor, _t(), e.id)
+		var rock := UnitMotion.rock_angle(armor, _t(), spd, e.id)
+		if rock != 0.0:
+			draw_set_transform(box.get_center(), rock, Vector2.ONE)
+			draw_texture_rect_region(tex, Rect2(-box.size * 0.5, box.size), region, Color.WHITE)
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		else:
+			draw_texture_rect_region(tex, box, region, Color.WHITE)
+		if e.is_airborne:
+			_draw_rotors(e, box, armor)
 	elif tex != null:
-		var angle := _facing_angle(e)
+		var armor2: String = e.def_data.get("armorClass", "")
+		var spd2 := _speed(e)
+		var angle := _facing_angle(e) + UnitMotion.rock_angle(armor2, _t(), spd2, e.id)
 		var region := SpriteAtlas.region(e.def_id)
 		var box := _scaled_sprite_box(e, region.size, size_px)
 		var draw_pos := box.get_center()
+		draw_pos.y += UnitMotion.bob_offset(armor2, _t(), spd2, e.id) + UnitMotion.hover_offset(armor2, _t(), e.id)
 		var tint := Color.WHITE
 		# Character/vehicle tint: faction hue washed over a mostly-neutral sprite.
 		if SpriteAtlas.is_humanoid(e.def_id):
@@ -191,6 +214,26 @@ func _draw_unit(e: Entity, cam_rect: Rect2) -> void:
 		_draw_health(Vector2(e.position.x, e.position.y - size_px * 0.5 - 5.0), e.health.current / e.health.max_health, size_px * 0.8)
 	if sim.selected_ids.has(e.id):
 		draw_arc(e.position, size_px * 0.55, 0, TAU, 32, SEL_COLOR, 2.0)
+
+## Spinning 2-blade cross + faint disc at each rotor. Corners of the drawn box, not yaw-
+## rotated: a quad is 4-fold symmetric so this is exact at yaw multiples of 90 deg and a
+## cheap cheat in between. Blades, not a disc, so each frame shows a different phase
+## (the 3D prototype learned this the hard way — see presentation3d/Drone3D.gd:20-24).
+func _draw_rotors(e: Entity, box: Rect2, armor: String) -> void:
+	var n: int = UnitMotion.params(armor).get("rotors", 0)
+	if n <= 0:
+		return
+	var r := minf(box.size.x, box.size.y) * 0.17
+	var c := box.get_center()
+	var offs := [Vector2(-0.30, -0.30), Vector2(0.30, -0.30), Vector2(-0.30, 0.30), Vector2(0.30, 0.30)]
+	for i in range(mini(n, offs.size())):
+		var p: Vector2 = c + Vector2(offs[i].x * box.size.x, offs[i].y * box.size.y)
+		var a := UnitMotion.rotor_angle(_t(), e.id) * (1.0 if i % 2 == 0 else -1.0)
+		draw_set_transform(p, a, Vector2(1.0, 0.7))   # 0.7: the 3/4 view foreshortens the disc
+		draw_circle(Vector2.ZERO, r, ROTOR_DISC)
+		draw_line(Vector2(-r, 0), Vector2(r, 0), ROTOR_BLADE, 1.5)
+		draw_line(Vector2(0, -r), Vector2(0, r), ROTOR_BLADE, 1.5)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _sort_y(e: Entity) -> float:
 	if e.kind == "structure":
