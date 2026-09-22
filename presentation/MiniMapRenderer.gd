@@ -35,14 +35,14 @@ func _init(_sim: Simulation, fog: FogOfWarSystem, faction: String, cam: RTSCamer
 	# Draw above everything (Control-free, plain Node2D in screen space).
 	z_index = 100
 
-## One texel per cell from NavGrid.land_types: open / street / blocked (incl. structure pads).
+## One texel per cell from NavGrid.render_type(): open / street / pad (occupancy included).
 func _build_terrain_texture(gw: int, gh: int) -> void:
 	if sim.grid_map == null or sim.grid_map.land_types.is_empty():
 		return
 	var img := Image.create_empty(gw, gh, false, Image.FORMAT_RGBA8)
 	for y in range(gh):
 		for x in range(gw):
-			var lt: int = sim.grid_map.land_types[y][x]
+			var lt: int = sim.grid_map.render_type(x, y)
 			var col := COL_TERRAIN
 			if lt == 1:
 				col = COL_STREET

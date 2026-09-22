@@ -105,6 +105,16 @@ func _init() -> void:
 	_run(sim, 3)
 	_check(s_e.weapon.current_target_id == lurker, "enemy revealed is acquired")
 
+	# --- p1-04: blocking a road cell does not erase the road ---
+	var g := sim.grid_map
+	g.land_types[10][10] = 1
+	g.set_blocked(10, 10, true)
+	_check(g.is_blocked(10, 10), "cell is blocked")
+	_check(g.render_type(10, 10) == 2, "blocked cell renders as pad")
+	g.set_blocked(10, 10, false)
+	_check(g.land_types[10][10] == 1, "road survives block/unblock")
+	_check(g.render_type(10, 10) == 1, "unblocked cell renders as road again")
+
 	if failures == 0:
 		print("PHASE7_RESULT: ALL PASS")
 	else:

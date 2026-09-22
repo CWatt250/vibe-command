@@ -12,7 +12,7 @@ var height: int
 var _blocked: PackedByteArray      # 0 passable, 1 blocked (ground layer only)
 var _air_blocked: PackedByteArray  # 0 passable, 1 blocked (air layer)
 var _cell_index: Dictionary = {}   # cell key -> WorldCell data (resource/height)
-var land_types: Array = []         # Array[Array[int]] terrain for rendering: 0 open, 1 street, 2 blocked
+var land_types: Array = []         # Array[Array[int]] terrain for rendering: 0 open, 1 street, 2 map-painted rubble. Occupancy is NOT stored here (see render_type)
 
 func _init(w: int, h: int) -> void:
 	width = w
@@ -54,11 +54,10 @@ func set_blocked(cx: int, cy: int, blocked: bool, air: bool = false) -> void:
 		_air_blocked[idx(cx, cy)] = 1 if blocked else 0
 	else:
 		_blocked[idx(cx, cy)] = 1 if blocked else 0
-		# Keep the render land-type in sync for ground blocking (2 = blocked).
-		if blocked:
-			land_types[cy][cx] = 2
-		elif land_types[cy][cx] == 2:
-			land_types[cy][cx] = 0
+
+## What to draw at a cell: 2 if occupied (structure pad / rubble), else the terrain type.
+func render_type(cx: int, cy: int) -> int:
+	return 2 if is_blocked(cx, cy) else land_types[cy][cx]
 
 ## Register a rectangular footprint as blocked (for structures / map obstacles).
 func block_rect(cx: int, cy: int, w: int, h: int, air: bool = false) -> void:

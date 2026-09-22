@@ -75,7 +75,7 @@ func _draw() -> void:
 	for y in range(y0, y1 + 1):
 		for x in range(x0, x1 + 1):
 			var r := Rect2(x * cell, y * cell, cell, cell)
-			var lt: int = land_grid[y][x]
+			var lt: int = grid.render_type(x, y)
 			var tex := _tile_for(x, y, lt)
 			if tex != null:
 				draw_texture_rect(tex, r, false)
