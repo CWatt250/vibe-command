@@ -235,6 +235,32 @@ rig renders the lot in ~40 min. Route 1 stays for props and anything the generat
 Open: texture quality (Hunyuan3D-2.1 paint or a multi-view projection), infantry (humanoid meshes
 are fine but need a walk cycle — rig or 2-frame bob), and per-unit yaw/scale sanity checks.
 
+### Readability pass on the unit pipeline (2026-09-21, commit 77eb1cd)
+
+Everything below was found by downsampling sprites to their **true in-game size** and
+viewing them at 6x nearest. Reviewing at 256 px hides every one of these. Do this first,
+always — `docs/concepts/*_units_sheet.png` shows facings at render size and is not enough.
+
+1. **Pad the image before image-to-3D.** Portraits are cropped flush to their bbox, and a
+   subject touching the frame edge makes Hunyuan3D shear the mesh off against the voxel
+   bounds (legs gone, flat cut planes). `image_to_3d.py --margin 0.18`. Affected every
+   mesh generated before this fix; all were regenerated.
+2. **Hunyuan3D is for vehicles, not people.** Single-view humanoid reconstruction is
+   lumpy and legless; at 40 px anatomy is the entire readability budget. Infantry build
+   from Kenney Blocky Characters (CC0) in `kit_infantry()` — faction palette + helmet /
+   vest / belt / pack, plus `INFANTRY_ROLE` giving each unit a different held object
+   (rifle / launcher / mg / tools / heavy). Vehicles keep the generated meshes.
+3. **Camera tilt is measured from straight down.** 0 = top-down, 90 = side. Infantry at
+   58, vehicles at 40 — the same per-class cheat C&C used.
+4. **Lighting and albedo do opposite jobs.** Form comes from the rig (key + fill + a rim
+   that draws a bright edge along the silhouette, High Contrast look); albedo is only
+   "this region is tan". The portrait is blurred ~5% of its size before projection —
+   sampling a sharp image per vertex paints camouflage speckle that destroys the form.
+5. **Outline in post.** Freestyle's line is sub-pixel after the 2x downsample;
+   `pack_facings.py` composites a 1 px dark sticker outline instead (`--outline-px`).
+6. **Bulk the silhouette.** `UNIT_PX` Infantry 30 -> 40, Heavy 68 -> 72. Warcraft III's
+   rule: recognition in a split-second glance is bought with silhouette size.
+
 ## Order of work
 
 | # | Step | Output | Effort |

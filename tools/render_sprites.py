@@ -241,6 +241,7 @@ def kit_generated(uid, length=None, material="paint", yaw_deg=0.0):
     before = set(bpy.context.scene.objects)
     bpy.ops.import_scene.gltf(filepath=os.path.join(GENERATED, f"{uid}.glb"))
     new = [o for o in bpy.context.scene.objects if o not in before]
+    new = drop_loose_debris(new)
     meshes = [o for o in new if o.type == "MESH"]
     pts = [o.matrix_world @ Vector(c) for o in meshes for c in o.bound_box]
     mn = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
@@ -268,6 +269,44 @@ def kit_generated(uid, length=None, material="paint", yaw_deg=0.0):
     return root
 
 
+def drop_loose_debris(objs, keep_frac=0.02):
+    """Delete disconnected islands smaller than `keep_frac` of the biggest one.
+
+    Marching-cubes output carries specks of stray surface around the subject; at
+    sprite size they read as dirt floating beside the unit. Splitting by loose parts
+    and keeping only substantial islands cleans them out."""
+    meshes = [o for o in objs if o.type == "MESH"]
+    if not meshes:
+        return objs
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in meshes:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = meshes[0]
+    before = set(bpy.context.scene.objects)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.separate(type="LOOSE")
+    bpy.ops.object.mode_set(mode="OBJECT")
+    # separate() splits the originals in place and adds the rest as new objects.
+    parts = [o for o in bpy.context.scene.objects if o.type == "MESH"
+             and (o in set(meshes) or o not in before)]
+    if len(parts) <= 1:
+        return objs
+    biggest = max(len(o.data.vertices) for o in parts)
+    keep = [o for o in parts if len(o.data.vertices) >= biggest * keep_frac]
+    drop = [o for o in parts if o not in keep]
+    if drop:
+        bpy.ops.object.select_all(action="DESELECT")
+        for o in drop:
+            o.select_set(True)
+        bpy.ops.object.delete()
+    print(f"DEBRIS removed {len(drop)} island(s), kept {len(keep)}")
+    # Rebuild from live objects only — anything in `objs` may have just been deleted.
+    survivors = set(bpy.context.scene.objects)
+    empties = [o for o in objs if o in survivors and o.type != "MESH"]
+    return empties + [o for o in keep if o in survivors]
+
+
 def project_portrait(obj, image_path):
     """Paint the mesh with the portrait it was generated from: orthographic projection
     along the portrait's view (front-left-above in the mesh's own frame, front = -Y),
@@ -287,6 +326,12 @@ def project_portrait(obj, image_path):
     # speckle and destroys the form. A 30 px unit is read through LIGHTING; the
     # portrait's job is only to say "this region is tan / this one is cyan".
     rgba = np.array(px, dtype=np.float32).reshape(h, w, 4)
+    # Reject leftover key colour. ai_sprite_prep's hue-ratio key leaves a magenta
+    # fringe on soft edges; blurring smears it inward and it lands on the mesh as
+    # pink blotches. Anything still magenta-dominant is background, not paint.
+    rr, gg, bb = rgba[..., 0], rgba[..., 1], rgba[..., 2]
+    magenta = (np.minimum(rr, bb) - gg) > 0.06
+    rgba[..., 3] = np.where(magenta, 0.0, rgba[..., 3])
     radius = max(2, int(min(w, h) * 0.05))
     ker = np.ones(radius * 2 + 1, dtype=np.float32)
     ker /= ker.sum()
@@ -500,18 +545,18 @@ def build_scene(px, tilt_deg=40.0, ortho=3.4):
     # a hot key so lit planes go bright, a dim fill so shadow keeps hue without
     # going to mud, and a rim from behind-above that draws a bright edge along the
     # silhouette — the single biggest help in separating a unit from the terrain.
-    sun.energy = 9.0
+    sun.energy = 3.4
     sun.angle = math.radians(2.0)
     so = bpy.data.objects.new("sun", sun)
     sc.collection.objects.link(so)
     so.rotation_euler = (math.radians(50), 0.0, math.radians(-135))
     fill = bpy.data.lights.new("fill", "SUN")
-    fill.energy = 1.2
+    fill.energy = 0.8
     fo = bpy.data.objects.new("fill", fill)
     sc.collection.objects.link(fo)
     fo.rotation_euler = (math.radians(35), 0.0, math.radians(45))
     rim = bpy.data.lights.new("rim", "SUN")
-    rim.energy = 5.0
+    rim.energy = 2.0
     rim.color = (0.85, 0.92, 1.0)
     ro = bpy.data.objects.new("rim", rim)
     sc.collection.objects.link(ro)
@@ -520,8 +565,10 @@ def build_scene(px, tilt_deg=40.0, ortho=3.4):
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs[0].default_value = (0.55, 0.6, 0.7, 1.0)
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.35
-    # Filmic crushes the value range we just built; Standard + a contrast look keeps it.
-    sc.view_settings.look = "High Contrast"
+    # Standard (set in build_scene) keeps albedo hue; High Contrast on top of a hot key
+    # blew every lit plane to white, so exposure does the shaping instead of a look LUT.
+    sc.view_settings.look = "Medium Low Contrast"
+    sc.view_settings.exposure = -0.35
     sc.world = world
     # Outline.
     sc.render.use_freestyle = True
