@@ -332,7 +332,9 @@ def project_portrait(obj, image_path):
     rr, gg, bb = rgba[..., 0], rgba[..., 1], rgba[..., 2]
     magenta = (np.minimum(rr, bb) - gg) > 0.06
     rgba[..., 3] = np.where(magenta, 0.0, rgba[..., 3])
-    radius = max(2, int(min(w, h) * 0.05))
+    # 5% smeared a black body with orange seams into uniform mauve; 2.5% still kills
+    # the per-vertex speckle but keeps a dark unit dark and a glowing seam glowing.
+    radius = max(2, int(min(w, h) * 0.025))
     ker = np.ones(radius * 2 + 1, dtype=np.float32)
     ker /= ker.sum()
     a_mask = rgba[..., 3:4]
@@ -385,6 +387,7 @@ def project_portrait(obj, image_path):
     vs = coords @ up2
     u0, u1, v0, v1 = float(us.min()), float(us.max()), float(vs.min()), float(vs.max())
     layer = me.color_attributes.new(name="portrait", type="BYTE_COLOR", domain="POINT")
+    glow = me.color_attributes.new(name="glow", type="BYTE_COLOR", domain="POINT")
     for i, v in enumerate(me.vertices):
         fx = (us[i] - u0) / max(u1 - u0, 1e-6)
         fy = (vs[i] - v0) / max(v1 - v0, 1e-6)
@@ -418,9 +421,23 @@ def project_portrait(obj, image_path):
         hh, ss, vv = colorsys.rgb_to_hsv(r / n, g / n, b / n)
         # Blurring already smoothed value; keep albedo mid-range and let the lighting
         # rig make the light/dark separation, or the two stack into mud.
-        vv = min(max(0.45 + (vv - 0.5) * 0.8, 0.12), 0.85)
+        # Centre near mid and keep unit gain, so a black faction stays black instead of
+        # being compressed up into grey. Floor is low on purpose.
+        # Accent lights are the faction tell at 40 px (VC cyan, FC amber, TS teal,
+        # SG orange). Projected as plain albedo they turn into dull patches, so a
+        # saturated, bright sample is routed to an emission layer instead and the
+        # material adds it back as light.
+        # Tight: an LED is saturated AND bright. Loosen this and a tan VC body or a
+        # sand FC hull qualifies, and the whole vehicle lights up like a lantern.
+        is_glow = ss > 0.62 and vv > 0.72
+        vv = min(max(0.44 + (vv - 0.5) * 1.05, 0.05), 0.88)
         rr, gg, bb = colorsys.hsv_to_rgb(hh, min(ss * 1.3, 1.0), vv)
         layer.data[i].color = (rr, gg, bb, 1.0)
+        if is_glow:
+            er, eg, eb = colorsys.hsv_to_rgb(hh, min(ss * 1.3, 1.0), min(vv * 1.6, 1.0))
+            glow.data[i].color = (er, eg, eb, 1.0)
+        else:
+            glow.data[i].color = (0.0, 0.0, 0.0, 1.0)
     return True
 
 
@@ -432,6 +449,10 @@ def vertex_color_material(uid):
     attr = nt.nodes.new("ShaderNodeVertexColor")
     attr.layer_name = "portrait"
     nt.links.new(attr.outputs["Color"], bsdf.inputs["Base Color"])
+    em = nt.nodes.new("ShaderNodeVertexColor")
+    em.layer_name = "glow"
+    nt.links.new(em.outputs["Color"], bsdf.inputs["Emission Color"])
+    bsdf.inputs["Emission Strength"].default_value = 1.6
     bsdf.inputs["Roughness"].default_value = 0.75
     return m
 
@@ -556,15 +577,18 @@ def build_scene(px, tilt_deg=40.0, ortho=3.4):
     sc.collection.objects.link(fo)
     fo.rotation_euler = (math.radians(35), 0.0, math.radians(45))
     rim = bpy.data.lights.new("rim", "SUN")
-    rim.energy = 2.0
-    rim.color = (0.85, 0.92, 1.0)
+    rim.energy = 1.3
+    rim.color = (1.0, 0.98, 0.94)
     ro = bpy.data.objects.new("rim", rim)
     sc.collection.objects.link(ro)
     ro.rotation_euler = (math.radians(20), 0.0, math.radians(35))
     world = bpy.data.worlds.new("w")
     world.use_nodes = True
-    world.node_tree.nodes["Background"].inputs[0].default_value = (0.55, 0.6, 0.7, 1.0)
-    world.node_tree.nodes["Background"].inputs[1].default_value = 0.35
+    # Neutral and dim. A blue-grey ambient at 0.35 lifted the black SG roster to a
+    # mid mauve (portrait median value 0.13 -> render 0.26, and warm -> cool), which
+    # erased the faction's whole identity.
+    world.node_tree.nodes["Background"].inputs[0].default_value = (0.5, 0.5, 0.5, 1.0)
+    world.node_tree.nodes["Background"].inputs[1].default_value = 0.15
     # Standard (set in build_scene) keeps albedo hue; High Contrast on top of a hot key
     # blew every lit plane to white, so exposure does the shaping instead of a look LUT.
     sc.view_settings.look = "Medium Low Contrast"
