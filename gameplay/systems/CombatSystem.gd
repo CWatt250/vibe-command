@@ -69,6 +69,10 @@ func _chase(e: Entity, target: Entity) -> void:
 	if dst.size() > 0:
 		e.movement.set_path(dst, target.position)
 
+## A faction may only engage what its sensors currently reveal.
+func _can_see(faction: String, pos: Vector2) -> bool:
+	return sim.fog_sys == null or sim.fog_sys.is_visible(faction, pos)
+
 ## Acquire the highest-scoring valid enemy target within acquisition radius.
 func _acquire_target(e: Entity) -> int:
 	var w: WeaponComponent = e.weapon
@@ -78,6 +82,8 @@ func _acquire_target(e: Entity) -> int:
 	for cid in candidates:
 		var cand: Entity = sim.entities.get(cid)
 		if cand == null or not cand.alive or cand.faction_id == e.faction_id:
+			continue
+		if not _can_see(e.faction_id, cand.position):
 			continue
 		if not _target_tag_valid(w, cand):
 			continue
@@ -124,7 +130,7 @@ func _valid_target(e: Entity, target_id: int) -> bool:
 	var t: Entity = sim.entities.get(target_id)
 	if t == null or not t.alive or t.faction_id == e.faction_id:
 		return false
-	return _target_tag_valid(e.weapon, t)
+	return _target_tag_valid(e.weapon, t) and _can_see(e.faction_id, t.position)
 
 # --- Fire resolution ---
 func _resolve_fire(e: Entity, w: WeaponComponent, target: Entity) -> void:

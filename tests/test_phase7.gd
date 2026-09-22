@@ -88,6 +88,23 @@ func _init() -> void:
 	_run(sim, 2)
 	_check(sim.fog_sys.is_visible("VC", sim.entities[near_fc].position), "FC unit beside VC HQ is visible")
 
+	# --- p1-03: no acquisition through fog ---
+	sim.add_player("FC")
+	var shooter := sim.spawn_unit("VC-U01", "VC", Vector2(1400, 1400))   # Trooper, has a weapon
+	var s_e: Entity = sim.entities[shooter]
+	var vis_r: float = s_e.def_data.get("visionRadius", 200.0)
+	var acq_r: float = s_e.weapon.acquire_radius
+	_check(acq_r > vis_r, "test premise: acquire radius (%d) exceeds vision (%d)" % [acq_r, vis_r])
+	# Enemy inside acquire radius but outside vision -> must NOT be acquired.
+	var lurker := sim.spawn_unit("FC-U01", "FC", Vector2(1400 + (vis_r + acq_r) * 0.5, 1400))
+	_run(sim, 3)
+	_check(s_e.weapon.current_target_id != lurker, "enemy in fog is not acquired")
+	# Move it inside vision -> acquired.
+	sim.entities[lurker].position = Vector2(1400 + vis_r * 0.5, 1400)
+	sim.spatial.update(lurker, sim.entities[lurker].position)
+	_run(sim, 3)
+	_check(s_e.weapon.current_target_id == lurker, "enemy revealed is acquired")
+
 	if failures == 0:
 		print("PHASE7_RESULT: ALL PASS")
 	else:
