@@ -31,6 +31,9 @@ the assets do; putting nicer sprites into a flat presentation layer wastes them.
   Explored = blue-black at 65% (cooled, not just darker); unexplored = black.
 - `MiniMapRenderer` draws a one-texel-per-cell terrain silhouette from `NavGrid.land_types` (open /
   street / blocked incl. structure pads) with `FogRenderer.texture` over it — one fog authority.
+- p3-02: the world overlay now draws `soft_texture` — alpha eroded one cell + 3×3 box blur, visible
+  cells pinned clear → a 0/85/170/255 ramp over 3 cells (120 px). `texture` stays crisp for the
+  minimap. `docs/screenshot_2d_fog.png`.
 
 ### V3 — Terrain — DONE 2026-09-20 (`docs/screenshot_v3_terrain.png`)
 - Procedural tile set via `tools/generate_terrain.py` → `assets/terrain/` (no external tileset; same
