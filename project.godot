@@ -15,14 +15,6 @@ window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
-[input]
-move_up={ "deadzone": 0.2, "events": [ { "type": "key", "device": -1, "keycode": 87, "physical_keycode": 0, "unicode": 119 } ] }
-move_down={ "deadzone": 0.2, "events": [ { "type": "key", "device": -1, "keycode": 83, "physical_keycode": 0, "unicode": 115 } ] }
-move_left={ "deadzone": 0.2, "events": [ { "type": "key", "device": -1, "keycode": 65, "physical_keycode": 0, "unicode": 97 } ] }
-move_right={ "deadzone": 0.2, "events": [ { "type": "key", "device": -1, "keycode": 68, "physical_keycode": 0, "unicode": 100 } ] }
-zoom_in={ "deadzone": 0.2, "events": [ { "type": "key", "device": -1, "keycode": 4194308, "physical_keycode": 0, "unicode": 0 } ] }
-zoom_out={ "deadzone": 0.2, "events": [ { "type": "key", "device": -1, "keycode": 4194309, "physical_keycode": 0, "unicode": 0 } ] }
-
 [rendering]
 textures/vram_compression/import_etc2_astc=true
 textures/default_filters/use_nearest_mipmap_filter=false

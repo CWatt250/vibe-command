@@ -104,6 +104,7 @@ func _ready() -> void:
 
 	# Spawn starter forces: 12 Vibe Coder infantry + a Garage Core (Vibe base)
 	_spawn_starter_force()
+	rts_cam.home = _player_home()   # H key; the HQ is pre-placed and losing it ends the match
 
 	events.game_tick.connect(_on_game_tick)
 
@@ -118,6 +119,7 @@ func _ready() -> void:
 	var debug_place := ""
 	var debug_pause := false
 	var debug_motion := false
+	var debug_cam := ""
 	for a in args:
 		if a.begins_with("--capture="):
 			_capture_out = a.trim_prefix("--capture=")
@@ -137,6 +139,8 @@ func _ready() -> void:
 			debug_pause = true
 		elif a == "--motion":
 			debug_motion = true
+		elif a.begins_with("--cam="):
+			debug_cam = a.trim_prefix("--cam=")   # x,y,zoom — applied after every other debug flag
 		elif a == "--attack":
 			# Drop an FC squad inside the VC roster's acquire radius so combat FX show.
 			for i in range(6):
@@ -165,8 +169,13 @@ func _ready() -> void:
 			var id: int = sim.spawn_unit(l[0], "VC", l[1])
 			if id >= 0:
 				sim.run_commands(0, [{"type": "MOVE", "entityIds": [id], "targetPosition": l[1] + Vector2(600, 0)}])
-		rts_cam.zoom = Vector2(2.0, 2.0)
+		rts_cam.set_zoom_now(2.0)   # zoom AND its target, or settle_zoom eases back to 1
 		rts_cam.position = Vector2(900, 475)
+	if debug_cam != "":
+		var p := debug_cam.split(",")
+		if p.size() == 3:
+			rts_cam.position = Vector2(float(p[0]), float(p[1]))
+			rts_cam.set_zoom_now(float(p[2]))
 
 func _build_map(grid: NavGrid) -> void:
 	sim.grid_map = grid
@@ -234,6 +243,19 @@ func _spawn_starter_force() -> void:
 
 	# Skirmish AI drives Federal Command against the Vibe Coder player.
 	sim.attach_skirmish_ai("FC", "VC")
+
+## Where H sends the camera: the player's HQ-class structure (same test as
+## Simulation._check_match_over), else the player's first structure, else the map centre.
+func _player_home() -> Vector2:
+	var first := Vector2(-1, -1)
+	for e in sim.entities.values():
+		if e.faction_id != PLAYER_FACTION or e.kind != "structure" or not e.alive:
+			continue
+		if e.def_data.get("class", "") == "HQ":
+			return e.position
+		if first.x < 0.0:
+			first = e.position
+	return first if first.x >= 0.0 else _world * 0.5
 
 func _process(delta: float) -> void:
 	_accum += delta
