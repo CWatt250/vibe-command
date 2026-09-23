@@ -84,7 +84,7 @@ Tickets in `docs/specs/p3-0x-*.md`. All presentation-only; `core/` and `gameplay
 | Review sheets: render each unit from 3 angles into a grid | **L** builds, **F** reviews once per faction |
 </details>
 
-### Phase 4 — Camera + controls (~2 days) — specs written 2026-09-22, `docs/specs/p4-0x-*.md`
+### Phase 4 — Camera + controls — SHIPPED 2026-09-22 (b3e1ce9, 1f53df0, e007564, 0d1fc8b, 9ed362d) + `p4-06` bugfix ticket pending
 Landing order is fixed: p4-01, p4-02, p4-04, p4-03, p4-05 (see `docs/specs/README.md`). WASD is
 unbound so A/S/G can be command keys; pan is arrows + edge scroll + middle-drag.
 | Task | Tier |

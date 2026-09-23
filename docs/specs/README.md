@@ -101,6 +101,14 @@ zoom, H = home, A = attack-move, S = stop, G = hold, Escape = cancel/deselect, 0
 Ctrl+0–9 assign groups, Shift = queue, double-click = select same type on screen. **WASD is unbound**
 (p4-01 deletes the dead InputMap actions).
 
-After all five: F plays for a minute (input cannot be captured headlessly) and reviews
-`docs/screenshot_cam_zoom.png`, `docs/screenshot_minimap_jump.png`, `docs/screenshot_armed_attack.png`,
-`docs/screenshot_p4_type_select.png`, `docs/cursors_sheet.png`. Then Phase 5 (movement feel).
+**Phase 4 SHIPPED 2026-09-22**, in the fixed order: p4-01 `b3e1ce9`, p4-02 `1f53df0`, p4-04
+`e007564`, p4-03 `0d1fc8b`, p4-05 `9ed362d`. 15 suites. F reviewed every diff and capture. Still
+owed by Colton: a minute of play to judge camera pan/zoom feel and the hotkeys (input cannot be
+captured headlessly); knobs are `zoom_smoothing` / `zoom_notch` / `pan_speed` / `edge_margin` at
+the top of `presentation/RTSCamera.gd`.
+
+18. `p4-06-no-targeting-neutral-fields.md` — C. Bug found during p4-03 verification: resource
+    fields spawn faction-less and combat only excludes same-faction targets, so units acquire and
+    shoot the ore. One predicate in `CombatSystem`, headless test. Any time; depends on nothing.
+
+Then Phase 5 (movement feel) — F writes the steering spec first.
