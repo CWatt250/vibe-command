@@ -323,8 +323,14 @@ func _tick_entity(e: Entity, dt: float) -> void:
 		# arrival.
 		if was_moving and not e.movement.is_moving() \
 				and (e.order == Entity.Order.MOVE or e.order == Entity.Order.ATTACK_MOVE) \
-				and e.position.distance_to(e.order_dest) <= 4.0:
+				and e.position.distance_to(e.order_dest) <= maxf(4.0, e.movement.footprint_radius):
 			e.order = Entity.Order.IDLE
+
+	# p4-03: the current order is finished (IDLE) and more are queued -> start the next one now.
+	# This is the ONE place the queue pops. ATTACK ends in CombatSystem.tick_all (later in the
+	# same step), so its successor starts on the next tick.
+	if e.order == Entity.Order.IDLE and not e.order_queue.is_empty():
+		_pop_order_queue(e)
 	if e.weapon != null:
 		e.weapon.tick_cool(dt)
 	if e.production != null:
@@ -341,6 +347,15 @@ func run_commands(id: int, commands: Array) -> void:
 	for cmd in commands:
 		var cmd_type: String = cmd.get("type", "")
 		var targets: Array = cmd.get("entityIds", [])
+		# p4-03: Shift-queued orders. A busy unit gets the order appended to its queue instead of
+		# issued now; a non-queued order (and STOP / HOLD) clears the queue first.
+		if cmd_type == "MOVE" or cmd_type == "ATTACK" or cmd_type == "ATTACK_MOVE":
+			targets = _split_queued(cmd_type, targets, cmd)
+		elif cmd_type == "STOP" or cmd_type == "HOLD":
+			for t in targets:
+				var eq: Entity = entities.get(t)
+				if eq != null:
+					eq.order_queue.clear()
 		match cmd_type:
 			"MOVE":
 				_issue_move(id, targets, cmd.get("targetPosition", Vector2.ZERO))
@@ -452,6 +467,45 @@ func _issue_hold(self_id: int, targets: Array) -> void:
 		e.order = Entity.Order.HOLD
 		if e.movement != null:
 			e.movement.clear()
+
+# ---- Order queue (p4-03: Shift = queue) ----
+## Returns the subset of `targets` to issue right now. With "queue": true, a unit that is busy
+## (order != IDLE, or still holding queued orders) gets the order appended instead. Without it,
+## the queue is cleared so the new order replaces everything. Position orders store the unit's own
+## formation slot (same _formation_offsets as an immediate group move) so a queued group move
+## fans out instead of stacking when it pops one unit at a time.
+func _split_queued(cmd_type: String, targets: Array, cmd: Dictionary) -> Array:
+	var queue: bool = cmd.get("queue", false)
+	var now: Array = []
+	var offsets := _formation_offsets(targets.size())
+	for i in range(targets.size()):
+		var e: Entity = entities.get(targets[i])
+		if e == null:
+			continue
+		if queue and (e.order != Entity.Order.IDLE or not e.order_queue.is_empty()):
+			var entry: Dictionary = {"type": cmd_type}
+			if cmd_type == "ATTACK":
+				entry["targetEntityId"] = cmd.get("targetEntityId", -1)
+			else:
+				entry["targetPosition"] = cmd.get("targetPosition", Vector2.ZERO) + offsets[i]
+			e.order_queue.append(entry)
+		else:
+			if not queue:
+				e.order_queue.clear()
+			now.append(targets[i])
+	return now
+
+## Start the next queued order on one entity. Single-target calls, so _formation_offsets(1)
+## contributes Vector2.ZERO and the stored slot is used as-is.
+func _pop_order_queue(e: Entity) -> void:
+	var next: Dictionary = e.order_queue.pop_front()
+	match next.get("type", ""):
+		"MOVE":
+			_issue_move(0, [e.id], next.get("targetPosition", e.position))
+		"ATTACK":
+			_issue_attack(0, [e.id], next)
+		"ATTACK_MOVE":
+			_issue_attack_move(0, [e.id], next.get("targetPosition", e.position))
 
 # --- Base building (Blueprint §5.2) / production (Blueprint §5.3) ---
 func _issue_build(self_id: int, cmd: Dictionary) -> void:

@@ -91,11 +91,14 @@ func jump_to_screen(screen_pos: Vector2) -> void:
 
 ## Right click: MOVE the current selection to the world point under the cursor.
 ## Same command dict SelectionInput._issue_context_order builds for a ground click.
-func order_move_at(screen_pos: Vector2) -> void:
+func order_move_at(screen_pos: Vector2, queue: bool = false) -> void:
 	var ids: Array = sim.selected_ids
 	if ids.is_empty():
 		return
-	orders_issued.emit([{"type": "MOVE", "entityIds": ids, "targetPosition": minimap_to_world(screen_pos)}])
+	var order: Dictionary = {"type": "MOVE", "entityIds": ids, "targetPosition": minimap_to_world(screen_pos)}
+	if queue:
+		order["queue"] = true
+	orders_issued.emit([order])
 
 ## _input (not _unhandled_input): runs before the GUI pass and before SelectionInput /
 ## RTSCamera see the event, regardless of tree order. Anything that lands on the minimap
@@ -112,7 +115,7 @@ func _input(event: InputEvent) -> void:
 				_drag_jump = false
 				get_viewport().set_input_as_handled()
 		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and contains_screen(event.position):
-			order_move_at(event.position)
+			order_move_at(event.position, event.shift_pressed)
 			get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion and _drag_jump:
 		jump_to_screen(event.position)   # keeps following even if the cursor leaves the rect

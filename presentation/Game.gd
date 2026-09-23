@@ -116,8 +116,10 @@ func _ready() -> void:
 	# --place=<structure_def_id> starts the placement ghost with the cursor warped to centre.
 	# --attack spawns an enemy squad next to the base; --pause opens the pause menu at capture.
 	# --minimap-click=<x>,<y> (screen px) performs a minimap left-click before the capture.
+	# --select-type=<def_id> selects every on-screen unit with that def (p4-03 type-select).
 	var args := OS.get_cmdline_user_args()
 	var debug_select := ""
+	var debug_select_type := ""
 	var debug_train := ""
 	var debug_place := ""
 	var debug_pause := false
@@ -136,6 +138,8 @@ func _ready() -> void:
 					_capture_frames.append(int(s))
 		elif a.begins_with("--select="):
 			debug_select = a.trim_prefix("--select=")
+		elif a.begins_with("--select-type="):
+			debug_select_type = a.trim_prefix("--select-type=")
 		elif a.begins_with("--train="):
 			debug_train = a.trim_prefix("--train=")
 		elif a.begins_with("--place="):
@@ -165,6 +169,15 @@ func _ready() -> void:
 				if debug_train != "":
 					var order := {"type": "TRAIN", "entityIds": [e.id], "unitDefId": debug_train}
 					sim.run_commands(0, [order, order])
+				break
+	if debug_select_type != "":
+		# p4-03: drive the double-click type-select from the first entity with that def, so a
+		# capture shows every on-screen unit of the type ringed. Prints the count for pixel checks.
+		for e in sim.entities.values():
+			if e.def_id == debug_select_type:
+				var ids: Array = selection_input.select_same_type(e.id)
+				print("SELECT_TYPE: %s -> %d units" % [debug_select_type, ids.size()])
+				_on_selection(ids)
 				break
 	if debug_armed:
 		selection_input.arm(SelectionInput.Armed.ATTACK_MOVE)

@@ -34,6 +34,11 @@ enum Order { IDLE, MOVE, ATTACK, ATTACK_MOVE, HOLD }
 var order: Order = Order.IDLE
 var order_target: int = -1              # entity id for ATTACK
 var order_dest: Vector2 = Vector2.ZERO  # for MOVE / ATTACK_MOVE
+## p4-03: orders waiting behind the current one (Shift = queue). Each entry is a command dict
+## in run_commands' own shape: {"type": "MOVE"|"ATTACK_MOVE", "targetPosition": Vector2} or
+## {"type": "ATTACK", "targetEntityId": int}. Drained by Simulation._tick_entity once `order` is
+## back to IDLE; cleared by any non-queued order, STOP or HOLD.
+var order_queue: Array = []
 
 # --- components (Blueprint §2 / §4) ---
 var health: HealthComponent = null
