@@ -10,6 +10,7 @@ var sim: Simulation
 
 var rts_cam: RTSCamera
 var selection_input: SelectionInput
+var cursors: Cursors
 var map_renderer: MapRenderer
 var entity_renderer: EntityRenderer
 var fx_renderer: FxRenderer
@@ -95,6 +96,9 @@ func _ready() -> void:
 	selection_input.orders_issued.connect(_on_orders)
 	selection_input.selection_changed.connect(_on_selection)
 	hud.bind_input(selection_input)   # p4-04: HUD order buttons share the armed state
+	# p4-05 contextual cursor: five procedural images registered once; switched per tick below.
+	cursors = Cursors.new()
+	cursors.install()
 
 	# Structure placement: HUD build grid asks, the ghost previews + issues BUILD.
 	placement_ghost = PlacementGhost.new(sim, rts_cam, player_faction)
@@ -294,6 +298,7 @@ func _player_home() -> Vector2:
 func _process(delta: float) -> void:
 	_accum += delta
 	var step := Simulation.TICK_DT
+	var ticked := false
 	while _accum >= step:
 		sim.step(step)
 		motion.sample(sim, step)   # this tick's speed, before the redraw that draws it
@@ -302,6 +307,9 @@ func _process(delta: float) -> void:
 		fog_renderer.queue_redraw()
 		minimap.queue_redraw()
 		_frame += 1
+		ticked = true
+	if ticked:
+		_update_cursor()   # once per sim tick, never per frame
 	if not _capture_frames.is_empty():
 		if _frame >= _capture_frames[0]:
 			var n: int = _capture_frames.pop_front()
@@ -354,3 +362,29 @@ func _on_selection(ids: Array) -> void:
 	var typed: Array[int] = []
 	typed.assign(ids)
 	events.entity_selected.emit(typed)
+## p4-05: build the cursor context from what is under the mouse and let Cursors pick.
+## Presentation only — reads the sim, issues nothing.
+func _update_cursor() -> void:
+	var mpos := get_viewport().get_mouse_position()
+	var over_minimap := minimap.contains_screen(mpos)   # p4-02's hit-test: one source of truth
+	var world := rts_cam.screen_to_world(mpos)
+	var hover_id: int = selection_input._unit_at_world(world)   # fog-aware: enemies only if visible
+	var hover: Entity = sim.entities.get(hover_id) if hover_id >= 0 else null
+	# Path layer for the walkability read: air only when every selected unit is airborne.
+	var air_only := not sim.selected_ids.is_empty()
+	for id in sim.selected_ids:
+		var e: Entity = sim.entities.get(id)
+		if e == null or not e.is_airborne:
+			air_only = false
+			break
+	var cell := sim.grid_map.world_to_cell(world.x, world.y)
+	var ctx := {
+		"ui": get_viewport().gui_get_hovered_control() != null or over_minimap or placement_ghost.active(),
+		"armed": "attack" if selection_input.armed == SelectionInput.Armed.ATTACK_MOVE else "",
+		"has_selection": not sim.selected_ids.is_empty(),
+		"hover_own": hover != null and hover.faction_id == PLAYER_FACTION,
+		"hover_enemy": hover != null and hover.faction_id != PLAYER_FACTION,
+		"fog": sim.fog_sys.state_at(PLAYER_FACTION, world),
+		"walkable": not sim.grid_map.is_blocked(cell.x, cell.y, air_only),
+	}
+	cursors.apply(Cursors.cursor_for(ctx))
