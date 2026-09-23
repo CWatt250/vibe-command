@@ -6,10 +6,18 @@ class_name SelectionInput
 
 signal orders_issued(orders: Array)
 signal selection_changed(ids: Array)
+## p4-04: the armed click-target mode changed (HUD highlights the matching button).
+signal armed_changed(mode: int)
+
+## p4-04 armed command mode. A hotkey or a HUD button arms it, the next left click in the
+## world consumes it, Escape or right click cancels it. One enum so the HUD buttons and the
+## keys share the same state; add MOVE / RALLY here when those buttons exist.
+enum Armed { NONE, ATTACK_MOVE }
 
 var rts_cam: RTSCamera
 var sim: Simulation
 
+var armed: Armed = Armed.NONE
 var _dragging: bool = false
 var _drag_start: Vector2 = Vector2.ZERO   # world
 var _drag_current: Vector2 = Vector2.ZERO
@@ -27,6 +35,16 @@ func _draw() -> void:
 		draw_rect(rect, Color(0.0, 0.85, 1.0, 0.18), true)
 		draw_rect(rect, Color(0.0, 0.85, 1.0, 0.9), false, 1.5)
 
+## Escape is taken here, in _input, because PauseMenu consumes it in _unhandled_input and sits
+## later in the tree (Game.gd adds it after us), so it would never reach our _unhandled_input.
+## PlacementGhost also uses _input and is added later still, so an active placement still wins.
+## Only consumed when there is something to cancel: with nothing armed and nothing selected the
+## event falls through and Escape still pauses.
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+		if handle_escape():
+			get_viewport().set_input_as_handled()
+
 func _unhandled_input(event: InputEvent) -> void:
 	_shift = event is InputEventKey and event.keycode == KEY_SHIFT # fallback; tracked via state
 	if event is InputEventKey and event.pressed and event.keycode == KEY_SHIFT:
@@ -34,21 +52,100 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and not event.pressed and event.keycode == KEY_SHIFT:
 		_shift = false
 
+	if event is InputEventKey and event.pressed and not event.echo:
+		if handle_key(event.keycode):
+			get_viewport().set_input_as_handled()
+			return
+
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
+			if handle_left_click(rts_cam.screen_to_world(event.position)):
+				get_viewport().set_input_as_handled()
+				return
 			_dragging = true
 			_drag_start = rts_cam.screen_to_world(event.position)
 			_drag_current = _drag_start
-		else:
+		elif _dragging:
 			_dragging = false
 			_finish_drag(event.position)
 			queue_redraw()
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-		_issue_context_order(rts_cam.screen_to_world(event.position))
+		handle_right_click(rts_cam.screen_to_world(event.position))
 
 	if _dragging:
 		_drag_current = rts_cam.screen_to_world(get_viewport().get_mouse_position())
 		queue_redraw()
+
+# --- p4-04 armed command mode: pure event → call translation (headless-testable) ---
+
+## Arm a click-target mode. No-op with nothing selected: there is nobody to give the order to,
+## and it keeps a stray A press from swallowing the next selection click.
+func arm(mode: Armed) -> void:
+	if mode == Armed.NONE or sim.selected_ids.is_empty() or armed == mode:
+		return
+	armed = mode
+	armed_changed.emit(armed)
+
+func disarm() -> void:
+	if armed == Armed.NONE:
+		return
+	armed = Armed.NONE
+	armed_changed.emit(armed)
+
+## Hotkeys. Returns true when the key did something (the caller marks the event handled).
+## A = arm attack-move, S = stop, G = guard (sim HOLD: stay put, engage in range, never chase).
+func handle_key(keycode: int) -> bool:
+	match keycode:
+		KEY_A:
+			arm(Armed.ATTACK_MOVE)
+			return armed == Armed.ATTACK_MOVE
+		KEY_S:
+			disarm()
+			return issue_simple("STOP")
+		KEY_G:
+			disarm()
+			return issue_simple("HOLD")
+	return false
+
+## Escape: cancel the armed mode first; with nothing armed, deselect; with nothing selected
+## either, return false so the event falls through to PauseMenu.
+func handle_escape() -> bool:
+	if armed != Armed.NONE:
+		disarm()
+		return true
+	if not sim.selected_ids.is_empty():
+		selection_changed.emit([])
+		return true
+	return false
+
+## Left click at a world point while armed: issue the armed order for the selection and
+## disarm. Returns true when consumed, so the caller must not start a drag-select.
+func handle_left_click(world_pos: Vector2) -> bool:
+	if armed == Armed.NONE:
+		return false
+	var mode := armed
+	disarm()
+	if sim.selected_ids.is_empty():
+		return true
+	match mode:
+		Armed.ATTACK_MOVE:
+			orders_issued.emit([{"type": "ATTACK_MOVE", "entityIds": sim.selected_ids.duplicate(), "targetPosition": world_pos}])
+	return true
+
+## Right click: cancels an armed mode (and issues nothing — the click was a cancel, not an
+## order); otherwise the usual contextual order.
+func handle_right_click(world_pos: Vector2) -> void:
+	if armed != Armed.NONE:
+		disarm()
+		return
+	_issue_context_order(world_pos)
+
+## An order with no target ("STOP", "HOLD") for the current selection. False with no selection.
+func issue_simple(cmd_type: String) -> bool:
+	if sim.selected_ids.is_empty():
+		return false
+	orders_issued.emit([{"type": cmd_type, "entityIds": sim.selected_ids.duplicate()}])
+	return true
 
 func _finish_drag(mouse_pos: Vector2) -> void:
 	var p0 := rts_cam.screen_to_world(mouse_pos)

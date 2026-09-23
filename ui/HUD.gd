@@ -18,6 +18,9 @@ var _portrait: TextureRect
 var _title: Label
 var _stats: Label
 var _stop_button: Button
+var _attack_button: Button   # p4-04: toggle, lit while SelectionInput is armed ATTACK_MOVE
+var _guard_button: Button
+var selection_input: SelectionInput = null   # p4-04: set by Game.gd via bind_input()
 var _match_panel: Control
 var _result_label: Label
 
@@ -84,6 +87,24 @@ func _ready() -> void:
 	UiTheme.style_button(_stop_button, faction)
 	_stop_button.pressed.connect(_on_stop)
 	header.add_child(_stop_button)
+	# p4-04: ATTACK arms the click-target mode (same state as the A key); GUARD = HOLD (G).
+	_attack_button = Button.new()
+	_attack_button.text = "ATTACK"
+	_attack_button.toggle_mode = true
+	_attack_button.custom_minimum_size = Vector2(56, 0)
+	_attack_button.focus_mode = Control.FOCUS_NONE
+	_attack_button.tooltip_text = "Attack-move: then click a point (A)"
+	UiTheme.style_button(_attack_button, faction)
+	_attack_button.toggled.connect(_on_attack_toggled)
+	header.add_child(_attack_button)
+	_guard_button = Button.new()
+	_guard_button.text = "GUARD"
+	_guard_button.custom_minimum_size = Vector2(56, 0)
+	_guard_button.focus_mode = Control.FOCUS_NONE
+	_guard_button.tooltip_text = "Hold position, return fire (G)"
+	UiTheme.style_button(_guard_button, faction)
+	_guard_button.pressed.connect(_on_guard)
+	header.add_child(_guard_button)
 
 	queue_panel = ProductionQueuePanel.new(sim, events, faction)
 	column.add_child(queue_panel)
@@ -151,9 +172,28 @@ func _on_game_tick(tick: int, _dt: float) -> void:
 	if tick % Simulation.ticks_per(3.0) == 0 and _card.visible:
 		_refresh_selection(sim.selected_ids)
 
+## p4-04: the order buttons share SelectionInput's armed state and its orders_issued path
+## (Game._on_orders -> sim.run_commands) instead of talking to the sim directly.
+func bind_input(si: SelectionInput) -> void:
+	selection_input = si
+	si.armed_changed.connect(_on_armed_changed)
+
 func _on_stop() -> void:
-	if not sim.selected_ids.is_empty():
-		sim.run_commands(0, [{"type": "STOP", "entityIds": sim.selected_ids.duplicate()}])
+	selection_input.issue_simple("STOP")
+
+func _on_guard() -> void:
+	selection_input.issue_simple("HOLD")
+
+func _on_attack_toggled(on: bool) -> void:
+	if on:
+		selection_input.arm(SelectionInput.Armed.ATTACK_MOVE)
+		if selection_input.armed != SelectionInput.Armed.ATTACK_MOVE:
+			_attack_button.set_pressed_no_signal(false)   # arm() refused (nothing selected)
+	else:
+		selection_input.disarm()
+
+func _on_armed_changed(mode: int) -> void:
+	_attack_button.set_pressed_no_signal(mode == SelectionInput.Armed.ATTACK_MOVE)
 
 func _refresh_selection(ids: Array) -> void:
 	if ids.is_empty():
@@ -164,7 +204,7 @@ func _refresh_selection(ids: Array) -> void:
 		_portrait.texture = UiTheme.icon_for(sim.entities[ids[0]].def_id) if sim.entities.has(ids[0]) else null
 		_title.text = "%d units" % ids.size()
 		_stats.text = _group_summary(ids)
-		_stop_button.visible = true
+		_set_order_buttons_visible(true)
 		return
 	var e: Entity = sim.entities.get(ids[0])
 	if e == null:
@@ -185,7 +225,12 @@ func _refresh_selection(ids: Array) -> void:
 	elif e.kind == "unit" and e.movement != null and e.movement.is_moving():
 		line += "\nMoving"
 	_stats.text = line
-	_stop_button.visible = e.kind == "unit"
+	_set_order_buttons_visible(e.kind == "unit")
+
+func _set_order_buttons_visible(on: bool) -> void:
+	_stop_button.visible = on
+	_attack_button.visible = on
+	_guard_button.visible = on
 
 func _group_summary(ids: Array) -> String:
 	var counts: Dictionary = {}

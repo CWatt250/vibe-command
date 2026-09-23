@@ -94,6 +94,7 @@ func _ready() -> void:
 	add_child(selection_input)
 	selection_input.orders_issued.connect(_on_orders)
 	selection_input.selection_changed.connect(_on_selection)
+	hud.bind_input(selection_input)   # p4-04: HUD order buttons share the armed state
 
 	# Structure placement: HUD build grid asks, the ghost previews + issues BUILD.
 	placement_ghost = PlacementGhost.new(sim, rts_cam, player_faction)
@@ -123,6 +124,7 @@ func _ready() -> void:
 	var debug_motion := false
 	var debug_cam := ""
 	var debug_minimap_click := Vector2(-1, -1)
+	var debug_armed := false
 	for a in args:
 		if a.begins_with("--capture="):
 			_capture_out = a.trim_prefix("--capture=")
@@ -148,6 +150,8 @@ func _ready() -> void:
 			var parts := a.trim_prefix("--minimap-click=").split(",")
 			if parts.size() == 2:
 				debug_minimap_click = Vector2(float(parts[0]), float(parts[1]))
+		elif a == "--armed":
+			debug_armed = true   # p4-04: arm ATTACK_MOVE after --select so the HUD button lights
 		elif a == "--attack":
 			# Drop an FC squad inside the VC roster's acquire radius so combat FX show.
 			for i in range(6):
@@ -162,6 +166,8 @@ func _ready() -> void:
 					var order := {"type": "TRAIN", "entityIds": [e.id], "unitDefId": debug_train}
 					sim.run_commands(0, [order, order])
 				break
+	if debug_armed:
+		selection_input.arm(SelectionInput.Armed.ATTACK_MOVE)
 	if debug_place != "":
 		Input.warp_mouse(get_viewport_rect().size * 0.5)
 		placement_ghost.begin(debug_place)
