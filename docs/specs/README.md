@@ -78,4 +78,29 @@ send a short `/code` or `/pro` message that names the ticket path and the hard r
 executor read the file — the dispatcher runs on WattBott with the repo checked out. DeepSeek
 cannot view PNGs; it verifies captures by pixel measurement, so the visual sign-off stays with F.
 
-Next: Phase 4 (camera + controls) per `docs/execution-plan.md` — specs to be written by F.
+## Phase 4 — camera + controls
+
+**Landing order is fixed — run them in this sequence.** p4-04 and p4-03 both edit
+`presentation/SelectionInput.gd`; p4-04 owns the input entry point and the armed-mode API, p4-03
+extends it. Each later ticket anchors its `Game.gd` edits on code the previous ticket inserted.
+
+13. `p4-01-camera-feel.md` — P. Arrow/edge/middle-drag pan, cursor-anchored eased zoom, H = home.
+    Owns `RTSCamera.gd` (replaced) and `RTSCamera.center_on()`, which p4-02/p4-03 call.
+14. `p4-02-minimap-click.md` — C. Minimap left-click/drag jumps the camera, right-click orders a MOVE.
+15. `p4-04-hotkeys-attack-move-stop-guard.md` — P. A = attack-move (armed click), S = stop, G = hold,
+    Escape cancels; HUD gets ATTACK/GUARD chips wired through the same state.
+16. `p4-03-groups-typeselect-queue.md` — O (Sonnet; `/pro` is acceptable, every line is specified).
+    Ctrl+0–9 / 0–9 control groups, double-click type-select, Shift = queue orders. **The only Phase 4
+    ticket that changes the sim** (`Entity.order_queue`, `Simulation` queue pop + arrival tolerance),
+    headless-tested.
+17. `p4-05-contextual-cursors.md` — C. Procedural 32×32 cursors chosen from what is under the mouse
+    and p4-04's armed state; `docs/cursors_sheet.png` for F.
+
+Key map for the phase (decided; tickets must not deviate): arrows / edge / MMB drag = pan, wheel =
+zoom, H = home, A = attack-move, S = stop, G = hold, Escape = cancel/deselect, 0–9 recall and
+Ctrl+0–9 assign groups, Shift = queue, double-click = select same type on screen. **WASD is unbound**
+(p4-01 deletes the dead InputMap actions).
+
+After all five: F plays for a minute (input cannot be captured headlessly) and reviews
+`docs/screenshot_cam_zoom.png`, `docs/screenshot_minimap_jump.png`, `docs/screenshot_armed_attack.png`,
+`docs/screenshot_p4_type_select.png`, `docs/cursors_sheet.png`. Then Phase 5 (movement feel).

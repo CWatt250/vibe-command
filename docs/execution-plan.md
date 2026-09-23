@@ -84,13 +84,16 @@ Tickets in `docs/specs/p3-0x-*.md`. All presentation-only; `core/` and `gameplay
 | Review sheets: render each unit from 3 angles into a grid | **L** builds, **F** reviews once per faction |
 </details>
 
-### Phase 4 — Camera + controls (~2 days)
+### Phase 4 — Camera + controls (~2 days) — specs written 2026-09-22, `docs/specs/p4-0x-*.md`
+Landing order is fixed: p4-01, p4-02, p4-04, p4-03, p4-05 (see `docs/specs/README.md`). WASD is
+unbound so A/S/G can be command keys; pan is arrows + edge scroll + middle-drag.
 | Task | Tier |
 |---|---|
-| WASD/arrow pan, MMB drag, cursor-anchored zoom with smoothing, `H` home | **P** |
-| Minimap click-to-jump + right-click move | **C** |
-| Double-click type-select, Ctrl+0–9 groups (sim already has control groups), Shift order queue | **O** (Sonnet) |
-| `A` attack-move, `S` stop, `G` guard, contextual cursor sprites | **C** (each one a ticket) |
+| `p4-01` Arrow/edge/middle-drag pan, cursor-anchored eased zoom, `H` home | **P** |
+| `p4-02` Minimap click-to-jump + right-click move | **C** |
+| `p4-04` `A` attack-move (armed click), `S` stop, `G` hold, Escape; HUD ATTACK/GUARD chips | **P** |
+| `p4-03` Ctrl+0–9 groups, double-click type-select, Shift order queue (adds `Entity.order_queue` in the sim) | **O** (Sonnet) or **P** |
+| `p4-05` Contextual cursor sprites (procedural, 32×32) | **C** |
 
 ### Phase 5 — Movement feel (~3 days)
 | Task | Tier |
