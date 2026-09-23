@@ -83,6 +83,7 @@ func _ready() -> void:
 	minimap = MiniMapRenderer.new(sim, sim.fog_sys, player_faction, rts_cam)
 	minimap.fog_texture = fog_renderer.texture
 	minimap_layer.add_child(minimap)
+	minimap.orders_issued.connect(_on_orders)   # p4-02: right-click on the minimap = MOVE
 
 	# HUD shell (Phase 7): resources top-left, selection info bottom-right.
 	hud = HUD.new(sim, events, player_faction)
@@ -113,6 +114,7 @@ func _ready() -> void:
 	# first entity with that def and (optionally) queues that unit on it twice.
 	# --place=<structure_def_id> starts the placement ghost with the cursor warped to centre.
 	# --attack spawns an enemy squad next to the base; --pause opens the pause menu at capture.
+	# --minimap-click=<x>,<y> (screen px) performs a minimap left-click before the capture.
 	var args := OS.get_cmdline_user_args()
 	var debug_select := ""
 	var debug_train := ""
@@ -120,6 +122,7 @@ func _ready() -> void:
 	var debug_pause := false
 	var debug_motion := false
 	var debug_cam := ""
+	var debug_minimap_click := Vector2(-1, -1)
 	for a in args:
 		if a.begins_with("--capture="):
 			_capture_out = a.trim_prefix("--capture=")
@@ -141,6 +144,10 @@ func _ready() -> void:
 			debug_motion = true
 		elif a.begins_with("--cam="):
 			debug_cam = a.trim_prefix("--cam=")   # x,y,zoom — applied after every other debug flag
+		elif a.begins_with("--minimap-click="):
+			var parts := a.trim_prefix("--minimap-click=").split(",")
+			if parts.size() == 2:
+				debug_minimap_click = Vector2(float(parts[0]), float(parts[1]))
 		elif a == "--attack":
 			# Drop an FC squad inside the VC roster's acquire radius so combat FX show.
 			for i in range(6):
@@ -176,6 +183,14 @@ func _ready() -> void:
 		if p.size() == 3:
 			rts_cam.position = Vector2(float(p[0]), float(p[1]))
 			rts_cam.set_zoom_now(float(p[2]))
+	if debug_minimap_click.x >= 0.0:
+		# p4-02: same path a real left click takes (hit-test, jump, clamp). After --motion so
+		# it wins over that flag's camera placement. Logged so the capture can be checked.
+		var hit := minimap.contains_screen(debug_minimap_click)
+		if hit:
+			minimap.jump_to_screen(debug_minimap_click)
+		print("MINIMAP_CLICK: screen=", debug_minimap_click, " hit=", hit,
+			" world=", minimap.minimap_to_world(debug_minimap_click), " cam=", rts_cam.position)
 
 func _build_map(grid: NavGrid) -> void:
 	sim.grid_map = grid
